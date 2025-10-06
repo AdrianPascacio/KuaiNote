@@ -1,0 +1,138 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. original
+    <style name="Base.Theme.Kuai_Notes_Project" parent="Theme.Material3.DayNight.NoActionBar">
+    -->
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Kuai_Notes_Project" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+    <!-- Base application theme. original
+    -->
+
+    <!-- Primary brand color. -->
+    <item name="colorPrimary">#9E9E9E</item>
+        <!--
+    <item name="colorPrimaryDark">@color/green_dark_1</item>
+     -->
+    <item name="colorButtonNormal">@color/white_bamboo</item>
+    <item name="colorAccent">@color/ex_yellow</item>
+    <item name="android:colorBackground">@color/white_softy_1</item>
+    <item name="colorOnPrimary">@color/gray_light_2</item>
+    <item name="textAppearanceButton">@color/white</item>
+
+
+
+    <item name="actionBarItemBackground">@color/teal_200</item>
+    <item name="colorSecondary">@color/teal_200</item>
+    <item name="colorSecondaryVariant">@color/teal_700</item>
+    <item name="colorOnSecondary">@color/black</item>
+
+
+        <!-- Coloca el texto en negro -->
+        <item name="android:windowLightStatusBar">true</item>
+
+        <item name="android:actionBarDivider">@color/light_brown_natural_trans</item>
+        <item name="android:statusBarColor">#BFF2DCC5</item>
+        <item name="android:titleTextColor">@color/light_brown_natural_trans</item>
+        <item name="android:navigationBarColor">@color/light_brown_natural_trans</item>
+
+        <!--
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:backgroundTint">@color/yellow_focus</item>
+     -->
+
+
+
+
+
+    <!--
+    <item name="colorPrimaryVariant">@color/purple_700</item>
+    -->
+    <!--
+    <item name="colorPrimary">@color/red_expensive_1</item>
+    -->
+    <!--
+    <item name="colorPrimary">@color/red_expensive_1</item>
+    <item name="colorAccent">@color/white</item>
+    <item name="colorButtonNormal">@color/white</item>
+    <item name="android:colorBackground">@color/white_softy_1</item>
+    <item name="colorPrimaryVariant">@color/red_expensive_2</item>
+    <item name="colorOnPrimary">@color/white</item>
+    -->
+    <!--
+    This make the button get the custom color, but is because is a mistake
+    <item name="textAppearanceButton"></item>
+    -->
+    <!-- Secondary brand color. -->
+    <!--
+    <item name="colorSecondary">@color/teal_200</item>
+    <item name="colorSecondaryVariant">@color/teal_700</item>
+    <item name="colorOnSecondary">@color/black</item>
+
+    -->
+    <!-- Status bar color. -->
+    <!--
+    <item name="android:statusBarColor">@color/magenta_1</item>
+    <item name="android:actionBarDivider">@color/magenta_1</item>
+    <item name="android:navigationBarColor">@color/purple_200</item>
+    <item name="android:titleTextColor">@color/purple_200</item>
+
+
+
+
+
+        <item name="android:windowLightStatusBar">@color/light_brown_natural_trans</item>
+        <item name="android:actionBarDivider">@color/light_brown_natural_trans</item>
+        -->
+</style>
+
+
+
+    <style name="Theme.Kuai_Notes_Project" parent="Base.Theme.Kuai_Notes_Project" >
+
+        <!-- Notification bar:
+        <item name="android:statusBarColor">#BFFBE8DC</item>
+            -->
+
+        <item name="android:navigationBarColor">#BFFBE4CC</item>
+
+        <!--
+            <item name="android:windowLightStatusBar">@color/light_brown_natural_trans</item>
+            <item name="android:actionBarDivider">@color/light_brown_natural_trans</item>
+            -->
+
+
+
+
+
+
+
+    </style>
+
+
+
+    <!--
+    <style name="Button_test" parent="ThemeOverlay.AppCompat">
+        <item name="colorAccent">@color/white_softy_1</item>
+    </style>
+     -->
+    <!-- Customize your theme here. -->
+
+    <!-- Style for button. -->
+    <!--
+     -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </resources>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="CircularShapeStyle" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+        <item name="sizePercent">10</item>
+        <item name="android:shadowColor">#00FFFFFF</item>
+        <item name="color">#00AFAFAF</item>
+        <item name="android:shadowRadius">@null</item>
+
+
+
+
+
+
+    </style>
+
+
+
+</resources>

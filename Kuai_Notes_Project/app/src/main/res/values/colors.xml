@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+
+    <color name="white">#FFFFFFFF</color>
+    <color name="white_softy_1">#FFF7F2F7</color>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="magenta_1">#FFBB31FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="light_blue1">#AFEEFF</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="matcha_1">#6E8641</color>
+    <color name="matcha_1_trans">#BF6E8641</color>
+    <color name="white_bamboo">#FFF1EBE1</color>
+    <color name="white_bamboo_trans">#BFF1EBE1</color>
+    <color name="light_brown_natural">#FFCEB7A1</color>
+    <color name="light_brown_natural_trans">#BFCEB7A1</color>
+    <color name="salmon_light">#FFFAA493</color>
+    <color name="red_expensive_1">#E565BC</color>
+    <color name="red_expensive_2">#D550AA</color>
+    <color name="black">#FF000000</color>
+    <color name="gray">#FF444444</color>
+
+
+    <color name="white_sand_light">#FFFAF5F1</color>
+    <color name="orange_mild">#FFFB8960</color>
+    <color name="orange_hard">#FFDF6F19</color>
+    <color name="pink_mild">#FFD84E8F</color>
+    <color name="pink_mild_2">#FFBA385F</color>
+    <color name="red_bloody_1">#FFA12015</color>
+    <color name="light_blue_x1">#FFB2D7E8</color>
+    <color name="light_blue_x2">#FF4F9BB2</color>
+    <color name="sand_light_1">#FFE0DBD8</color>
+    <color name="sand_mild_1">#FFC1ACA2</color>
+    <color name="sand_mild_2">#FF8F7A6E</color>
+    <color name="gray_light_1">#FFAAABAE</color>
+    <color name="gray_light_2">#FF888B8E</color>
+    <color name="gray_light_3">#FF656976</color>
+    <color name="gray_dark_1">#FF434343</color>
+    <color name="gray_dark_2">#FF292F36</color>
+    <color name="gray_neutral_trans">#708B8B8B</color>
+    <color name="dark_chocolate_1">#FF292F36</color>
+    <color name="blue_dark_gray">#FF252645</color>
+    <color name="green_baby_bamboo">#FFCEDDBB</color>
+    <color name="green_dark_1">#FF133C3E</color>
+    <color name="transparent">#008F8F8F</color>
+
+    <!-- Gimp Generated Pallet Colors:
+    -->
+    <color name="light_green">#FF8AC698</color>
+    <color name="light_blue">#FF839BC8</color>
+    <color name="light_green_bright1">#FFA6F7A1</color>
+    <color name="light_green_bright2">#FF7CFC98</color>
+
+    <color name="yellow_focus">#FFEFD500</color>
+    <color name="light_orange_notification">#FFF5AAA0</color>
+    <color name="lavender_misty_heather">#FFAB7DA4</color>
+
+    <!-- Exercise Type::
+    -->
+    <color name="ex_red">#FFE88B8B</color>
+    <color name="ex_orange">#FFF4B183</color>
+    <color name="ex_yellow">#FFF3E79B</color>
+    <color name="ex_green">#FF8AC698</color>
+    <color name="ex_light_blue">#FF9CCBE3</color>
+
+    <!-- Item Type::-->
+    <color name="Item_selected_light_green">#A0EFFBD6</color>
+    <color name="Neutral_gray_icon_note">#A4A4A4</color>
+
+
+
+
+</resources>

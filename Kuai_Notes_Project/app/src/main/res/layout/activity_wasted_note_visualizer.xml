@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8E3C1"
+    tools:context=".MainActivity"
+    >
+    <!--android:background="#FFECC4"-->
+    <!--android:background="#FFF3D1"-->
+
+    <EditText
+        android:id="@+id/Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="91dp"
+        android:paddingHorizontal="20dp"
+        android:background="@android:color/transparent"
+        android:hint="Title"
+        android:textColorHint="#3A3C3C3C"
+        android:textColor="#1B1919"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/Note_Time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="19dp"
+        android:background="@android:color/transparent"
+        android:hint="1111"
+        android:lineSpacingExtra="2sp"
+        android:textColor="#A0A0A0"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/Title" />
+
+
+    <LinearLayout
+        android:id="@+id/Layout_Body_Note"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="84dp"
+        android:gravity="top"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Title"
+        app:layout_constraintVertical_bias="0">
+
+
+        <!--
+            <ScrollView
+            android:id="@+id/ScrollView_Note"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="30dp"
+            android:scrollbars="vertical"
+
+            >
+            -->
+
+
+        <EditText
+            android:id="@+id/Body_Note"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="30dp"
+            android:background="@android:color/transparent"
+            android:gravity="top"
+            android:hint="Cuerpo del mensaje, esto es solo un ejemplo:\n1- uno\n2- dos"
+            android:lineSpacingExtra="7sp"
+            android:textColor="#686868"
+            android:textColorHint="#4E4D4D4D"
+            android:textSize="18sp"
+            />
+
+        <!--
+        </ScrollView>
+                -->
+
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/FrameLayout_Change_Pin_Status"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@drawable/recycler_logo_icon_2"
+        android:backgroundTint="@color/ex_green"
+        android:layout_marginTop="10dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+    <FrameLayout
+        android:id="@+id/fl_Delete"
+        android:layout_width="24dp"
+        android:layout_height="30dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/trash_can_icon_1"
+        android:backgroundTint="@color/red_bloody_1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    <FrameLayout
+        android:id="@+id/fl_Delete1"
+        android:layout_width="45dp"
+        android:layout_height="35dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/trash_can"
+        android:backgroundTint="#A4A4A4"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <FrameLayout
+        android:id="@+id/fl_Back"
+        android:layout_width="36dp"
+        android:layout_height="26dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/arrow_left_3"
+        android:backgroundTint="#A4A4A4"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
