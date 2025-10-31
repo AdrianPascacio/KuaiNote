@@ -1,48 +1,63 @@
 package com.example.kuai_notes_project;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.window.OnBackInvokedDispatcher;
 
-import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
+import androidx.core.os.BuildCompat;
+import androidx.core.view.SoftwareKeyboardControllerCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-///290 V3 , 347 V4
+
+///290 V3 , 347 V4, 281 V5, 485 V6, 429 V7
 public class MainActivity extends AppCompatActivity {
     private DB_Notes DB_N;
     private DB_Trash_Can DB_TC;
-    //String time, title, note;
-    private TextView tv_Date ;
+    private TextView tv_Date, tv_Info;
     private EditText et_Title, et_Note ;
     private Note note = new Note();
     private String previous_date = null;
-    private String complete_current_time = null, short_current_time = null;
+    private String complete_current_time = null;
     private boolean change_in_note = false;
     private boolean change_in_date = false;
-    private FrameLayout fl_Change_Pin_Status;
+    private boolean now_is_something_writed = false;
+    private FrameLayout fl_Change_Pin_Status,fl_Back ,fl_Delete;
+    private FrameLayout fl_Change_Pin_Status_Ghost,fl_Back_Ghost ,fl_Delete_Ghost;
+    private Date_of_Note_in_Visualizer DoN;
+    private View layout_date_and_info;
+    private View layout_body_note;
+    private Animation AnimationPin, AnimationDate , AnimationDateInvert, AnimationInfo, AnimationInfoInvert, AnimationPinAppear, AnimationPinFade;
+    private Animation AnimationNoteAppear,AnimationTitleAppear, AnimationNoteHintFading;
+    //private ScrollView sv_note;
+
 
     @Override
     protected void onPause(){
         super.onPause();
-        //Verify if title or Note have been changed and have something to save
         if (Verify_if_it_is_not_empty() && change_in_note) {
             Save_Note();
         }
@@ -50,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume(){
         super.onResume();
-        //Verify if title or Note have been changed and have something to save
         if (Verify_if_it_is_not_empty() && change_in_note) {
             Save_Note();
         }
@@ -71,27 +85,50 @@ public class MainActivity extends AppCompatActivity {
         DB_TC = new DB_Trash_Can(this);
 
         tv_Date = findViewById(R.id.Note_Time);
+        tv_Info = findViewById(R.id.Note_Info);
 
         et_Title = findViewById(R.id.Title);
         et_Note = findViewById(R.id.Body_Note);
 
+        layout_body_note = findViewById(R.id.Layout_Body_Note);
+
         fl_Change_Pin_Status = findViewById(R.id.FrameLayout_Change_Pin_Status);
+        fl_Back = findViewById(R.id.fl_Back);
+        fl_Delete= findViewById(R.id.fl_Delete);
 
-        FrameLayout fl_Back = findViewById(R.id.fl_Back);
-        FrameLayout fl_Delete = findViewById(R.id.fl_Delete);
-
+        fl_Change_Pin_Status_Ghost = findViewById(R.id.FrameLayout_Change_Pin_Status_Ghost);
+        fl_Back_Ghost = findViewById(R.id.fl_Back_Ghost);
+        fl_Delete_Ghost = findViewById(R.id.fl_Delete_Ghost);
 
         previous_date = getIntent().getStringExtra("send_date_of_note");
 
         complete_current_time = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()).format(new Date());
 
+        DoN = new Date_of_Note_in_Visualizer();
+
+        layout_date_and_info = findViewById(R.id.Layout_date_and_info);
+
+
+        AnimationPin = AnimationUtils.loadAnimation(this,R.anim.pin_visualizer_change_status);
+        AnimationDate = AnimationUtils.loadAnimation(this,R.anim.date_visualizer);
+        AnimationDateInvert = AnimationUtils.loadAnimation(this,R.anim.date_visualizer_invert);
+        AnimationInfo = AnimationUtils.loadAnimation(this,R.anim.info_visualizer);
+        AnimationInfoInvert = AnimationUtils.loadAnimation(this,R.anim.info_visualizer_invert);
+        AnimationPinAppear = AnimationUtils.loadAnimation(this,R.anim.appear_visualizer);
+        AnimationPinFade = AnimationUtils.loadAnimation(this,R.anim.fade_visualizer);
+        AnimationNoteAppear = AnimationUtils.loadAnimation(this,R.anim.note_appear_mainvisualizer);
+        AnimationTitleAppear = AnimationUtils.loadAnimation(this,R.anim.title_appear_mainvisualizer);
+        AnimationNoteHintFading = AnimationUtils.loadAnimation(this,R.anim.hint_note_fading_visualizer);
+
 
         if(previous_date!=null){
-            //Trae la nota si esta existe, luego coloca la informacion en los text view correspondientes
+            now_is_something_writed = true;
+            //---- Trae la nota si esta existe, luego coloca la informacion en los text view correspondientes
             Bring_Note_From_DB( previous_date );
             Set_Pin_Status();
-            Set_Date_of_Note();
+            et_Title.startAnimation(AnimationTitleAppear);
         }else {
+            Set_Icons_To_Empty_Note_Style();
             //Enfocar edit text luego de cargar todo garcias a Runnable
                 //Se enfoca en cuerpo de la nota y se abre el teclado solo si el texto es nuevo
             new Handler().postDelayed(new Runnable() {
@@ -105,38 +142,60 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }, 300); // Realiza accion luego de 300 milisegundos
+
+            et_Note.startAnimation(AnimationNoteAppear);
         }
 
-        fl_Back.setOnClickListener(new View.OnClickListener() {
+        fl_Back_Ghost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Return_To_Memo_Board();
-                //finish();
+                if(!now_is_something_writed && previous_date!=null){
+                    Delete_Note();
+                }else {
+                    if(tv_Date.getText().toString().isEmpty()){
+                        tv_Date.setVisibility(View.GONE);
+                    }
+                    Return_To_Memo_Board();
+                }
             }
         });
-        fl_Change_Pin_Status.setOnClickListener(new View.OnClickListener() {
+        fl_Change_Pin_Status_Ghost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Pin_Note();
+                if (Verify_if_it_is_not_empty()) {
+                    Pin_Note();
+                    fl_Change_Pin_Status.startAnimation(AnimationPin);
+                }
             }
         });
-        tv_Date.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Date_Format_Change();
-            }
-        });
-         fl_Delete.setOnClickListener(new View.OnClickListener() {
+         fl_Delete_Ghost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Delete_Note();
             }
         });
-        //!!-----hacer la misma funcion para el boton de atras del control de navegacion
+        layout_date_and_info.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Date_Format_Change();
+            }
+        });
+        layout_body_note.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                et_Note.requestFocus();
+                et_Note.setSelection(et_Note.getText().length());
+                InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (inputMethodManager != null) {
+                    inputMethodManager.showSoftInput(et_Note, InputMethodManager.SHOW_IMPLICIT);
+                }
+            }
+        });
         et_Title.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 change_in_note = true;
+                Verify_if_exist_something();
             }
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
@@ -146,106 +205,132 @@ public class MainActivity extends AppCompatActivity {
              public void afterTextChanged(Editable s) {
                  change_in_note = true;
                  if(change_in_date){
-                     Set_Date_of_Note();
-                     Set_Date_Note_Information();
+                     tv_Info.setText(DoN.Set_Date_Note_Only_Information(et_Note.getText().toString()));
                  }
+                 Verify_if_exist_something();
              }
              @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
              @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
          });
 
+        //--- Back button function:
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if(!now_is_something_writed && previous_date!=null){
+                    Delete_Note();
+                }else {
+                    if(tv_Date.getText().toString().isEmpty()){
+                        tv_Date.setVisibility(View.GONE);
+                    }
+                    Return_To_Memo_Board();
+                }
+            }
+        });
     }
+
+    private void Set_Icons_To_Empty_Note_Style() {
+        fl_Change_Pin_Status.setScaleX(0.9f);
+        fl_Change_Pin_Status.setScaleY(0.9f);
+        fl_Delete.setScaleX(0.9f);
+        fl_Delete.setScaleY(0.9f);
+        fl_Change_Pin_Status.setAlpha(0.4f);
+        fl_Delete.setAlpha(0.4f);
+    }
+
+
     private void Bring_Note_From_DB(String date_of_note){
         note = DB_N.getASpecificNote(date_of_note);
         et_Title.setText(note.title);
         et_Note.setText(note.note);
+        tv_Date.setText(DoN.Set_Date_of_Note(previous_date,complete_current_time));
         //!! Need to add the reminder column when reminder function is working
     }
 
     private boolean Verify_if_it_is_not_empty(){
-        //Verify if title or Note have been changed
         String _title = et_Title.getText().toString();
         String _note = et_Note.getText().toString();
 
         return !_title.isEmpty() || !_note.isEmpty();
     }
+
+    private void Verify_if_exist_something(){
+        if (!Verify_if_it_is_not_empty()){
+            if (now_is_something_writed){
+                now_is_something_writed = false;        //si ahora no existe nada entonces:
+                if(previous_date == null){
+                    fl_Change_Pin_Status.startAnimation(AnimationPinFade);
+                    fl_Delete.startAnimation(AnimationPinFade);
+                    et_Note.startAnimation(AnimationNoteHintFading);
+                }
+            }
+        }else{
+            if (!now_is_something_writed){
+                now_is_something_writed = true;        //si ahora existe algo:
+                fl_Change_Pin_Status.setAlpha(1f);
+                fl_Delete.setAlpha(1f);
+                fl_Change_Pin_Status.startAnimation(AnimationPinAppear);
+                fl_Delete.startAnimation(AnimationPinAppear);
+                et_Note.clearAnimation();
+            }
+        }
+    }
+
     private void Save_Note(){
         boolean save_Success = false;
-        ////LocalDate today = null;
-        ////today = LocalDate.now();
-        ////DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMMM-yyyy hh:mm:ss");
-        ////String _current_time = today.format(formatter);
 
-        //String _current_time = new SimpleDateFormat("dd-MMMM-yyyy hh:mmaSSS", Locale.getDefault()).format(new Date());
-        //String _current_time = new SimpleDateFormat("yyMMdd MMMM yyyy hh:mmaSSS", Locale.getDefault()).format(new Date());
         String _current_time = new SimpleDateFormat("yyMMddHHmmss dd MMMM yyyy hh:mma", Locale.getDefault()).format(new Date());
 
         String _title = et_Title.getText().toString();
         String _note = et_Note.getText().toString();
 
-
         if(previous_date == null){
-
-            //there is no previous date -> The Note Is New:
             //-------Insert new note
-            Boolean Insert_Note_Checker = DB_N.Insert_Note(_current_time, _title, _note,note.pin);
-            if (Insert_Note_Checker) {
+            if (DB_N.Insert_Note(_current_time, _title, _note,note.pin)) {
                 Toast.makeText(MainActivity.this, "Inserted", Toast.LENGTH_SHORT).show();
                 save_Success = true;
-            } else {
-                Toast.makeText(MainActivity.this, "Not_Inserted", Toast.LENGTH_SHORT).show();
             }
-
         }else{
-            //if there is a previous date -> have to modify the note:
             //-------Modify the Note
-            Boolean Modify_Note_Checker = DB_N.Modify_Note(previous_date, _current_time, _title, _note,note.pin);
-            if (Modify_Note_Checker) {
+            if (DB_N.Modify_Note(previous_date, _current_time, _title, _note,note.pin)) {
                 Toast.makeText(MainActivity.this, "Modified", Toast.LENGTH_SHORT).show();
                 save_Success = true;
-            } else {
-                Toast.makeText(MainActivity.this, "Not_Modified", Toast.LENGTH_SHORT).show();
             }
-
         }
 
         //-------Update the view of the date of last modification:
         if(save_Success) {
+            change_in_note = false;
             previous_date = _current_time;
-            ////tv_Date.setText(previous_date);
-            Set_Date_of_Note();
+            tv_Date.setText(DoN.Set_Date_of_Note(previous_date,complete_current_time));
         }
-
     }
     private void Pin_Note(){
 
         boolean pin_modify_Success = false;
 
-        if(note.pin == 0 ){
-            note.setPin(1);
+        note.setPin( note.getPin() ^ 1); //XOR Operator
+
+        if(previous_date != null){
+            //-------Modify pin status of the Note
+            Boolean Modify_Pin_Status = DB_N.Modify_Pin_Status(previous_date,note.pin);
+            if (Modify_Pin_Status) {
+                Toast.makeText(MainActivity.this, "Modified_Pin_Status", Toast.LENGTH_SHORT).show();
+                pin_modify_Success = true;
+            } else {
+                Log.d("Main Activity","Not_Pin_Modified");
+            }
         }else{
-            note.setPin(0);
-        }
-
-
-        //if there is a previous date -> have to modify the note:
-        //-------Modify pin status of the Note
-        Boolean Modify_Pin_Status = DB_N.Modify_Pin_Status(previous_date,note.pin);
-        if (Modify_Pin_Status) {
-            Toast.makeText(MainActivity.this, "Modified_Pin_Status", Toast.LENGTH_SHORT).show();
             pin_modify_Success = true;
-        } else {
-            Toast.makeText(MainActivity.this, "Not_Pin_Modified", Toast.LENGTH_SHORT).show();
         }
 
-        //-------Set update the pin status:
+        //-------Update the pin status:
         if(pin_modify_Success) {
             Set_Pin_Status();
         }
-
     }
     private void Set_Pin_Status(){
-        if(note.pin == 1){
+        if(note.getPin() == 1){
             fl_Change_Pin_Status.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.ex_orange)));
         }else{
             fl_Change_Pin_Status.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.Neutral_gray_icon_note)));
@@ -253,12 +338,34 @@ public class MainActivity extends AppCompatActivity {
     }
     private void Delete_Note(){
         boolean delete_Success = false;
+        String _title = et_Title.getText().toString();
+        String _note = et_Note.getText().toString();
+        String _current_time = new SimpleDateFormat("yyMMddHHmmss dd MMMM yyyy hh:mma", Locale.getDefault()).format(new Date());
+        Boolean Insert_Note_In_TrashCan = false;
 
-        if(previous_date != null){
-            //if there is a previous date -> have to delete the note:
-            //-------Delete the Note
+        if(previous_date != null){      //Delete and save in the trashcan
 
-            if(DB_TC.Insert_Note(note.date,note.title,note.note,note.pin,20)){
+            Toast.makeText(MainActivity.this, "se intenta grabar sin previo", Toast.LENGTH_SHORT).show();
+
+            //if now_is_there_something_wrote > Send to trashcan what is wrote
+            if (!now_is_something_writed) {
+                //if there_is_nothing__wrote > Send to trashcan what was in the database before save
+                //if
+                if(note.title == null&& note.note== null){
+                    //!! se debe arreglar la razon por la que se indica como cierto es solo para que prosiga con la salida. de lo contrario se guardaria en pause lo que quede en title y note
+                    Toast.makeText(MainActivity.this, "se debe borrar del todo ", Toast.LENGTH_SHORT).show();
+                    Insert_Note_In_TrashCan = true;
+                }else{
+                    Toast.makeText(MainActivity.this, "incertado vacio", Toast.LENGTH_SHORT).show();
+                    Insert_Note_In_TrashCan = DB_TC.Insert_Note(previous_date,note.title,note.note,note.pin,20);
+
+                }
+            } else if(!change_in_note){
+                Insert_Note_In_TrashCan = DB_TC.Insert_Note(previous_date,_title,_note,note.pin,20);
+            }else{
+                Insert_Note_In_TrashCan = DB_TC.Insert_Note(_current_time,_title,_note,note.pin,20);
+            }
+            if(Insert_Note_In_TrashCan){
                 Boolean Delete_Note_Checker = DB_N.Delete_Specific_Note(previous_date);
                 if (Delete_Note_Checker) {
                     Toast.makeText(MainActivity.this, "Deleted", Toast.LENGTH_SHORT).show();
@@ -268,67 +375,55 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-        }else{
-            //The note was not saved in the data base before, there is not need to delete
-            Toast.makeText(MainActivity.this, "Note not deleted.", Toast.LENGTH_SHORT).show();
+        }else{      //Save the note directly in the TrashCan
+            Toast.makeText(MainActivity.this, "pasa directo", Toast.LENGTH_SHORT).show();
+
+            if(now_is_something_writed){
+                Insert_Note_In_TrashCan = DB_TC.Insert_Note(_current_time,_title,_note,note.pin,20);
+            }else{
+                //!! se debe arreglar la razon por la que se indica como cierto es solo para que prosiga con la salida. de lo contrario se guardaria en pause lo que quede en title y note
+                Insert_Note_In_TrashCan = true;
+            }
+            if (Insert_Note_In_TrashCan) {
+                delete_Success = true;
+            }
         }
-        //-------Finish activity if Delete of note is complete
+
         if(delete_Success) {
+            et_Title.setText("");
+            et_Note.setText("");
+            //!!---Deberia crearse algunas animaciones para eliminar el title y la nota, al igual que el date y la info
             Return_To_Memo_Board(); //is a method with the finish() method inside, but is there to add animations later
         }
-
-    }
-    private void Set_Date_of_Note(){
-        //-------Set Date according to format
-        int size_of_date = previous_date.length() ;
-        String date_dMy = previous_date.substring(13,size_of_date - 8);
-        String date_hm = previous_date.substring(size_of_date - 6);
-        Log.d("MainActivity", "Set_Date_Note : "+complete_current_time + " ::: " + date_dMy);
-
-        //If current date is equal to date of last modification then is "Today"
-        if(complete_current_time.equals(date_dMy)){
-            if(change_in_date){
-                tv_Date.setText("Today"+"    " + complete_current_time + "   "+date_hm);
-            }else{
-                short_current_time = complete_current_time.substring(0,6);
-                tv_Date.setText("Today"+"    " + short_current_time + "   "+date_hm);
-            }
-
-            //!!----If current date is equal Yesteday then "yesterday" (Verificar si el costo es muy elevado
-        }else{
-            //Just complete the date and hour in the format "dd MMMM yyyy    hh:mma"
-            if(change_in_date){
-                tv_Date.setText(date_dMy+"   "+date_hm);
-            }else{
-                tv_Date.setText(date_dMy+"   "+date_hm);
-            }
-        }
-    }
-    private void Set_Date_Note_Information(){
-        //!!-------Se debe optimizar, se esta ejecutando todo el metodo Set_Date_of_Note cada vez que se actualiza el texto
-        tv_Date.setText(tv_Date.getText()+ "\n " + "Character" + ": " + et_Note.length() + "   |   " + "Words" + ": " + Word_Counter(et_Note.getText().toString())) ;
-    }
-    private int Word_Counter(String text){
-        if (text == null || text.trim().isEmpty()){
-            return 0;
-        }
-        String [] words = text.trim().split("\\s+");
-
-        return words.length;
     }
     private void Date_Format_Change(){
         change_in_date = !change_in_date;
         if(change_in_date){
-            tv_Date.setTextSize(14);
-            Set_Date_of_Note();
-            Set_Date_Note_Information();
+            if(previous_date != null){
+                tv_Date.setText(DoN.Set_Date_of_Note(previous_date,complete_current_time));
+                tv_Date.startAnimation(AnimationDate);
+            }else{
+                tv_Date.setText("");
+            }
+            tv_Info.setText(DoN.Set_Date_Note_Only_Information(et_Note.getText().toString()));
+            tv_Info.startAnimation(AnimationInfo);
         }else{
-            tv_Date.setTextSize(13);
-            Set_Date_of_Note();
+            if(previous_date != null){
+                tv_Date.setText(DoN.Set_Date_of_Note(previous_date,complete_current_time));
+                tv_Date.startAnimation(AnimationDateInvert);
+            }else{
+                tv_Date.setText("");
+            }
+            tv_Info.startAnimation(AnimationInfoInvert);
         }
     }
-
     public void Return_To_Memo_Board(){
-            finish();
+        View view = this.getCurrentFocus();
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if(view != null){
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+                finish();
+        overridePendingTransition(R.anim.return_activity_slide_right_in,R.anim.return_activity_slide_right_out);
     }
 }

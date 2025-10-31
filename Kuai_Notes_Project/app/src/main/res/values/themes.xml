@@ -14,9 +14,10 @@
     <item name="colorPrimary">#9E9E9E</item>
         <!--
     <item name="colorPrimaryDark">@color/green_dark_1</item>
+        <item name="colorAccent">#F2E68D</item>
      -->
     <item name="colorButtonNormal">@color/white_bamboo</item>
-    <item name="colorAccent">@color/ex_yellow</item>
+        <item name="colorAccent">@color/green_dark_cha</item>
     <item name="android:colorBackground">@color/white_softy_1</item>
     <item name="colorOnPrimary">@color/gray_light_2</item>
     <item name="textAppearanceButton">@color/white</item>
@@ -37,8 +38,10 @@
         <item name="android:titleTextColor">@color/light_brown_natural_trans</item>
         <item name="android:navigationBarColor">@color/light_brown_natural_trans</item>
 
-        <!--
+
+
         <item name="android:windowLightNavigationBar">true</item>
+        <!--
         <item name="android:backgroundTint">@color/yellow_focus</item>
      -->
 

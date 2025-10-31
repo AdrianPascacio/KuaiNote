@@ -97,7 +97,7 @@ public class DB_Trash_Can extends SQLiteOpenHelper {
     }
     public Cursor get_All_Notes(){
         SQLiteDatabase DB_TC = this.getReadableDatabase();
-        Cursor cursor = DB_TC.rawQuery("select * from Deleted_Notes order by pin DESC, date DESC", null);
+        Cursor cursor = DB_TC.rawQuery("select * from Deleted_Notes order by date DESC", null);
         return cursor;
     }
     public int get_Specific_Note_Sorted_by_Pin_and_Date(String date){

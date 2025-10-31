@@ -5,10 +5,19 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -16,18 +25,23 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 
-///324 V3, 305 V4
+///324 V3, 305 V4, 358 V6, 306 V7
 public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board_Interface, MyItemAnimator.ItemAnimatorListener{
     RecyclerView recyclerView;
     ArrayList<String> dateEdited_list;
     ArrayList<String> noteOriginal_list;
     ArrayList<Boolean> selected_list;
+    ArrayList<Boolean> unselected_list;
     ArrayList<Note> noteList;
+    ArrayList<Integer> previous_selected_list;
 
     DB_Notes DB_N;
     DB_Trash_Can DB_TC;
@@ -36,10 +50,18 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
 
     String _current_time = null;
     Button btn_config;
+    Button btn_aux;
+    View main;
+    private PopupWindow popupWindow;
+    private LayoutInflater layoutInflater;
     private int current_hold_position = -1;
 
     private int prev_selectedPosition = -1;
+    private int postprev_selectedPosition = -1;
     Body_Note_Preview BNP;
+    Date_of_Note_Item_View DoN_IV;
+    private Animation AnimationAddNoteButton;
+    private FloatingActionButton fa_btn;
 
     @Override
     protected void onResume(){
@@ -47,7 +69,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         _current_time = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()).format(new Date());
 
         recyclerView = findViewById(R.id.Recycler_MemoBoard);
-        adapter = new Adapter_Recycler_Memo_Board(this, dateEdited_list,selected_list,noteList,this);
+        adapter = new Adapter_Recycler_Memo_Board(this, dateEdited_list,selected_list,noteList,unselected_list,this);
         recyclerView.setAdapter(adapter);
 
         Clear_Lists();
@@ -72,8 +94,13 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         noteOriginal_list = new ArrayList<>();
         selected_list = new ArrayList<>();
         noteList = new ArrayList<>();
+        unselected_list = new ArrayList<>();
+        previous_selected_list = new ArrayList<>();
 
         BNP = new Body_Note_Preview();
+        DoN_IV = new Date_of_Note_Item_View();
+        fa_btn = findViewById(R.id.floatingActionButton);
+        main = findViewById(R.id.main);
 
         ///SharedPreferences shared_preferences = getSharedPreferences("Day_change", Context.MODE_PRIVATE);
         ///SharedPreferences.Editor editor = shared_preferences.edit();
@@ -82,15 +109,52 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         ///String saved_number = shared_preferences.getString("today","numero");
         ///Toast.makeText(this, saved_number, Toast.LENGTH_LONG).show();
 
+        AnimationAddNoteButton = AnimationUtils.loadAnimation(this,R.anim.add_note_button_zoom);
 
         btn_config = findViewById(R.id.button_Config);
+        btn_aux = findViewById(R.id.button_aux);
+        fa_btn.startAnimation(AnimationAddNoteButton);
         btn_config.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Go_To_Trash_Can();
             }
         });
+        btn_aux.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Start_Reminder_PopUpWindow();
+            }
+        });
     }
+
+    private void Start_Reminder_PopUpWindow(String note_title) {
+        layoutInflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+        ViewGroup container = (ViewGroup) layoutInflater.inflate(R.layout.reminder_setter,null);
+
+        popupWindow = new PopupWindow(container, 400, 400, true);
+        popupWindow.showAtLocation(main, Gravity.CENTER,00,-400);
+        //Go_To_Reminder_Setter();
+        TextView label_in_reminder,name_in_reminder ;
+        label_in_reminder = container.findViewById(R.id.Label_Reminder_Setter);
+        name_in_reminder = container.findViewById(R.id.Note_title_in_Reminder_Setter);
+        name_in_reminder.setText(note_title);
+        label_in_reminder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //popupWindow.dismiss();
+            }
+        });
+        container.setOnTouchListener(new View.OnTouchListener(){
+            @Override
+            public  boolean onTouch(View v, MotionEvent event){
+                //popupWindow.dismiss();
+                return true;
+            }
+        });
+    }
+
+
     private void Update_Recycler_View(){
         try (Cursor cursor_Notes = DB_N.get_All_Notes()) {
             if(cursor_Notes.getCount()==0){
@@ -98,48 +162,82 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             }else{
                 while (cursor_Notes.moveToNext()){
                     Note note = new Note(cursor_Notes.getString(0),cursor_Notes.getString(1),BNP.Set_Body_Note_Preview(cursor_Notes.getString(1),cursor_Notes.getString(2),60,55,0,2),cursor_Notes.getInt(3),"");
-                    dateEdited_list.add(Set_Date_of_Note(note.date));
+                    dateEdited_list.add(DoN_IV.Set_Date_of_Note(note.date,_current_time));
                     noteOriginal_list.add(cursor_Notes.getString(2));
                     selected_list.add(false);
                     noteList.add(note);
+                    unselected_list.add(false);
                 }
             }
         }
-        //////With object "Note"
-        ////noteList = DB_N.getAllNotes();
-
-    //    adapter.notifyDataSetChanged();
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if(RecyclerView.SCROLL_STATE_DRAGGING == newState){
+                    if(prev_selectedPosition != -1){
+                        if(selected_list.get(prev_selectedPosition)== true){
+                            Toast.makeText(Memo_Board.this, "arrastrando", Toast.LENGTH_SHORT).show();
+                            selected_list.set(prev_selectedPosition,false);
+                            unselected_list.set(prev_selectedPosition,true);
+                            adapter.notifyItemChanged(prev_selectedPosition);
+
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    unselected_list.set(prev_selectedPosition,false);
+                                    adapter.notifyItemChanged(prev_selectedPosition,this);
+                                    prev_selectedPosition = -1;
+                                    previous_selected_list.clear();
+                                }
+                            }, 500); // Realiza accion luego de 300 milisegundos
+                        }
+                    }
+                    if(postprev_selectedPosition != -1){
+                        if(unselected_list.get(postprev_selectedPosition)== true){
+                            Toast.makeText(Memo_Board.this, "arrastrando", Toast.LENGTH_SHORT).show();
+                            unselected_list.set(postprev_selectedPosition,false);
+                            //unselected_list.set(prev_selectedPosition,false);
+                            adapter.notifyItemChanged(postprev_selectedPosition,this);
+                        }
+                    }
+
+                }
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        });
     }
-
-    private String Set_Date_of_Note(String date){
-        int size_of_date = date.length() ;
-        String date_dMy = date.substring(13,size_of_date - 8);
-        String date_hm = date.substring(size_of_date - 6);
-
-        //if last modification date is equal to current date then "Today"
-        if(_current_time.equals(date_dMy)){
-            return ("Today\n"+_current_time+"\n"+date_hm);
-        }else{
-            return (date_dMy+"\n"+date_hm);
-        }
-    }
-
     private void Clear_Lists(){
+        if(noteOriginal_list.isEmpty()){
+            return;
+        }
         dateEdited_list.clear();
         noteOriginal_list.clear();
         selected_list.clear();
         noteList.clear();
+        unselected_list.clear();
+        previous_selected_list.clear();
     }
-
     public void Go_To_Add_New_Note(View view){
         Intent goTo = new Intent(this, MainActivity.class);
         startActivity(goTo);
+        overridePendingTransition(R.anim.slide_left_in,R.anim.slide_left_out);
     }
     public void Go_To_Trash_Can(){
         Intent goTo = new Intent(this, Trash_Can.class);
         startActivity(goTo);
+        overridePendingTransition(R.anim.slide_left_in_trash,R.anim.slide_left_out_trash);
+    }
+    private void Go_To_Reminder_Setter() {
+        //Intent goTo = new Intent(this, Reminder_Setter.class);
+        //startActivity(goTo);
+        //overridePendingTransition(R.anim.slide_left_in_trash,R.anim.slide_left_out_trash);
     }
 
     @Override
@@ -148,60 +246,124 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         Intent goTo = new Intent(this, MainActivity.class);
         goTo.putExtra("send_date_of_note",_note.date);
         startActivity(goTo);
+        overridePendingTransition(R.anim.slide_left_in,R.anim.slide_left_out);
     }
 
-    //@Override
-    public void Update_Recycler_Adapter(){
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-    }
     @Override
     public void onItemHold(int position) {
 
         //--Si actual es igual previo
-            if(position == prev_selectedPosition){
-                Log.d("Memo Board", "Hold position == prev : ");
-                //--Invertir estado de seleccion
-                boolean previousIsSelected = selected_list.get(position);
-                selected_list.set(position,!previousIsSelected);
-                adapter.notifyItemChanged(position);
-
-            }else{
-                Log.d("Memo Board", "Hold position diff prev : ");
-                //--Si previo esta activado entonces desactivar
-                if(prev_selectedPosition != -1){
-                    Log.d("Memo Board", "Hold position diff Inicio :     prev= " + prev_selectedPosition);
-                    boolean previousIsSelected = selected_list.get(prev_selectedPosition);
-                    if(previousIsSelected){
-                        Log.d("Memo Board", "Hold position prev = true");
-                        selected_list.set(prev_selectedPosition,false);
-                        adapter.notifyItemChanged(prev_selectedPosition);
-
-                        current_hold_position = position;
-                        //adapter.notifyItemRangeChanged(prev_selectedPosition,position);
-                        //adapter.notifyDataSetChanged();
-                        //Update_Recycler_Adapter();
-                    }
+        if(position == prev_selectedPosition){
+            //--Invertir estado de seleccion
+            boolean previousIsSelected = selected_list.get(position);
+            selected_list.set(position,!previousIsSelected);
+        }else{
+            //--Si previo esta activado entonces desactivar
+            if(prev_selectedPosition != -1){
+                boolean previousIsSelected = selected_list.get(prev_selectedPosition);
+                if(previousIsSelected){
+                    selected_list.set(prev_selectedPosition,false);
+                    adapter.notifyItemChanged(prev_selectedPosition);
+                    current_hold_position = position;
                 }
-
-                //!!---- This have to be replaced to a callback or listener
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        //--Si actual es diferente a previo
-                        //--Activar la seleccion de actual
-                        selected_list.set(position,true);
-                        adapter.notifyItemChanged(position);
-                    }
-                }, 350); // Realiza accion luego de 350 milisegundos depende de la ejecucion del celular, mejorar
-
-
-                //Update_Recycler_Adapter();
             }
+            selected_list.set(position,true);
+        }
 
-        //--Previo es igual a position actual:
+        adapter.notifyItemChanged(position);
+
+        Set_Unselected_List(position);
+
+        postprev_selectedPosition = prev_selectedPosition;
         prev_selectedPosition = position;
+
+        Note _note = new Note();
+        _note = noteList.get(position);
+        Start_Reminder_PopUpWindow(_note.title);
+    }
+    public void onItemHold_BackUp_2V(int position) {
+
+        //--Si actual es igual previo
+        if(position == prev_selectedPosition){
+            //--Invertir estado de seleccion
+            boolean previousIsSelected = selected_list.get(position);
+            selected_list.set(position,!previousIsSelected);
+        }else{
+            //--Si previo esta activado entonces desactivar
+            if(prev_selectedPosition != -1){
+                boolean previousIsSelected = selected_list.get(prev_selectedPosition);
+                if(previousIsSelected){
+                    selected_list.set(prev_selectedPosition,false);
+                    adapter.notifyItemChanged(prev_selectedPosition);
+                    current_hold_position = position;
+                }
+            }
+            selected_list.set(position,true);
+        }
+
+        adapter.notifyItemChanged(position);
+
+        Set_Unselected_List(position);
+
+        prev_selectedPosition = position;
+    }
+
+    private void Set_Unselected_List(int position) {
+        previous_selected_list.add(0, position);
+
+        if(previous_selected_list.size()==2){       //--size 2 : current and just unselected:
+            unselected_list.set(previous_selected_list.get(1),true);
+            adapter.notifyItemChanged(previous_selected_list.get(1));
+
+            boolean current_eq_previous = Objects.equals(previous_selected_list.get(0), previous_selected_list.get(1));
+            if(current_eq_previous){
+                previous_selected_list.clear();
+            }
+            return;
+        }
+
+        if(previous_selected_list.size()==3){       //--size 3 : current, just unselected and previous unselected:
+            unselected_list.set(previous_selected_list.get(2),false);
+            unselected_list.set(previous_selected_list.get(1),true);
+            adapter.notifyItemChanged(previous_selected_list.get(2),this);
+
+            boolean current_eq_previous = Objects.equals(previous_selected_list.get(0), previous_selected_list.get(1));
+
+            previous_selected_list.remove(2);
+
+            if(current_eq_previous){
+                previous_selected_list.clear();
+                return;
+            }
+        }
+    }
+    private void Set_Unselected_List_BackUp_V2(int position) {
+        previous_selected_list.add(0, position);
+
+        if(previous_selected_list.size()==2){       //--size 2 : current and just unselected:
+            unselected_list.set(previous_selected_list.get(1),true);
+            adapter.notifyItemChanged(previous_selected_list.get(1));
+
+            boolean current_eq_previous = Objects.equals(previous_selected_list.get(0), previous_selected_list.get(1));
+            if(current_eq_previous){
+                previous_selected_list.clear();
+            }
+            return;
+        }
+
+        if(previous_selected_list.size()==3){       //--size 3 : current, just unselected and previous unselected:
+            unselected_list.set(previous_selected_list.get(2),false);
+            unselected_list.set(previous_selected_list.get(1),true);
+
+            boolean current_eq_previous = Objects.equals(previous_selected_list.get(0), previous_selected_list.get(1));
+
+            previous_selected_list.remove(2);
+
+            if(current_eq_previous){
+                previous_selected_list.clear();
+                return;
+            }
+        }
     }
 
     @Override
@@ -217,7 +379,14 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
                 selected_list.remove(position);
                 adapter.notifyItemRemoved(position);
 
-                //Previous selection must be equal to -1
+                if(previous_selected_list.size() > 1){
+                    unselected_list.set(previous_selected_list.get(1),false);
+                }
+                previous_selected_list.clear();
+
+                unselected_list.remove(position);
+
+
                 prev_selectedPosition = -1;
             }
         }
@@ -228,30 +397,14 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     public void PinItem(int position) {
         //----Pin Status positive
         Note _note = noteList.get(position);
-        boolean _pin_state = _note.pin == 1;
-        int _pin=0;
-        if(_note.pin == 0) {
-            _pin =1;
-        }
+        int _pin = _note.getPin() ^ 1;      //XOR Operator
 
         //----Database update with new pin status value:
-        boolean pin_modify_Success = Modify_Pin_Status_In_DataBase(_note, position, _pin);
-
-        if(pin_modify_Success){
+        if(DB_N.Modify_Pin_Status(_note.date,_pin)){
             //----RecyclerView pin status update:
             RecyclerView_Pin_Update(position);
-        }
-    }
-
-    public Boolean Modify_Pin_Status_In_DataBase(Note _note,int position,int _pin){
-        //Note _note = noteList.get(position);
-        Boolean Modify_Pin_Status = DB_N.Modify_Pin_Status(_note.date,_pin);
-        if (Modify_Pin_Status) {
-            //Toast.makeText(Memo_Board.this, "Modified_Pin_Status", Toast.LENGTH_SHORT).show();
-            return true;
-        } else {
+        }else{
             Toast.makeText(Memo_Board.this, "Not_Pin_Modified", Toast.LENGTH_SHORT).show();
-            return false;
         }
     }
 
@@ -262,12 +415,21 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         String _date= dateEdited_list.get(position);
         String _noteOriginal= noteOriginal_list.get(position);
         boolean _selected=false;
+        boolean _unselected=true;
         selected_list.set(position,false);
+        unselected_list.set(position,true);
         adapter.notifyItemChanged(position);
 
         dateEdited_list.remove(position);
         noteOriginal_list.remove(position);
         selected_list.remove(position);
+
+        if(previous_selected_list.size() > 1){
+            unselected_list.set(previous_selected_list.get(1),false);
+        }
+        previous_selected_list.clear();
+
+        unselected_list.remove(position);
         noteList.remove(position);
 
         int current_pinned_notes = DB_N.get_Specific_Note_Sorted_by_Pin_and_Date(_note.date);
@@ -276,16 +438,12 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         dateEdited_list.add(current_pinned_notes,_date);
         noteOriginal_list.add(current_pinned_notes,_noteOriginal);
         //--cambio de estado con referencia al anterior de (0 a 1)
-        if (_note.pin==0){
-            _note.pin=1;
-        }else {
-            _note.pin = 0;
-        }
+        _note.setPin(_note.getPin() ^ 1);       //XOR Operator
         noteList.add(current_pinned_notes,_note);
         selected_list.add(current_pinned_notes,_selected);
+        unselected_list.add(current_pinned_notes,_unselected);
         adapter.notifyItemMoved(position,current_pinned_notes);
         adapter.notifyItemChanged(current_pinned_notes);
-
     }
 
     @Override

@@ -135,6 +135,22 @@ public class DB_Notes extends SQLiteOpenHelper {
         }
         return noteList;
     }
+    public boolean Note_Exist(String date){
+        //Manera mas eficiente de consultar por una coincidencia
+            //Se detiene al encontrar solo una coincidencia con LIMIT 1
+        SQLiteDatabase DB_N = this.getReadableDatabase();
+        boolean exist = false;
+        try (Cursor cursor = DB_N.rawQuery("select COUNT(*) from Notes where date = ? LIMIT 1", new String[] {date}) ){
+            if(cursor.getCount()==0){
+                Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Does not exist");
+            }else{
+                if (cursor.moveToFirst()) {
+                    exist = true;
+                }
+            }
+        }
+        return exist;
+    }
 
     public Cursor get_Specific_Note(String date){
         SQLiteDatabase DB_N = this.getReadableDatabase();

@@ -30,7 +30,7 @@
         android:clickable="true"
         android:focusable="true"
         android:onClick="Go_To_Add_New_Note"
-        app:backgroundTint="#68999999"
+        app:backgroundTint="#3B737272"
         app:fabCustomSize="100dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -41,7 +41,7 @@
         app:maxImageSize="85dp"
         app:shapeAppearanceOverlay="@style/CircularShapeStyle"
         app:srcCompat="@drawable/cruz_add_note"
-        app:tint="#FFFFFF"
+        app:tint="@color/white"
         android:outlineAmbientShadowColor="@color/transparent"
         android:outlineSpotShadowColor="@color/transparent"
 
@@ -52,7 +52,18 @@
         android:layout_height="36dp"
         android:layout_marginRight="14dp"
         android:layout_marginTop="14dp"
-        android:background="@drawable/recycler_logo_icon_2"
+        android:background="@drawable/recycler_logo_icon_4"
+        android:backgroundTintMode="multiply"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/button_aux"
+        android:layout_width="10dp"
+        android:layout_height="36dp"
+        android:layout_marginRight="100dp"
+        android:layout_marginTop="14dp"
+        android:background="@drawable/option_icon"
         android:backgroundTintMode="multiply"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

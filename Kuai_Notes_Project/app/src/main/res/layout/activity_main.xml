@@ -16,42 +16,102 @@
         android:id="@+id/Title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="91dp"
-        android:paddingHorizontal="20dp"
+        android:layout_marginTop="81dp"
         android:background="@android:color/transparent"
         android:hint="Title"
-        android:textColorHint="#3A3C3C3C"
+        android:text=""
+        android:paddingHorizontal="20dp"
+        android:textAlignment="center"
         android:textColor="#1B1919"
+        android:textColorHighlight="@color/green_nai_cha"
+        android:textColorHint="#3A3C3C3C"
         android:textSize="30sp"
         android:textStyle="bold"
-        android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/Note_Time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="19dp"
-        android:background="@android:color/transparent"
-        android:hint=""
-        android:lineSpacingExtra="2sp"
-        android:textColor="#A0A0A0"
-        android:textSize="13sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0"
+    <LinearLayout
+        android:id="@+id/Layout_aux_size_between0"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="-82dp"
+        android:orientation="vertical"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/Title" />
+        app:layout_constraintTop_toBottomOf="@id/Title"
+        ></LinearLayout>
+    <LinearLayout
+        android:id="@+id/Layout_aux_size_between"
+        android:layout_width="240dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="-9dp"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/Title"
+        ></LinearLayout>
+    <LinearLayout
+        android:id="@+id/Layout_aux_size_between2"
+        android:layout_width="240dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="53dp"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/Title"
+        ></LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/Layout_date_and_info"
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/Title">
+
+        <TextView
+            android:id="@+id/Note_Time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="10dp"
+            android:background="@android:color/transparent"
+            android:hint=""
+            android:lineSpacingExtra="2sp"
+            android:paddingTop="10dp"
+            android:paddingBottom="1dp"
+            android:textColor="#A0A0A0"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/Title" />
+
+        <TextView
+            android:id="@+id/Note_Info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:background="@android:color/transparent"
+            android:hint=""
+            android:lineSpacingExtra="2sp"
+            android:paddingBottom="10dp"
+            android:textColor="#A0A0A0"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/Title" />
+
+    </LinearLayout>
+
 
 
     <LinearLayout
         android:id="@+id/Layout_Body_Note"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="84dp"
+        android:layout_marginTop="83dp"
         android:gravity="top"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -61,35 +121,32 @@
         app:layout_constraintVertical_bias="0">
 
 
-        <!--
-            <ScrollView
+        <ScrollView
             android:id="@+id/ScrollView_Note"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginHorizontal="30dp"
+            android:layout_height="wrap_content"
             android:scrollbars="vertical"
 
+
             >
-            -->
 
+                <EditText
+                    android:id="@+id/Body_Note"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="30dp"
+                    android:background="@android:color/transparent"
+                    android:backgroundTint="@color/yellow_focus"
+                    android:gravity="top"
+                    android:hint="Start here..."
+                    android:fallbackLineSpacing="true"
+                    android:lineSpacingExtra="7sp"
+                    android:textColor="#686868"
+                    android:textColorHighlight="@color/green_nai_cha"
+                    android:textColorHint="#4E4D4D4D"
+                    android:textSize="18sp" />
 
-        <EditText
-            android:id="@+id/Body_Note"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginHorizontal="30dp"
-            android:background="@android:color/transparent"
-            android:gravity="top"
-            android:hint="Cuerpo del mensaje, esto es solo un ejemplo:\n1- uno\n2- dos"
-            android:lineSpacingExtra="7sp"
-            android:textColor="#686868"
-            android:textColorHint="#4E4D4D4D"
-            android:textSize="18sp"
-            />
-
-    <!--
-    </ScrollView>
-            -->
+        </ScrollView>
 
 
     </LinearLayout>
@@ -98,49 +155,61 @@
         android:id="@+id/FrameLayout_Change_Pin_Status"
         android:layout_width="18dp"
         android:layout_height="30dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/clip_icon_1"
-        android:backgroundTint="@color/ex_orange"
-        android:layout_marginTop="10dp"
+        android:backgroundTint="@color/Neutral_gray_icon_note"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <FrameLayout
         android:id="@+id/fl_Delete"
         android:layout_width="24dp"
         android:layout_height="30dp"
+        android:layout_marginTop="12dp"
         android:layout_marginRight="16dp"
-        android:layout_marginTop="10dp"
         android:background="@drawable/trash_can_icon_1"
         android:backgroundTint="#A4A4A4"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <FrameLayout
-        android:id="@+id/fl_Delete1"
-        android:layout_width="45dp"
-        android:layout_height="35dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/trash_can"
-        android:backgroundTint="#A4A4A4"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent" />
 
     <FrameLayout
         android:id="@+id/fl_Back"
         android:layout_width="36dp"
         android:layout_height="26dp"
-        android:layout_marginLeft="15dp"
-        android:layout_marginTop="12dp"
-        android:background="@drawable/arrow_left_3"
+        android:layout_marginLeft="14dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/arrow_left_4"
         android:backgroundTint="#A4A4A4"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <FrameLayout
+        android:id="@+id/FrameLayout_Change_Pin_Status_Ghost"
+        android:layout_width="45dp"
+        android:layout_height="50dp"
+        android:background="@color/transparent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <FrameLayout
+        android:id="@+id/fl_Delete_Ghost"
+        android:layout_width="53dp"
+        android:layout_height="50dp"
+        android:background="@color/transparent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <FrameLayout
+        android:id="@+id/fl_Back_Ghost"
+        android:layout_width="63dp"
+        android:layout_height="50dp"
+        android:background="@color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

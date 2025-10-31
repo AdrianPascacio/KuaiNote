@@ -87,9 +87,9 @@
         android:layout_width="30dp"
         android:layout_height="match_parent"
         android:layout_gravity="end|top"
-        android:layout_marginTop="7dp"
-        android:layout_marginBottom="5dp"
-        android:layout_marginRight="2dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        android:layout_marginRight="0dp"
         android:gravity="fill"
         android:orientation="vertical"
         >
@@ -99,18 +99,18 @@
             android:layout_width="15dp"
             android:layout_height="27dp"
             android:layout_gravity="top"
-            android:layout_marginTop="4dp"
-            android:layout_marginLeft="7dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginLeft="5dp"
             android:background="@drawable/clip_icon_1"
             android:longClickable="false"
             android:focusable="false"
             android:clickable="false"
-            android:backgroundTint="@color/ex_orange"
+            android:backgroundTint="#888888"
             />
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="13dp"
+            android:layout_height="20dp"
             android:layout_weight="1"
             />
 
@@ -120,23 +120,93 @@
             android:layout_height="27dp"
             android:layout_gravity="bottom"
             android:background="@drawable/trash_can_icon_1"
-            android:layout_marginBottom="4dp"
-            android:layout_marginLeft="4dp"
+            android:layout_marginBottom="7dp"
+            android:layout_marginLeft="3dp"
             android:longClickable="false"
             android:focusable="false"
             android:clickable="false"
             android:backgroundTint="@color/red_bloody_1"
             />
 
-</LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/Layout_Item_Options_Ghost"
+        android:layout_width="32dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end|top"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        android:layout_marginRight="4dp"
+        android:gravity="fill"
+        android:orientation="vertical"
+        >
+
+        <FrameLayout
+            android:id="@+id/Fl_Item_Pin_Ghost"
+            android:layout_width="30dp"
+            android:layout_height="42dp"
+            android:layout_weight="0"
+            android:layout_gravity="top|right"
+            android:background="@color/transparent"
+            android:longClickable="false"
+            android:focusable="false"
+            android:clickable="false"
+            />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="13dp"
+            android:layout_weight="1"
+            />
+
+
+        <FrameLayout
+            android:id="@+id/FL_Item_Delete_Ghost"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_weight="0"
+            android:layout_gravity="bottom"
+            android:background="@color/transparent"
+            android:longClickable="false"
+            android:focusable="false"
+            android:clickable="false"
+            />
+
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/Layout_Reminder"
+        android:layout_width="30dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end|top"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        android:layout_marginRight="35dp"
+        android:gravity="fill"
+        android:orientation="vertical"
+        >
+
+        <FrameLayout
+            android:id="@+id/Fl_Reminder"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="top"
+            android:layout_marginTop="8dp"
+            android:layout_marginLeft="5dp"
+            android:background="@drawable/recycler_logo_icon_4"
+            android:longClickable="false"
+            android:focusable="false"
+            android:clickable="false"
+            android:backgroundTint="@color/light_blue_x2"
+            />
+    </LinearLayout>
     <FrameLayout
         android:id="@+id/FrameLayout_Pin_Icon"
-        android:layout_width="20dp"
-        android:layout_height="18dp"
+        android:layout_width="11dp"
+        android:layout_height="16dp"
         android:layout_gravity="end"
-        android:layout_marginTop="2dp"
-        android:layout_marginRight="2dp"
-        android:background="@drawable/attach_file"
+        android:layout_marginTop="3dp"
+        android:layout_marginRight="6dp"
+        android:background="@drawable/clip_icon_1"
         android:backgroundTint="@color/ex_orange"
         android:visibility="visible"
         >
