@@ -6,17 +6,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 public class DB_Notes extends SQLiteOpenHelper {
@@ -28,7 +22,8 @@ public class DB_Notes extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase DB_N) {
 
         //DB_N.execSQL("create Table Notes(date TEXT, TIME TEXT, title TEXT, note TEXT, primary key (date))");
-        DB_N.execSQL("create Table Notes(date TEXT, title TEXT, note TEXT, pin INTEGER, reminder TEXT, primary key (date))");
+        //DB_N.execSQL("create Table Notes(date TEXT, title TEXT, note TEXT, pin INTEGER, reminder TEXT, primary key (date))");
+        DB_N.execSQL("create Table Notes(date TEXT, title TEXT, note TEXT, pin INTEGER, reminder LONG, reminder_type INTEGER, reminder_interval INTEGER, primary key (date))");
 
     }
     //!!--- cambio de pin para recibir booleano
@@ -40,14 +35,16 @@ public class DB_Notes extends SQLiteOpenHelper {
 
     }
 
-    public Boolean Insert_Note(String current_date, String title,  String note, Integer pin){
+    public Boolean Insert_Note(String current_date, String title,  String note, Integer pin, Long reminder, int reminder_type, int reminder_interval){
         SQLiteDatabase DB_N = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("date",current_date);
         contentValues.put("title",title);
         contentValues.put("note",note);
         contentValues.put("pin",pin);
-        contentValues.put("reminder","");
+        contentValues.put("reminder",reminder);
+        contentValues.put("reminder_type",reminder_type);
+        contentValues.put("reminder_interval",reminder_interval);
 
         long result = DB_N.insert("Notes", null,contentValues);
         if (result == -1){
@@ -59,7 +56,7 @@ public class DB_Notes extends SQLiteOpenHelper {
         }
     }
 
-    public Boolean Modify_Note(String previous_date, String current_date, String title, String note, Integer pin){
+    public Boolean Modify_Note(String previous_date, String current_date, String title, String note, Integer pin, Long reminder, int reminder_type, int reminder_interval){
 
         SQLiteDatabase DB_N = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -68,7 +65,9 @@ public class DB_Notes extends SQLiteOpenHelper {
         contentValues.put("note",note);
         contentValues.put("pin",pin);
         //!!----Verify if the reminder is needed
-        contentValues.put("reminder","");
+        contentValues.put("reminder",reminder);
+        contentValues.put("reminder_type",reminder_type);
+        contentValues.put("reminder_interval",reminder_interval);
 
         //Uso de try-finally como manejo estandar de recursos que necesitan ser cerrados como "Cursor"
         //try (Cursor cursor = DB_N.rawQuery("select date, time, title, note from Notes where date = ? and time = ?", new String[]{date, time})) {
@@ -105,6 +104,26 @@ public class DB_Notes extends SQLiteOpenHelper {
             return false;
         }
     }
+    public Boolean Modify_Reminder_Status(String previous_date,  Long reminder, int reminder_type, int reminder_interval){
+
+        SQLiteDatabase DB_N = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("reminder",reminder);
+        contentValues.put("reminder_type",reminder_type);
+        contentValues.put("reminder_interval",reminder_interval);
+
+        int result = DB_N.update("Notes", contentValues, "date=? ", new String[]{previous_date});
+
+        if (result > 0) {
+            Log.d("Inside DB_Notes", "Modify_Reminder_Status: Note modified");
+            return true;
+        } else {
+            //result == 0 no se encontro | -1 hubo un error
+            if (result == 0) Log.d("Inside DB_Notes", "Modify_Reminder_Status: Note NOT Found");
+            if (result == -1) Log.d("Inside DB_Notes", "Modify_Reminder_Status: Error");
+            return false;
+        }
+    }
 
     public Cursor get_All_Notes(){
         SQLiteDatabase DB_N = this.getReadableDatabase();
@@ -127,7 +146,9 @@ public class DB_Notes extends SQLiteOpenHelper {
                         note.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
                         note.setNote(cursor.getString(cursor.getColumnIndexOrThrow("note")));
                         note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin")));
-                        note.setReminder(cursor.getString(cursor.getColumnIndexOrThrow("reminder")));
+                        note.setReminder(cursor.getLong(cursor.getColumnIndexOrThrow("reminder")));
+                        note.setReminder_type(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_type")));
+                        note.setReminder_interval(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_interval")));
                         noteList.add(note);
                     } while (cursor.moveToNext());
                 }
@@ -151,6 +172,21 @@ public class DB_Notes extends SQLiteOpenHelper {
         }
         return exist;
     }
+    public long Get_Note_Reminder(String date){
+        //Manera mas eficiente de consultar por una coincidencia
+        //Se detiene al encontrar solo una coincidencia con LIMIT 1
+        SQLiteDatabase DB_N = this.getReadableDatabase();
+        try (Cursor cursor = DB_N.rawQuery("select reminder from Notes where date = ? LIMIT 1", new String[] {date}) ){
+            if(cursor.getCount()==0){
+                Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Does not exist");
+            }else{
+                if (cursor.moveToFirst()) {
+                     return cursor.getLong(cursor.getColumnIndexOrThrow("reminder"));
+                }
+            }
+        }
+        return 0L;
+    }
 
     public Cursor get_Specific_Note(String date){
         SQLiteDatabase DB_N = this.getReadableDatabase();
@@ -162,7 +198,7 @@ public class DB_Notes extends SQLiteOpenHelper {
     public Note getASpecificNote(String date){
         Note note = new Note();
         SQLiteDatabase DB_N = this.getReadableDatabase();
-        try (Cursor cursor = DB_N.rawQuery("select * from Notes where date = ?", new String[] {date}) ){
+        try (Cursor cursor = DB_N.rawQuery("select * from Notes where date = ? LIMIT 1", new String[] {date}) ){
             if(cursor.getCount()==0){
                 Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Does not exist");
             }else{
@@ -171,11 +207,50 @@ public class DB_Notes extends SQLiteOpenHelper {
                         note.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
                         note.setNote(cursor.getString(cursor.getColumnIndexOrThrow("note")));
                         note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin")));
-                        note.setReminder(cursor.getString(cursor.getColumnIndexOrThrow("reminder")));
+                        note.setReminder(cursor.getLong(cursor.getColumnIndexOrThrow("reminder")));
+                        note.setReminder_type(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_type")));
+                        note.setReminder_interval(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_interval")));
                 }
             }
         }
         return note;
+    }
+    public Note getASpecificNote_ByReminder(Long reminder){
+        Note note = new Note();
+        SQLiteDatabase DB_N = this.getReadableDatabase();
+        try (Cursor cursor = DB_N.rawQuery("select * from Notes where reminder = ? LIMIT 2", new String[] {String.valueOf(reminder)}) ) {
+            if (cursor.getCount() == 0) {
+                Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Does not exist");
+            }else if(cursor.getCount() == 2){
+                Log.d("Read cursor_Notes", "Cursor_Notes : getASpecificNote_ByReminder : Note is duplicate");
+            }else{
+                if (cursor.moveToFirst()) {
+                    note.setDate(cursor.getString(cursor.getColumnIndexOrThrow("date")));
+                    note.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
+                    note.setNote(cursor.getString(cursor.getColumnIndexOrThrow("note")));
+                    note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin")));
+                    note.setReminder(cursor.getLong(cursor.getColumnIndexOrThrow("reminder")));
+                    note.setReminder_type(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_type")));
+                    note.setReminder_interval(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_interval")));
+                }
+            }
+        }
+        return note;
+    }
+    public String getASpecificNoteDate_ByReminder(Long reminder){
+        SQLiteDatabase DB_N = this.getReadableDatabase();
+        try (Cursor cursor = DB_N.rawQuery("select * from Notes where reminder = ? LIMIT 2", new String[] {String.valueOf(reminder)}) ) {
+            if (cursor.getCount() == 0) {
+                Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Does not exist");
+            }else if(cursor.getCount() == 2){
+                Log.d("Read cursor_Notes", "Cursor_Notes : getASpecificNote_ByReminder : Note is duplicate");
+            }else{
+                if (cursor.moveToFirst()) {
+                    return cursor.getString(cursor.getColumnIndexOrThrow("date"));
+                }
+            }
+        }
+        return null;
     }
     public int get_Specific_Note_Sorted_by_Pin_and_Date(String date){
         int New_Position = 0;

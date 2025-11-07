@@ -173,31 +173,53 @@
             />
 
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/Layout_Reminder"
-        android:layout_width="30dp"
+        android:layout_width="32dp"
         android:layout_height="match_parent"
-        android:layout_gravity="end|top"
+        android:layout_gravity="end|bottom"
         android:layout_marginTop="0dp"
+        android:layout_marginRight="38dp"
         android:layout_marginBottom="0dp"
-        android:layout_marginRight="35dp"
-        android:gravity="fill"
-        android:orientation="vertical"
-        >
+        android:gravity="bottom"
+        android:orientation="vertical">
+
 
         <FrameLayout
             android:id="@+id/Fl_Reminder"
             android:layout_width="25dp"
             android:layout_height="25dp"
-            android:layout_gravity="top"
-            android:layout_marginTop="8dp"
-            android:layout_marginLeft="5dp"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="2dp"
+            android:layout_marginBottom="6dp"
             android:background="@drawable/recycler_logo_icon_4"
-            android:longClickable="false"
-            android:focusable="false"
+            android:backgroundTint="#888888"
             android:clickable="false"
-            android:backgroundTint="@color/light_blue_x2"
-            />
+            android:focusable="false"
+            android:longClickable="false" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/Layout_Option_Reminder_Ghost"
+        android:layout_width="32dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end|bottom"
+        android:layout_marginTop="0dp"
+        android:layout_marginRight="38dp"
+        android:layout_marginBottom="0dp"
+        android:gravity="bottom"
+        android:orientation="vertical">
+
+
+        <FrameLayout
+            android:id="@+id/Fl_Reminder_Ghost"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="0dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:longClickable="false" />
     </LinearLayout>
     <FrameLayout
         android:id="@+id/FrameLayout_Pin_Icon"
@@ -205,12 +227,24 @@
         android:layout_height="16dp"
         android:layout_gravity="end"
         android:layout_marginTop="3dp"
-        android:layout_marginRight="6dp"
+        android:layout_marginEnd="6dp"
         android:background="@drawable/clip_icon_1"
         android:backgroundTint="@color/ex_orange"
         android:visibility="visible"
         >
 
+    </FrameLayout>
+    <FrameLayout
+        android:id="@+id/Fl_Reminder_Activated"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="3dp"
+        android:background="@drawable/recycler_logo_icon_4"
+        android:backgroundTint="#55BCD1"
+        android:longClickable="false"
+        >
     </FrameLayout>
 
 </androidx.cardview.widget.CardView>

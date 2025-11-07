@@ -19,7 +19,7 @@ public class DB_Trash_Can extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase DB_TC) {
-        DB_TC.execSQL("create Table Deleted_Notes(date TEXT, title TEXT, note TEXT, pin INTEGER, reminder TEXT, expire_days INTEGER, primary key (date))");
+        DB_TC.execSQL("create Table Deleted_Notes(date TEXT, title TEXT, note TEXT, pin INTEGER, reminder LONG, reminder_type INTEGER, reminder_interval INTEGER, expire_days INTEGER, primary key (date))");
     }
 
     @Override
@@ -29,14 +29,16 @@ public class DB_Trash_Can extends SQLiteOpenHelper {
 
     }
 
-    public Boolean Insert_Note(String date, String title,  String note, Integer pin, Integer expire_days){
+    public Boolean Insert_Note(String date, String title,  String note, Integer pin, Long reminder , int reminder_type , int reminder_interval , Integer expire_days){
         SQLiteDatabase DB_TC = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("date",date);
         contentValues.put("title",title);
         contentValues.put("note",note);
         contentValues.put("pin",pin);
-        contentValues.put("reminder","");
+        contentValues.put("reminder",reminder);
+        contentValues.put("reminder_type",reminder_type);
+        contentValues.put("reminder_interval",reminder_interval);
         contentValues.put("expire_days",expire_days);
 
         long result = DB_TC.insert("Deleted_Notes", null,contentValues);
@@ -49,7 +51,7 @@ public class DB_Trash_Can extends SQLiteOpenHelper {
         }
     }
 
-    public Boolean Modify_Note(String previous_date, String current_date, String title, String note, Integer pin, Integer expire_days){
+    public Boolean Modify_Note(String previous_date, String current_date, String title, String note, Integer pin, Long reminder , int reminder_type , int reminder_interval , Integer expire_days){
 
         SQLiteDatabase DB_TC = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -58,7 +60,9 @@ public class DB_Trash_Can extends SQLiteOpenHelper {
         contentValues.put("note",note);
         contentValues.put("pin",pin);
         contentValues.put("expire_days",expire_days);
-        contentValues.put("reminder","");
+        contentValues.put("reminder",reminder);
+        contentValues.put("reminder_type",reminder_type);
+        contentValues.put("reminder_interval",reminder_interval);
 
 
         //long result = DB_N.update("Notes", contentValues, "date=? and time=?", new String[]{date, time});
@@ -131,7 +135,9 @@ public class DB_Trash_Can extends SQLiteOpenHelper {
                     note.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
                     note.setNote(cursor.getString(cursor.getColumnIndexOrThrow("note")));
                     note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin")));
-                    note.setReminder(cursor.getString(cursor.getColumnIndexOrThrow("reminder")));
+                    note.setReminder(cursor.getLong(cursor.getColumnIndexOrThrow("reminder")));
+                    note.setReminder_type(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_type")));
+                    note.setReminder_interval(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_interval")));
                 }
             }
         }

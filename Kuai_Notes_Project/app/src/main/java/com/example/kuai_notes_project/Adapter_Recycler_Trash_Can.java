@@ -60,6 +60,9 @@ public class Adapter_Recycler_Trash_Can extends RecyclerView.Adapter<Adapter_Rec
             holder.title_id.setVisibility(View.GONE);
         }
 
+        holder.date_id.setText(String.valueOf(date_id.get(position)));
+        holder.note_id.setText(note.note);
+
         //------Visibility depending if it is Selected:
         if(selected_id.get(position)==true){
             holder.note_id.setPadding(0,0,0,14);
@@ -92,8 +95,6 @@ public class Adapter_Recycler_Trash_Can extends RecyclerView.Adapter<Adapter_Rec
 
             if(unselected_id.get(position)==true){
                 holder.layout_btn_options.setVisibility(View.VISIBLE);
-                Log.d("Adapter TrashCan",  " :unselected - position: " + position);
-                //holder.title_id.setTextColor(Color.parseColor("#57e8a3"));
 
                 holder.fl_pin.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#686868")));
                 holder.fl_delete.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#686868")));
@@ -101,9 +102,6 @@ public class Adapter_Recycler_Trash_Can extends RecyclerView.Adapter<Adapter_Rec
                 holder.fl_delete.setAnimation(Animation_TrashCan_Appear_invert);
             }
         }
-
-        holder.date_id.setText(String.valueOf(date_id.get(position)));
-        holder.note_id.setText(note.note);
     }
 
     @Override

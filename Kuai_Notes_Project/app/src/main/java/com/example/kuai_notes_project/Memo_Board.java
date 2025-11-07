@@ -1,20 +1,22 @@
 package com.example.kuai_notes_project;
 
+import android.Manifest;
+import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.PopupWindow;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -34,7 +36,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 ///324 V3, 305 V4, 358 V6, 306 V7
-public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board_Interface, MyItemAnimator.ItemAnimatorListener{
+public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board_Interface, Reminder_PopUpWindow.OnValueSelectedListener, MyItemAnimator.ItemAnimatorListener{
     RecyclerView recyclerView;
     ArrayList<String> dateEdited_list;
     ArrayList<String> noteOriginal_list;
@@ -52,8 +54,6 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     Button btn_config;
     Button btn_aux;
     View main;
-    private PopupWindow popupWindow;
-    private LayoutInflater layoutInflater;
     private int current_hold_position = -1;
 
     private int prev_selectedPosition = -1;
@@ -62,6 +62,8 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     Date_of_Note_Item_View DoN_IV;
     private Animation AnimationAddNoteButton;
     private FloatingActionButton fa_btn;
+
+    private static final String CHANNEL_ID = "My_App_Channel";
 
     @Override
     protected void onResume(){
@@ -114,6 +116,9 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         btn_config = findViewById(R.id.button_Config);
         btn_aux = findViewById(R.id.button_aux);
         fa_btn.startAnimation(AnimationAddNoteButton);
+
+        Create_Notification_Channel();
+
         btn_config.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -127,33 +132,32 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             }
         });
     }
+    @Override
+    public void SetReminder(int position) {
+        //This is functional but pero estoy tratando de pasarlo a una clase externa para poder reutilizarlo
+        ///Start_Reminder_PopUpWindow(position);
 
-    private void Start_Reminder_PopUpWindow(String note_title) {
-        layoutInflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-        ViewGroup container = (ViewGroup) layoutInflater.inflate(R.layout.reminder_setter,null);
+        //--- popup in anotherclass:
+        Reminder_PopUpWindow reminder_PopUp = new Reminder_PopUpWindow(this, position);
+        reminder_PopUp.setListener(this);
 
-        popupWindow = new PopupWindow(container, 400, 400, true);
-        popupWindow.showAtLocation(main, Gravity.CENTER,00,-400);
-        //Go_To_Reminder_Setter();
-        TextView label_in_reminder,name_in_reminder ;
-        label_in_reminder = container.findViewById(R.id.Label_Reminder_Setter);
-        name_in_reminder = container.findViewById(R.id.Note_title_in_Reminder_Setter);
-        name_in_reminder.setText(note_title);
-        label_in_reminder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //popupWindow.dismiss();
-            }
-        });
-        container.setOnTouchListener(new View.OnTouchListener(){
-            @Override
-            public  boolean onTouch(View v, MotionEvent event){
-                //popupWindow.dismiss();
-                return true;
-            }
-        });
+        Note _note = noteList.get(position);
+        reminder_PopUp.show(main, _note);
+
     }
 
+    private void Create_Notification_Channel(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            CharSequence name = "General Notification";
+            String description = "Application notification";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,name,importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
 
     private void Update_Recycler_View(){
         try (Cursor cursor_Notes = DB_N.get_All_Notes()) {
@@ -161,7 +165,19 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
                 Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
             }else{
                 while (cursor_Notes.moveToNext()){
-                    Note note = new Note(cursor_Notes.getString(0),cursor_Notes.getString(1),BNP.Set_Body_Note_Preview(cursor_Notes.getString(1),cursor_Notes.getString(2),60,55,0,2),cursor_Notes.getInt(3),"");
+                    //!!---debe actualizarse
+                    Note note = new Note(cursor_Notes.getString(0),
+                            cursor_Notes.getString(1),
+                            BNP.Set_Body_Note_Preview(cursor_Notes.getString(1),
+                                    cursor_Notes.getString(2),
+                                    60,
+                                    55,
+                                    0,
+                                    2),
+                            cursor_Notes.getInt(3),
+                            cursor_Notes.getLong(4),
+                            cursor_Notes.getInt(5),
+                            cursor_Notes.getInt(6));
                     dateEdited_list.add(DoN_IV.Set_Date_of_Note(note.date,_current_time));
                     noteOriginal_list.add(cursor_Notes.getString(2));
                     selected_list.add(false);
@@ -234,11 +250,6 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         startActivity(goTo);
         overridePendingTransition(R.anim.slide_left_in_trash,R.anim.slide_left_out_trash);
     }
-    private void Go_To_Reminder_Setter() {
-        //Intent goTo = new Intent(this, Reminder_Setter.class);
-        //startActivity(goTo);
-        //overridePendingTransition(R.anim.slide_left_in_trash,R.anim.slide_left_out_trash);
-    }
 
     @Override
     public void onItemClick(int position) {
@@ -277,35 +288,6 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         postprev_selectedPosition = prev_selectedPosition;
         prev_selectedPosition = position;
 
-        Note _note = new Note();
-        _note = noteList.get(position);
-        Start_Reminder_PopUpWindow(_note.title);
-    }
-    public void onItemHold_BackUp_2V(int position) {
-
-        //--Si actual es igual previo
-        if(position == prev_selectedPosition){
-            //--Invertir estado de seleccion
-            boolean previousIsSelected = selected_list.get(position);
-            selected_list.set(position,!previousIsSelected);
-        }else{
-            //--Si previo esta activado entonces desactivar
-            if(prev_selectedPosition != -1){
-                boolean previousIsSelected = selected_list.get(prev_selectedPosition);
-                if(previousIsSelected){
-                    selected_list.set(prev_selectedPosition,false);
-                    adapter.notifyItemChanged(prev_selectedPosition);
-                    current_hold_position = position;
-                }
-            }
-            selected_list.set(position,true);
-        }
-
-        adapter.notifyItemChanged(position);
-
-        Set_Unselected_List(position);
-
-        prev_selectedPosition = position;
     }
 
     private void Set_Unselected_List(int position) {
@@ -337,40 +319,13 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             }
         }
     }
-    private void Set_Unselected_List_BackUp_V2(int position) {
-        previous_selected_list.add(0, position);
-
-        if(previous_selected_list.size()==2){       //--size 2 : current and just unselected:
-            unselected_list.set(previous_selected_list.get(1),true);
-            adapter.notifyItemChanged(previous_selected_list.get(1));
-
-            boolean current_eq_previous = Objects.equals(previous_selected_list.get(0), previous_selected_list.get(1));
-            if(current_eq_previous){
-                previous_selected_list.clear();
-            }
-            return;
-        }
-
-        if(previous_selected_list.size()==3){       //--size 3 : current, just unselected and previous unselected:
-            unselected_list.set(previous_selected_list.get(2),false);
-            unselected_list.set(previous_selected_list.get(1),true);
-
-            boolean current_eq_previous = Objects.equals(previous_selected_list.get(0), previous_selected_list.get(1));
-
-            previous_selected_list.remove(2);
-
-            if(current_eq_previous){
-                previous_selected_list.clear();
-                return;
-            }
-        }
-    }
 
     @Override
     public void RemoveItem(int position) {
         Note _note = noteList.get(position);
         //----Remove Note from Data Base:
-        if(DB_TC.Insert_Note(_note.date,_note.title,noteOriginal_list.get(position),_note.pin,20)){
+        Reminder_Notification.Cancel_Reminder_just_reminder(main,_note.reminder);
+        if(DB_TC.Insert_Note(_note.date,_note.title,noteOriginal_list.get(position),_note.pin,_note.reminder,0,0,20)){
             if(DB_N.Delete_Specific_Note(_note.date)) {
                 //----Remove Note from Recycler View
                 dateEdited_list.remove(position);
@@ -391,6 +346,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             }
         }
     }
+
 
     /// ----------------------------------------------------------Pin Items:
     @Override
@@ -446,6 +402,8 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         adapter.notifyItemChanged(current_pinned_notes);
     }
 
+    /// ----------------------------------------------------------Reminder Note:
+
     @Override
     //!!!--- currently is not working
     public void onAnimationFinished() {
@@ -456,5 +414,25 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             current_hold_position = -1;
         }
 
+    }
+
+    @Override
+    public void OnValueSelected(int position, long alarm_time) {
+        Note _note = noteList.get(position);
+        selected_list.set(position,false);
+        unselected_list.set(position,true);
+
+        if(previous_selected_list.size() > 1){
+            unselected_list.set(previous_selected_list.get(1),false);
+        }
+        previous_selected_list.clear();
+
+        _note.setReminder(alarm_time);
+        //!!---- actualizar type and interval
+        _note.setReminder_type(0);
+        _note.setReminder_interval(0);
+        noteList.remove(position);
+        noteList.add(position,_note);
+        adapter.notifyItemChanged(position);
     }
 }

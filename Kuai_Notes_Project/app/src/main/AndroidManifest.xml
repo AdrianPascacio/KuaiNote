@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" >
 
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,6 +16,8 @@
         android:roundIcon="@mipmap/ic_launcher_f_concept_2_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Kuai_Notes_Project" >
+        <receiver android:name=".Notification_Receiver"
+            android:enabled="true"/>
         <activity
             android:name=".Wasted_Note_Visualizer"
             android:exported="false" />

@@ -254,7 +254,8 @@ public class Wasted_Note_Visualizer extends AppCompatActivity {
 
         if(!note_recycled){
 
-            note_recycled = DB_N.Insert_Note(_current_time, _title, _note,note.pin);
+            //!!---reminder
+            note_recycled = DB_N.Insert_Note(_current_time, _title, _note,note.pin,0L,0,0);
             if(note_recycled){
                 if (DB_TC.Delete_Specific_Note(note.date)) {
                     Toast.makeText(Wasted_Note_Visualizer.this, "out of trash and saved", Toast.LENGTH_SHORT).show();
@@ -262,7 +263,8 @@ public class Wasted_Note_Visualizer extends AppCompatActivity {
                 }
             }
         }else{
-            if (DB_N.Modify_Note(previous_date, _current_time, _title, _note,note.pin)) {
+            //!!---reminder
+            if (DB_N.Modify_Note(previous_date, _current_time, _title, _note,note.pin,0L,0,0)) {
                 Toast.makeText(Wasted_Note_Visualizer.this, "Modified", Toast.LENGTH_SHORT).show();
                 _save_Success = true;
             }
@@ -352,7 +354,8 @@ public class Wasted_Note_Visualizer extends AppCompatActivity {
     }
     public void RecycleItem() {
         //----Remove Note from Data Base:
-        if(DB_N.Insert_Note(note.date,note.title,note.note,note.pin)){
+        //!!---reminder
+        if(DB_N.Insert_Note(note.date,note.title,note.note,note.pin,0L,0,0)){
             if(DB_TC.Delete_Specific_Note(note.date)) {
                 fl_Change_Recycler_Status.startAnimation(AnimationRecycler);
                 //fl_Change_Recycler_Status.startAnimation(Animationtrans);

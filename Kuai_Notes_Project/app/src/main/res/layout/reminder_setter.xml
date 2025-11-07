@@ -2,9 +2,18 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/white_bamboo_trans"
+    android:id="@+id/Reminder_relative_item_view"
+    android:background="@drawable/reminder_popup_back_layout"
 
     >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginVertical="15dp"
+        android:background="@drawable/reminder_popup_layout"
+        >
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -12,6 +21,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
+        android:layout_marginTop="10dp"
         android:gravity="center"
         android:orientation="vertical">
 
@@ -35,23 +45,164 @@
             android:layout_below="@+id/Label_Reminder_Setter"
             android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true"
+            android:layout_marginBottom="20dp"
             android:ems="10"
             android:inputType="text"
             android:text="Note Title"
             android:textAlignment="center"
             android:textSize="16dp"
             android:textStyle="bold" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_horizontal"
+            >
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="fill_horizontal|center_vertical"
+                >
+                <TextView
+                    android:id="@+id/Reminder_Label_Set_Date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:inputType="text"
+                    android:text="Set Date"
+                    android:textAlignment="center"
+                    android:textSize="16dp"
+                    android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/Note_title_in_Reminder_Setter"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="0dp"
-            android:background="@color/white_bamboo_trans_light"
-            android:text="Button" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="150dp"
+                    android:orientation="horizontal"
+                    android:gravity="fill_horizontal|center_vertical"
+                    >
+
+                    <NumberPicker
+                        android:id="@+id/Reminder_day_number_picker"
+                        android:layout_width="30dp"
+                        android:layout_height="150dp"
+                        android:layout_weight="1"
+                        >
+                    </NumberPicker>
+                    <NumberPicker
+                        android:id="@+id/Reminder_month_number_picker"
+                        android:layout_width="40dp"
+                        android:layout_height="150dp"
+                        android:layout_weight="1"
+                        >
+                    </NumberPicker>
+                    <NumberPicker
+                        android:id="@+id/Reminder_year_number_picker"
+                        android:layout_width="50dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+
+                        >
+                    </NumberPicker>
+                </LinearLayout>
+            </LinearLayout>
+            <Space
+                android:layout_width="30dp"
+                android:layout_height="10dp"
+                >
+            </Space>
+
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                >
+                <TextView
+                    android:id="@+id/Reminder_Label_Set_Time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:inputType="text"
+                    android:text="Set Time"
+                    android:textAlignment="center"
+                    android:textSize="16dp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="150dp"
+                    android:orientation="horizontal"
+                    android:gravity="fill_horizontal|center_vertical"
+                    >
+
+                    <NumberPicker
+                        android:id="@+id/Reminder_hour_number_picker"
+                        android:layout_width="30dp"
+                        android:layout_height="150dp"
+                        android:layout_weight="2"
+                        >
+                    </NumberPicker>
+                    <NumberPicker
+                        android:id="@+id/Reminder_minute_number_picker"
+                        android:layout_width="30dp"
+                        android:layout_height="150dp"
+                        android:layout_weight="2"
+                        >
+                    </NumberPicker>
+                    <NumberPicker
+                        android:id="@+id/Reminder_meridian_number_picker"
+                        android:layout_width="30dp"
+                        android:layout_height="150dp"
+                        android:layout_weight="2"
+                        >
+                    </NumberPicker>
+                </LinearLayout>
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:layout_marginBottom="15dp"
+            android:gravity="center"
+            >
+            <Button
+                android:id="@+id/Reminder_Ok_Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_below="@+id/Note_title_in_Reminder_Setter"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:background="@color/white_bamboo_trans_light"
+                android:text="SET" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                >
+            </Space>
+
+            <Button
+                android:id="@+id/Reminder_Cancel_Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_below="@+id/Note_title_in_Reminder_Setter"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:background="@color/salmon_light"
+                android:text="Cancel" />
+
+        </LinearLayout>
 
 
     </LinearLayout>

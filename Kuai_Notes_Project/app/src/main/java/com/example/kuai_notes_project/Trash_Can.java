@@ -73,13 +73,16 @@ public class Trash_Can extends AppCompatActivity implements Recycler_Trash_Can_I
                     Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
                 }else{
                     while (cursor.moveToNext()){
-                        if (cursor.getInt(5) > 0) {
+                        int expire_day_index = cursor.getColumnIndexOrThrow("expire_days");
+                        int date_index = cursor.getColumnIndexOrThrow("date");
+                        String _note_saved_date = cursor.getString(date_index);
+                        if (cursor.getInt(expire_day_index) > 0) {
                             //---Decrementar expire days
-                            DB_TC.Reduce_Note_Expire_Days(cursor.getString(0), cursor.getInt(5));
-                            Toast.makeText(this, saved_day+"\n"+_current_time+" : "+cursor.getInt(5), Toast.LENGTH_LONG).show();
+                            DB_TC.Reduce_Note_Expire_Days(_note_saved_date, cursor.getInt(expire_day_index));
+                            Toast.makeText(this, saved_day+"\n"+_current_time+" : "+cursor.getInt(expire_day_index), Toast.LENGTH_LONG).show();
                         } else {
                             //---Delete if is less than "1"
-                            DB_TC.Delete_Specific_Note(cursor.getString(0));
+                            DB_TC.Delete_Specific_Note(_note_saved_date);
                         }
                     }
                 }
@@ -160,7 +163,8 @@ public class Trash_Can extends AppCompatActivity implements Recycler_Trash_Can_I
                 Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
             }else{
                 while (cursor_Notes.moveToNext()){
-                    Note note = new Note(cursor_Notes.getString(0),cursor_Notes.getString(1),BPN.Set_Body_Note_Preview(cursor_Notes.getString(1),cursor_Notes.getString(2),115,100,0,5),cursor_Notes.getInt(3),"");
+                    //!!---reminder
+                    Note note = new Note(cursor_Notes.getString(0),cursor_Notes.getString(1),BPN.Set_Body_Note_Preview(cursor_Notes.getString(1),cursor_Notes.getString(2),115,100,0,5),cursor_Notes.getInt(3),0L,0,0);
                     dateEdited_list.add(DoN_IV.Set_Date_of_Note(note.date,_current_time));
                     noteOriginal_list.add(cursor_Notes.getString(2));
                     selected_list.add(false);
@@ -325,7 +329,8 @@ public class Trash_Can extends AppCompatActivity implements Recycler_Trash_Can_I
     public void RecycleItem(int position) {
         Note _note = noteList.get(position);
         //----Remove Note from Data Base:
-        if(DB_N.Insert_Note(_note.date,_note.title,noteOriginal_list.get(position),_note.pin)){
+        //!!-- set_reminder
+        if(DB_N.Insert_Note(_note.date,_note.title,noteOriginal_list.get(position),_note.pin,0L,0,0)){
             if(DB_TC.Delete_Specific_Note(_note.date)) {
                 //----Remove Note from Recycler View
                 dateEdited_list.remove(position);

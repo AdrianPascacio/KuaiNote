@@ -155,20 +155,35 @@
         android:id="@+id/FrameLayout_Change_Pin_Status"
         android:layout_width="18dp"
         android:layout_height="30dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="13dp"
         android:background="@drawable/clip_icon_1"
         android:backgroundTint="@color/Neutral_gray_icon_note"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.656"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <FrameLayout
+        android:id="@+id/FrameLayout_Change_Reminder_Status"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="14dp"
+        android:background="@drawable/recycler_logo_icon_4"
+        android:backgroundTint="@color/Neutral_gray_icon_note"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.337"
         app:layout_constraintTop_toTopOf="parent" />
 
     <FrameLayout
         android:id="@+id/fl_Delete"
         android:layout_width="24dp"
         android:layout_height="30dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="13dp"
         android:layout_marginRight="16dp"
         android:background="@drawable/trash_can_icon_1"
         android:backgroundTint="#A4A4A4"
@@ -193,6 +208,17 @@
         android:background="@color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.666"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <FrameLayout
+        android:id="@+id/FrameLayout_Change_Reminder_Status_Ghost"
+        android:layout_width="45dp"
+        android:layout_height="50dp"
+        android:background="@color/transparent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.333"
         app:layout_constraintTop_toTopOf="parent" />
 
     <FrameLayout

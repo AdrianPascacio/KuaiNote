@@ -4,8 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.util.Log;
-import android.util.LogPrinter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,14 +45,19 @@ public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Re
         return new MyViewHolder(v, recycler_memo_board_interface);
     }
 
+    /// 102 antes de optimizar
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, @SuppressLint("RecyclerView") int position){
         Note note = noteList.get(position);
-        boolean isPinned = note.pin ==1;
+        boolean isPinned = note.pin == 1;
+        boolean isReminded = note.reminder > 0;
+        boolean isUnselected = unselected_id.get(position)==true;
         Animation Animation_Pin_Orange_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_appear_memoboard);
         Animation Animation_Pin_Orange_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_appear_memoboard_invert);
         Animation Animation_Pin_Gray_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_gray_appear_memoboard);
         Animation Animation_Pin_Gray_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_gray_appear_memoboard_invert);
+        Animation Animation_Reminder_Active_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.reminder_active_icon_appear_memoboard);
+        Animation Animation_Reminder_Active_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.reminder_active_icon_appear_memoboard_invert);
         Animation Animation_TrashCan_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.trashcan_appear_memoboard);
         Animation Animation_TrashCan_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.trashcan_appear_memoboard_invert);
 
@@ -66,82 +69,95 @@ public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Re
             holder.date_id.setPadding(0,0,0,0);
         }else{
             holder.title_id.setVisibility(View.GONE);
-            holder.date_id.setPadding(0,10,0,0);
-            holder.note_id.setPadding(0,0,0,0);
 
+            holder.date_id.setPadding(0,10,0,0);
         }
+
+        holder.date_id.setText(String.valueOf(date_id.get(position)));
+        holder.note_id.setText(note.note);
 
         //------Visibility depending if it is Selected:
         if(selected_id.get(position)==true){
-            //note_id padding button14dp if is long clicked
-            holder.note_id.setPadding(0,0,0,14);
-            holder.date_id.setTextColor(Color.parseColor("#717171"));
-            holder.note_id.setTextColor(Color.parseColor("#616161"));
             holder.title_id.setTextColor(Color.parseColor("#454545"));
+            holder.date_id.setTextColor(Color.parseColor("#717171"));
+            holder.note_id.setPadding(0,0,0,44);
+            holder.note_id.setTextColor(Color.parseColor("#616161"));
+
+            holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#AEFDF2D8")));
 
             //Button Layout Visibility:
             holder.layout_btn_options.setVisibility(View.VISIBLE);
             holder.layout_btn_options_ghost.setVisibility(View.VISIBLE);
+            holder.layout_options_reminder_ghost.setVisibility(View.VISIBLE);
             holder.fl_delete.setAnimation(Animation_TrashCan_Appear);
             holder.fl_delete.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#A12015")));
 
-            //Pin Visibility
+
             if(isPinned){
                 holder.fl_pin.setVisibility(View.GONE);
-                //Pin Icon Visibility
-                    holder.framelayout_pin_icon.setVisibility(View.VISIBLE);
-                    holder.framelayout_pin_icon.setAnimation(Animation_Pin_Orange_Appear);
+
+                holder.fl_pin_icon_activated.setVisibility(View.VISIBLE);
+                holder.fl_pin_icon_activated.setAnimation(Animation_Pin_Orange_Appear);
             }else{
                 holder.fl_pin.setVisibility(View.VISIBLE);
-                //holder.fl_pin.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#888888")));
                 holder.fl_pin.setAnimation(Animation_Pin_Gray_Appear);
 
-                //Pin Icon Visibility
-                holder.framelayout_pin_icon.setVisibility(View.GONE);
+                holder.fl_pin_icon_activated.setVisibility(View.GONE);
             }
 
+            if(isReminded){
+                holder.fl_reminder.setVisibility(View.GONE);
 
-            holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#AEFDF2D8")));
+                holder.fl_reminder_activated.setVisibility(View.VISIBLE);
+                holder.fl_reminder_activated.setAnimation(Animation_Reminder_Active_Appear);
+            }else{
+                holder.fl_reminder.setVisibility(View.VISIBLE);
+                holder.fl_reminder.setAnimation(Animation_Pin_Gray_Appear);
 
+                holder.fl_reminder_activated.setVisibility(View.GONE);
+            }
         }else{
+            holder.title_id.setTextColor(Color.parseColor("#616161"));
+            holder.date_id.setTextColor(Color.parseColor("#787777"));
+            holder.note_id.setPadding(0,0,0,0);
+            holder.note_id.setTextColor(Color.parseColor("#686868"));
+
             holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#008F8F8F")));
 
             //Button Layout Visibility:
             holder.layout_btn_options.setVisibility(View.GONE);
             holder.layout_btn_options_ghost.setVisibility(View.GONE);
+            holder.layout_options_reminder_ghost.setVisibility(View.GONE);
+            holder.fl_reminder.setVisibility(View.GONE);
 
-            //Pin Icon Visibility
-            if(isPinned){
-                holder.framelayout_pin_icon.setVisibility(View.VISIBLE);
-                if(unselected_id.get(position)==true){
-                    holder.framelayout_pin_icon.setAnimation(Animation_Pin_Orange_Appear_invert);
 
-                    holder.layout_btn_options.setVisibility(View.VISIBLE);
-                    Log.d("Adapter Memo",  " :pinned: " + position);
-                    holder.fl_delete.setAnimation(Animation_TrashCan_Appear_invert);
-                    holder.fl_delete.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#686868")));
+            holder.fl_pin_icon_activated.setVisibility(isPinned ? View.VISIBLE : View.GONE); ///Ternary Operator
+            holder.fl_reminder_activated.setVisibility(isReminded ? View.VISIBLE : View.GONE); ///Ternary Operator
+
+            if(isUnselected){
+                holder.layout_btn_options.setVisibility(View.VISIBLE);
+                holder.fl_delete.setAnimation(Animation_TrashCan_Appear_invert);
+                holder.fl_delete.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#686868")));
+
+
+                if(isPinned){
+                    holder.fl_pin_icon_activated.setAnimation(Animation_Pin_Orange_Appear_invert);
+                    holder.fl_pin.setVisibility(View.GONE);
+                }else{
+                    holder.fl_pin.setVisibility(View.VISIBLE);
+                    holder.fl_pin.setAnimation(Animation_Pin_Gray_Appear_invert);
                 }
-            }else{
-                holder.framelayout_pin_icon.setVisibility(View.GONE);
-                if(unselected_id.get(position)==true){
-                    holder.layout_btn_options.setVisibility(View.VISIBLE);
-                    Log.d("Adapter Memo",  " :unpinned: " + position);
-                    holder.fl_delete.setAnimation(Animation_TrashCan_Appear_invert);
-                    holder.fl_delete.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#686868")));
+
+                if(isReminded){
+                    holder.fl_reminder_activated.setAnimation(Animation_Reminder_Active_Appear_invert);
+
+                    holder.fl_reminder.setVisibility(View.GONE);
+                }else{
+                    holder.fl_reminder.setVisibility(View.VISIBLE);
+                    holder.fl_reminder.setAnimation(Animation_Pin_Gray_Appear_invert);
                 }
             }
-
-            holder.fl_pin.setVisibility(View.VISIBLE);
-            holder.fl_pin.setAnimation(Animation_Pin_Gray_Appear_invert);
-
-            holder.note_id.setPadding(0,0,0,0);
-            holder.date_id.setTextColor(Color.parseColor("#787777"));
-            holder.note_id.setTextColor(Color.parseColor("#686868"));
-            holder.title_id.setTextColor(Color.parseColor("#616161"));
         }
-
-        holder.date_id.setText(String.valueOf(date_id.get(position)));
-        holder.note_id.setText(note.note);
     }
 
     @Override
@@ -151,8 +167,8 @@ public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Re
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         TextView date_id, title_id, note_id;
-        View layout_btn_options, layout_btn_options_ghost, layout_global_item;
-        FrameLayout fl_delete, fl_pin ,fl_delete_ghost, fl_pin_ghost ,  framelayout_pin_icon;
+        View layout_btn_options, layout_btn_options_ghost, layout_global_item, layout_options_reminder_ghost;
+        FrameLayout fl_delete, fl_reminder, fl_pin ,fl_delete_ghost, fl_reminder_ghost, fl_pin_ghost ,  fl_pin_icon_activated, fl_reminder_activated;
         FrameLayout fl_item;
 
 
@@ -163,12 +179,16 @@ public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Re
             note_id = itemView.findViewById(R.id.Text_Note_Preview);
             layout_btn_options = itemView.findViewById(R.id.Layout_Item_Options);
             layout_btn_options_ghost = itemView.findViewById(R.id.Layout_Item_Options_Ghost);
+            layout_options_reminder_ghost = itemView.findViewById(R.id.Layout_Option_Reminder_Ghost);
             layout_global_item = itemView.findViewById(R.id.Layout_Global_Item);
             fl_delete = itemView.findViewById(R.id.FL_Item_Delete);
+            fl_reminder = itemView.findViewById(R.id.Fl_Reminder);
             fl_pin = itemView.findViewById(R.id.Fl_Item_Pin);
             fl_delete_ghost = itemView.findViewById(R.id.FL_Item_Delete_Ghost);
+            fl_reminder_ghost = itemView.findViewById(R.id.Fl_Reminder_Ghost);
             fl_pin_ghost = itemView.findViewById(R.id.Fl_Item_Pin_Ghost);
-            framelayout_pin_icon = itemView.findViewById(R.id.FrameLayout_Pin_Icon);
+            fl_pin_icon_activated = itemView.findViewById(R.id.FrameLayout_Pin_Icon);
+            fl_reminder_activated = itemView.findViewById(R.id.Fl_Reminder_Activated);
             fl_item = itemView.findViewById((R.id.Layout_Item));
 
             itemView.setOnClickListener(new View.OnClickListener() {
@@ -213,6 +233,17 @@ public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Re
                         int pos = getAbsoluteAdapterPosition();
                         if (pos != RecyclerView.NO_POSITION){
                             recyclerMemoBoardInterface.PinItem(pos);
+                        }
+                    }
+                }
+            });
+            itemView.findViewById(R.id.Fl_Reminder_Ghost).setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v){
+                    if (recyclerMemoBoardInterface != null){
+                        int pos = getAbsoluteAdapterPosition();
+                        if (pos != RecyclerView.NO_POSITION){
+                            recyclerMemoBoardInterface.SetReminder(pos);
                         }
                     }
                 }
