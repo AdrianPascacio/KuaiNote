@@ -3,6 +3,14 @@
     android:interpolator="@android:anim/linear_interpolator"
     android:fillAfter="true"
     >
+    <!--
+    <alpha
+        android:fromAlpha="1"
+        android:toAlpha=".8"
+        android:duration="500"
+        >
+    </alpha>
+    -->
     <scale
         android:fromXScale="1.6"
         android:toXScale="1"
@@ -13,15 +21,15 @@
         android:duration="500"
         />
     <translate
-        android:fromXDelta="-95"
+        android:fromXDelta="-103"
         android:toXDelta="0"
-        android:fromYDelta="-43"
+        android:fromYDelta="-41"
         android:toYDelta="0"
         android:duration="500"
         />
     <rotate
-        android:fromDegrees="-15"
-        android:toDegrees="0"
+        android:fromDegrees="0"
+        android:toDegrees="-15"
         android:startOffset="0"
         android:pivotX="0%"
         android:pivotY="0%"

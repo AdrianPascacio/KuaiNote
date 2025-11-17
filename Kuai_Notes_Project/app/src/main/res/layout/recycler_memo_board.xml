@@ -188,12 +188,12 @@
 
         <FrameLayout
             android:id="@+id/Fl_Reminder"
-            android:layout_width="25dp"
+            android:layout_width="22dp"
             android:layout_height="25dp"
             android:layout_gravity="bottom"
             android:layout_marginLeft="2dp"
             android:layout_marginBottom="6dp"
-            android:background="@drawable/recycler_logo_icon_4"
+            android:background="@drawable/timer_icon_1"
             android:backgroundTint="#888888"
             android:clickable="false"
             android:focusable="false"
@@ -236,12 +236,12 @@
     </FrameLayout>
     <FrameLayout
         android:id="@+id/Fl_Reminder_Activated"
-        android:layout_width="16dp"
-        android:layout_height="16dp"
+        android:layout_width="13dp"
+        android:layout_height="15dp"
         android:layout_gravity="end|bottom"
-        android:layout_marginEnd="5dp"
         android:layout_marginBottom="3dp"
-        android:background="@drawable/recycler_logo_icon_4"
+        android:layout_marginEnd="6dp"
+        android:background="@drawable/timer_icon_1"
         android:backgroundTint="#55BCD1"
         android:longClickable="false"
         >

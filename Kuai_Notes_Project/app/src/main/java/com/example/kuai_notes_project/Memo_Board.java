@@ -1,18 +1,13 @@
 package com.example.kuai_notes_project;
 
-import android.Manifest;
-import android.app.AlarmManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -27,10 +22,12 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.kuai_notes_project.ruled_out_code.Date_of_Note_Item_View_DEPRECATED;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
@@ -46,20 +43,19 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     ArrayList<Integer> previous_selected_list;
 
     DB_Notes DB_N;
-    DB_Trash_Can DB_TC;
 
     Adapter_Recycler_Memo_Board adapter;
 
-    String _current_time = null;
+    long start_of_today = 0;
     Button btn_config;
     Button btn_aux;
     View main;
     private int current_hold_position = -1;
-
     private int prev_selectedPosition = -1;
     private int postprev_selectedPosition = -1;
     Body_Note_Preview BNP;
-    Date_of_Note_Item_View DoN_IV;
+    Date_of_Note_Item_View_DEPRECATED DoN_IV;
+    Date_of_Note DoN;
     private Animation AnimationAddNoteButton;
     private FloatingActionButton fa_btn;
 
@@ -68,7 +64,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     @Override
     protected void onResume(){
         super.onResume();
-        _current_time = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()).format(new Date());
+        getStartOfToday();
 
         recyclerView = findViewById(R.id.Recycler_MemoBoard);
         adapter = new Adapter_Recycler_Memo_Board(this, dateEdited_list,selected_list,noteList,unselected_list,this);
@@ -90,7 +86,6 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         });
 
         DB_N = new DB_Notes(this);
-        DB_TC = new DB_Trash_Can(this);
 
         dateEdited_list = new ArrayList<>();
         noteOriginal_list = new ArrayList<>();
@@ -100,7 +95,8 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         previous_selected_list = new ArrayList<>();
 
         BNP = new Body_Note_Preview();
-        DoN_IV = new Date_of_Note_Item_View();
+        DoN_IV = new Date_of_Note_Item_View_DEPRECATED();
+        DoN = new Date_of_Note();
         fa_btn = findViewById(R.id.floatingActionButton);
         main = findViewById(R.id.main);
 
@@ -125,12 +121,12 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
                 Go_To_Trash_Can();
             }
         });
-        btn_aux.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //Start_Reminder_PopUpWindow();
-            }
-        });
+        //btn_aux.setOnClickListener(new View.OnClickListener() {
+        //    @Override
+        //    public void onClick(View view) {
+        //        Start_Reminder_PopUpWindow();
+        //    }
+        //});
     }
     @Override
     public void SetReminder(int position) {
@@ -144,6 +140,14 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         Note _note = noteList.get(position);
         reminder_PopUp.show(main, _note);
 
+    }
+    private void  getStartOfToday() {
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+        start_of_today = today.getTimeInMillis();
     }
 
     private void Create_Notification_Channel(){
@@ -164,22 +168,32 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             if(cursor_Notes.getCount()==0){
                 Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
             }else{
+                int id_indx = cursor_Notes.getColumnIndex("_id");
+                int date_indx = cursor_Notes.getColumnIndex("date");
+                int title_indx = cursor_Notes.getColumnIndex("title");
+                int note_indx = cursor_Notes.getColumnIndex("note");
+                int pin_indx = cursor_Notes.getColumnIndex("pin");
+                int reminder_indx = cursor_Notes.getColumnIndex("reminder");
+                int reminder_type_indx = cursor_Notes.getColumnIndex("reminder_type");
+                int reminder_interval_indx = cursor_Notes.getColumnIndex("reminder_interval");
+
                 while (cursor_Notes.moveToNext()){
                     //!!---debe actualizarse
-                    Note note = new Note(cursor_Notes.getString(0),
-                            cursor_Notes.getString(1),
-                            BNP.Set_Body_Note_Preview(cursor_Notes.getString(1),
-                                    cursor_Notes.getString(2),
+                    Note note = new Note(cursor_Notes.getLong(id_indx),
+                            cursor_Notes.getLong(date_indx),
+                            cursor_Notes.getString(title_indx),
+                            BNP.Set_Body_Note_Preview(cursor_Notes.getString(title_indx),
+                                    cursor_Notes.getString(note_indx),
                                     60,
                                     55,
                                     0,
                                     2),
-                            cursor_Notes.getInt(3),
-                            cursor_Notes.getLong(4),
-                            cursor_Notes.getInt(5),
-                            cursor_Notes.getInt(6));
-                    dateEdited_list.add(DoN_IV.Set_Date_of_Note(note.date,_current_time));
-                    noteOriginal_list.add(cursor_Notes.getString(2));
+                            cursor_Notes.getInt(pin_indx),
+                            cursor_Notes.getLong(reminder_indx),
+                            cursor_Notes.getInt(reminder_type_indx),
+                            cursor_Notes.getInt(reminder_interval_indx));
+                    dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(note.date,start_of_today));
+                    noteOriginal_list.add(cursor_Notes.getString(note_indx));
                     selected_list.add(false);
                     noteList.add(note);
                     unselected_list.add(false);
@@ -189,6 +203,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -230,7 +245,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         });
     }
     private void Clear_Lists(){
-        if(noteOriginal_list.isEmpty()){
+        if(noteOriginal_list.isEmpty()&&selected_list.isEmpty()){
             return;
         }
         dateEdited_list.clear();
@@ -256,6 +271,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         Note _note = noteList.get(position);
         Intent goTo = new Intent(this, MainActivity.class);
         goTo.putExtra("send_date_of_note",_note.date);
+        goTo.putExtra("send_note_id",_note.note_id);
         startActivity(goTo);
         overridePendingTransition(R.anim.slide_left_in,R.anim.slide_left_out);
     }
@@ -324,26 +340,24 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     public void RemoveItem(int position) {
         Note _note = noteList.get(position);
         //----Remove Note from Data Base:
-        Reminder_Notification.Cancel_Reminder_just_reminder(main,_note.reminder);
-        if(DB_TC.Insert_Note(_note.date,_note.title,noteOriginal_list.get(position),_note.pin,_note.reminder,0,0,20)){
-            if(DB_N.Delete_Specific_Note(_note.date)) {
-                //----Remove Note from Recycler View
-                dateEdited_list.remove(position);
-                noteOriginal_list.remove(position);
-                noteList.remove(position);
-                selected_list.remove(position);
-                adapter.notifyItemRemoved(position);
+        Reminder_Notification.Cancel_Reminder_Alarm(main,_note.note_id);
+        if(DB_N.Send_Note_To_Trash(_note.note_id,_note.date,_note.title,noteOriginal_list.get(position),_note.pin,_note.reminder,0,0,20)){
+            //----Remove Note from Recycler View
+            dateEdited_list.remove(position);
+            noteOriginal_list.remove(position);
+            noteList.remove(position);
+            selected_list.remove(position);
+            adapter.notifyItemRemoved(position);
 
-                if(previous_selected_list.size() > 1){
-                    unselected_list.set(previous_selected_list.get(1),false);
-                }
-                previous_selected_list.clear();
-
-                unselected_list.remove(position);
-
-
-                prev_selectedPosition = -1;
+            if(previous_selected_list.size() > 1){
+                unselected_list.set(previous_selected_list.get(1),false);
             }
+            previous_selected_list.clear();
+
+            unselected_list.remove(position);
+
+
+            prev_selectedPosition = -1;
         }
     }
 
@@ -356,7 +370,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         int _pin = _note.getPin() ^ 1;      //XOR Operator
 
         //----Database update with new pin status value:
-        if(DB_N.Modify_Pin_Status(_note.date,_pin)){
+        if(DB_N.Modify_Pin_Status(_note.note_id,_pin)){
             //----RecyclerView pin status update:
             RecyclerView_Pin_Update(position);
         }else{
@@ -413,7 +427,6 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
 
             current_hold_position = -1;
         }
-
     }
 
     @Override

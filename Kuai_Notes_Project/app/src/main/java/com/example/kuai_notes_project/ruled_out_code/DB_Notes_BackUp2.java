@@ -1,4 +1,4 @@
-package com.example.kuai_notes_project;
+package com.example.kuai_notes_project.ruled_out_code;
 
 
 import android.content.ContentValues;
@@ -12,11 +12,13 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.kuai_notes_project.Note;
+
 import java.util.Objects;
 
-///330 V6, 331 V7despues de refactorizar DB con _id
-public class DB_Notes extends SQLiteOpenHelper {
-    public DB_Notes(@Nullable Context context) {
+///330 V6, 331 V7despues de refactorizar DB con _id, Version 7.1 12nov2025
+public class DB_Notes_BackUp2 extends SQLiteOpenHelper {
+    public DB_Notes_BackUp2(@Nullable Context context) {
         super(context, "notes.db", null, 1);
     }
 
@@ -24,7 +26,7 @@ public class DB_Notes extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase DB_N) {
         DB_N.execSQL("create Table Notes("+
                 "_id INTEGER PRIMARY KEY AUTOINCREMENT, "+
-                "date LONG, "+
+                "date TEXT, "+
                 "title TEXT, "+
                 "note TEXT, "+
                 "pin INTEGER, "+
@@ -35,11 +37,7 @@ public class DB_Notes extends SQLiteOpenHelper {
                 "expire_days INTEGER,"+
                 "deleted INTEGER)"
         );
-        //El LONG en integer solo se reconoce como un Integer
-        //Los integer en SQL tienen un almacenamietno variable dependiendo del dato guardado 1,2,3 o bytes dependiendo del tama~o
         //DB_N.execSQL("CREATE INDEX idx_delete ON Notes (is_deleted)"); //Creacion de indice para optimizar la consulta
-        //Indexado complejo para evitar el sort
-        DB_N.execSQL("CREATE INDEX idx_delete ON Notes (deleted, date DESC)"); //Creacion de indice para optimizar la consulta mas comun (delered, sorted por date
         //!!--no esta implementado
     }
 
@@ -48,7 +46,7 @@ public class DB_Notes extends SQLiteOpenHelper {
         DB_N.execSQL("drop Table if exists Notes");
     }
 
-    public Boolean Insert_Note(long current_date, String title,  String note, Integer pin, long reminder, int reminder_type, int reminder_interval){
+    public Boolean Insert_Note(String current_date, String title,  String note, Integer pin, long reminder, int reminder_type, int reminder_interval){
         SQLiteDatabase DB_N = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("date",current_date);
@@ -76,7 +74,7 @@ public class DB_Notes extends SQLiteOpenHelper {
             return true;
         }
     }
-    public long Insert_Note_L(long current_date, String title,  String note, Integer pin, long reminder, int reminder_type, int reminder_interval){
+    public long Insert_Note_L(String current_date, String title,  String note, Integer pin, long reminder, int reminder_type, int reminder_interval){
         SQLiteDatabase DB_N = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("date",current_date);
@@ -89,7 +87,7 @@ public class DB_Notes extends SQLiteOpenHelper {
         //!!--categoria_id no implementada todavia
         contentValues.put("category_id",0);
         //!!--expire_days no implementada todavia
-        contentValues.put("expire_days",0);
+        contentValues.put("expire_days",10);
         //!!--deleted no implementada todavia
         contentValues.put("deleted",0);
 
@@ -104,34 +102,6 @@ public class DB_Notes extends SQLiteOpenHelper {
             return result;
         }
     }
-    public Boolean Insert_Note_Directly_in_Trash(long current_date, String title,  String note, Integer pin, long reminder, int reminder_type, int reminder_interval){
-        SQLiteDatabase DB_N = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("date",current_date);
-        contentValues.put("title",title);
-        contentValues.put("note",note);
-        contentValues.put("pin",pin);
-        contentValues.put("reminder",reminder);
-        contentValues.put("reminder_type",reminder_type);
-        contentValues.put("reminder_interval",reminder_interval);
-        //!!--categoria_id no implementada todavia
-        contentValues.put("category_id",0);
-        //!!--expire_days no implementada todavia
-        contentValues.put("expire_days",0);
-        //!!--deleted no implementada todavia
-        contentValues.put("deleted",1);
-
-        long result = DB_N.insert("Notes", null,contentValues);
-        Log.d("Inside DB_Notes","result = "+result);
-        //.insert devuelve el id de la fila insertada y "-1" si se produce algun error
-        if (result == -1){
-            Log.d("Inside DB_Notes","Insert_Note: NOT inserted");
-            return false;
-        }else{
-            Log.d("Inside DB_Notes","Insert_Note: Note Inserted in Trash directly");
-            return true;
-        }
-    }
     public long Get_Last_RowId(){
         //!!--lo ideal seria usar el nativo .insert para recuperar este variable long
         SQLiteDatabase DB_N = this.getWritableDatabase();
@@ -140,7 +110,7 @@ public class DB_Notes extends SQLiteOpenHelper {
         statement.close();
         return lastId;
     }
-    public Boolean Modify_Note(long note_id, long current_date, String title, String note, Integer pin, long reminder, int reminder_type, int reminder_interval){
+    public Boolean Modify_Note(long note_id, String current_date, String title, String note, Integer pin, long reminder, int reminder_type, int reminder_interval){
 
         SQLiteDatabase DB_N = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -194,15 +164,7 @@ public class DB_Notes extends SQLiteOpenHelper {
     public Cursor get_All_Notes(){
         SQLiteDatabase DB_N = this.getReadableDatabase();
         //Cursor cursor = DB_N.rawQuery("select date, title, note from Notes order by date DESC", null);
-        //Cursor cursor = DB_N.rawQuery("select * from Notes order by pin DESC, date DESC", null);
-        Cursor cursor = DB_N.rawQuery("select * from Notes where deleted = 0 order by pin DESC, date DESC", null);
-        return cursor;
-    }
-    public Cursor get_All_Notes_Of_Trash(){
-        SQLiteDatabase DB_N = this.getReadableDatabase();
-        //Cursor cursor = DB_N.rawQuery("select date, title, note from Notes order by date DESC", null);
-        //Cursor cursor = DB_N.rawQuery("select * from Notes order by pin DESC, date DESC", null);
-        Cursor cursor = DB_N.rawQuery("select * from Notes where deleted = 1 order by pin DESC, date DESC", null);
+        Cursor cursor = DB_N.rawQuery("select * from Notes order by pin DESC, date DESC", null);
         return cursor;
     }
     public boolean Note_Exist(long note_id){
@@ -219,30 +181,7 @@ public class DB_Notes extends SQLiteOpenHelper {
         ///}
 
         //!!--implementar un .query en lugar de un rawquery para evitar sqlinyectoins
-        try (Cursor cursor = DB_N.query("Notes",new String[] {"_id"},"_id = ? AND deleted = 0",new String[] {String.valueOf(note_id)},null,null,null,"1" )){
-            if (cursor.moveToFirst()) {
-                exist = true;
-            } else {
-                Log.d("Read cursor_Notes", "Cursor_Notes :  No Entry Does not exist");
-            }
-        }
-        return exist;
-    }
-    public boolean Note_Exist_In_Trash(long note_id){
-        //Manera mas eficiente de consultar por una coincidencia
-        //Se detiene al encontrar solo una coincidencia con LIMIT 1
-        SQLiteDatabase DB_N = this.getReadableDatabase();
-        boolean exist = false;
-        ///try (Cursor cursor = DB_N.rawQuery("select COUNT(*) from Notes where _id = ? LIMIT 1", new String[] {String.valueOf(note_id)}) ){
-        ///    if (cursor.moveToFirst()) {
-        ///        exist = true;
-        ///    } else {
-        ///        Log.d("Read cursor_Notes", "Cursor_Notes :  No Entry Does not exist");
-        ///    }
-        ///}
-
-        //!!--implementar un .query en lugar de un rawquery para evitar sqlinyectoins
-        try (Cursor cursor = DB_N.query("Notes",new String[] {"_id"},"_id = ? AND deleted = 1",new String[] {String.valueOf(note_id)},null,null,null,"1" )){
+        try (Cursor cursor = DB_N.query("Notes",new String[] {"_id"},"_id = ?",new String[] {String.valueOf(note_id)},null,null,null,"1" )){
             if (cursor.moveToFirst()) {
                 exist = true;
             } else {
@@ -270,7 +209,7 @@ public class DB_Notes extends SQLiteOpenHelper {
     public Note getASpecificNote(long note_id){
         Note note = new Note();
         SQLiteDatabase DB_N = this.getReadableDatabase();
-        try (Cursor cursor = DB_N.rawQuery("select * from Notes where _id = ? AND deleted = 0 LIMIT 1", new String[] {String.valueOf(note_id)}) ){
+        try (Cursor cursor = DB_N.rawQuery("select * from Notes where _id = ? LIMIT 1", new String[] {String.valueOf(note_id)}) ){
             if(cursor.getCount()==0){
                 Log.d("Read cursor_Notes", "Cursor_Notes :  No Entry Does not exist");
             }else{
@@ -283,27 +222,6 @@ public class DB_Notes extends SQLiteOpenHelper {
                         note.setReminder(cursor.getLong(cursor.getColumnIndexOrThrow("reminder")));
                         note.setReminder_type(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_type")));
                         note.setReminder_interval(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_interval")));
-                }
-            }
-        }
-        return note;
-    }
-    public Note getASpecificNote_In_Trash(long note_id){
-        Note note = new Note();
-        SQLiteDatabase DB_N = this.getReadableDatabase();
-        try (Cursor cursor = DB_N.rawQuery("select * from Notes where _id = ? AND deleted = 1  LIMIT 1", new String[] {String.valueOf(note_id)}) ){
-            if(cursor.getCount()==0){
-                Log.d("Read cursor_Notes", "Cursor_Notes :  No Entry Does not exist");
-            }else{
-                if (cursor.moveToFirst()) {
-                    note.setNote_id(cursor.getLong(cursor.getColumnIndexOrThrow("_id")));
-                    note.setDate(cursor.getLong(cursor.getColumnIndexOrThrow("date")));
-                    note.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
-                    note.setNote(cursor.getString(cursor.getColumnIndexOrThrow("note")));
-                    note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin")));
-                    note.setReminder(cursor.getLong(cursor.getColumnIndexOrThrow("reminder")));
-                    note.setReminder_type(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_type")));
-                    note.setReminder_interval(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_interval")));
                 }
             }
         }
@@ -347,7 +265,7 @@ public class DB_Notes extends SQLiteOpenHelper {
         }
         return null;
     }
-    public int get_Specific_Note_Sorted_by_Pin_and_Date(long date){//!!--- que es esto parece que debe corregirse!!!
+    public int get_Specific_Note_Sorted_by_Pin_and_Date(String date){//!!--- que es esto parece que debe corregirse!!!
         int New_Position = 0;
         SQLiteDatabase DB_N = this.getReadableDatabase();
         try (Cursor cursor = DB_N.rawQuery("select date from Notes order by pin DESC, date DESC", null)) {
@@ -366,97 +284,8 @@ public class DB_Notes extends SQLiteOpenHelper {
 
         return New_Position;
     }
-    public int get_Specific_Note_Sorted_by_Pin_and_Date_In_Trash(long date){//!!--- que es esto parece que debe corregirse!!!
-        int New_Position = 0;
-        SQLiteDatabase DB_N = this.getReadableDatabase();
-        try (Cursor cursor = DB_N.rawQuery("select date from Notes order by pin DESC, date DESC", null)) {
-            if(cursor.getCount()==0){
-                Log.d("Read cursor_Notes", "Cursor_Notes :  No Entry Exist");
-                return New_Position;
-            }else{
-                while(cursor.moveToNext()){
-                    if(Objects.equals(cursor.getString(0), date)){
-                        Log.d("Read cursor_Notes", "Cursor Pin_Date : Position: " + cursor.getPosition());
-                        return cursor.getPosition();
-                    }
-                }
-            }
-        }
 
-        return New_Position;
-    }
-    public int get_expire_Day(long note_id) {
-        int expire_day = 0;
-        SQLiteDatabase DB_N = this.getReadableDatabase();
-        try (Cursor cursor = DB_N.rawQuery("select * from Notes where _id = ?", new String[] {String.valueOf(note_id)}) ){
-            if(cursor.getCount()==0){
-                Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Does not exist");
-            }else{
-                if (cursor.moveToFirst()) {
-                    expire_day = cursor.getInt(cursor.getColumnIndexOrThrow("expire_days"));
-                }
-            }
-        }
-        return expire_day;
-    }
-
-    public Boolean Delete_DB_DEPRECATED(long note_id, int expire_days){
-        SQLiteDatabase DB_N = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("expire_days",expire_days);
-        contentValues.put("deleted",1);
-
-        int result = DB_N.update("Notes", contentValues, "_id = ? ", new String[]{String.valueOf(note_id)});
-
-        String log_from = "Send_To_Trash_Specific_Note";
-        Result_Log_treatment(result, log_from);
-        return result > 0;
-    }
-    public Boolean Send_Note_To_Trash(long note_id, long current_date, String title, String note, Integer pin, long reminder, int reminder_type, int reminder_interval, int expire_days){
-
-        SQLiteDatabase DB_N = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("date",current_date);
-        contentValues.put("title",title);
-        contentValues.put("note",note);
-        contentValues.put("pin",pin);
-        contentValues.put("reminder",reminder);
-        contentValues.put("reminder_type",reminder_type);
-        contentValues.put("reminder_interval",reminder_interval);
-        //!!--categoria_id no implementada todavia
-        contentValues.put("category_id",0);
-        contentValues.put("expire_days",expire_days);
-        contentValues.put("deleted",1);
-
-        int result = DB_N.update("Notes", contentValues, "_id = ? ", new String[]{String.valueOf(note_id)});
-
-        String log_from = "Send_Note_To_Trash";
-        Result_Log_treatment(result, log_from);
-        return result > 0;
-    }
-    public Boolean Recycle_Note(long note_id, long current_date, String title, String note, Integer pin, long reminder, int reminder_type, int reminder_interval){
-
-        SQLiteDatabase DB_N = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("date",current_date);
-        contentValues.put("title",title);
-        contentValues.put("note",note);
-        contentValues.put("pin",pin);
-        contentValues.put("reminder",reminder);
-        contentValues.put("reminder_type",reminder_type);
-        contentValues.put("reminder_interval",reminder_interval);
-        //!!--categoria_id no implementada todavia
-        contentValues.put("category_id",0);
-        contentValues.put("expire_days",0);
-        contentValues.put("deleted",0);
-
-        int result = DB_N.update("Notes", contentValues, "_id = ? ", new String[]{String.valueOf(note_id)});
-
-        String log_from = "Recycle_Note";
-        Result_Log_treatment(result, log_from);
-        return result > 0;
-    }
-    public Boolean Delete_Hard_Specific_Note(long note_id){
+    public Boolean Delete_Specific_Note(long note_id){
         SQLiteDatabase DB_N = this.getWritableDatabase();
 
         int result = DB_N.delete("Notes",  "_id=? ", new String[]{String.valueOf(note_id)});

@@ -25,6 +25,43 @@ public class Date_of_Note_in_Visualizer_BackUp {
         }
         return _Date;
     }
+    public String Set_Date_of_Note_V7(String previous_date, String complete_current_time){
+        int dMy_first_index = previous_date.indexOf(" ") + 1;
+        int dMy_last_index = previous_date.lastIndexOf(" ");
+        String date_dMy = previous_date.substring(dMy_first_index,dMy_last_index);
+        String date_hm = previous_date.substring(dMy_last_index + 1);
+        Log.d("MainActivity", "Set_Date_Note : "+complete_current_time + " ::: " + date_dMy);
+
+        //--If current date is equal to date of last modification then is "Today"
+        if(complete_current_time.equals(date_dMy)){
+            String short_current_time = complete_current_time.substring(0,6);
+            _Date =("Today"+"    " + short_current_time + "   "+date_hm);
+
+            //!!----If current date is equal Yesteday then "yesterday" (Verificar si el costo es muy elevado
+        }else{
+            //--Just complete the date and hour in the format "dd MMMM yyyy    hh:mma"
+            _Date = (date_dMy+"   "+date_hm);
+        }
+        return _Date;
+    }
+    public String Set_Date_of_Note_BackUp_V7_1_12nov2025(String previous_date, String complete_current_time){
+        int dMy_last_index = previous_date.lastIndexOf(" ");
+        String date_dMy = previous_date.substring(0,dMy_last_index);
+        String date_hm = previous_date.substring(dMy_last_index + 1);
+        Log.d("MainActivity", "Set_Date_Note : "+complete_current_time + " ::: " + date_dMy);
+
+        //--If current date is equal to date of last modification then is "Today"
+        if(complete_current_time.equals(date_dMy)){
+            String short_current_time = complete_current_time.substring(0,6);
+            _Date =("Today"+"    " + short_current_time + "   "+date_hm);
+
+            //!!----If current date is equal Yesteday then "yesterday" (Verificar si el costo es muy elevado
+        }else{
+            //--Just complete the date and hour in the format "dd MMMM yyyy    hh:mma"
+            _Date = (date_dMy+"   "+date_hm);
+        }
+        return _Date;
+    }
     public String Set_Date_Note_Only_Information(String note){
         return _Information = ("Character" + ": " + note.length() + "   |   " + "Words" + ": " + Word_Counter(note)) ;
     }

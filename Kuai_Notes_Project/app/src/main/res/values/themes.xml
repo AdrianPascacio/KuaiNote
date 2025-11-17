@@ -125,8 +125,36 @@
     <!-- Style for button. -->
     <!--
      -->
+    <style name="Custom_Number_Picker"  parent="Theme.Kuai_Notes_Project">
+
+      <!-- Notification bar:
+      <item name="android:statusBarColor">#BFFBE8DC</item>
+          -->
 
 
+        <item name="colorControlNormal">@color/transparent</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/orange_hard</item>
+        <item name="android:textColorHighlight">@color/orange_hard</item>
+        <item name="android:textColorAlertDialogListItem">@color/orange_hard</item>
+        <item name="android:background">@color/white_bamboo_trans</item>
+        <item name="android:textColorHint">@color/orange_hard</item>
+        <item name="android:textColorPrimary">@color/Medium_dark_brown</item>
+        <item name="android:textStyle">bold</item>
+
+
+      <!--
+          <item name="android:windowLightStatusBar">@color/light_brown_natural_trans</item>
+          <item name="android:actionBarDivider">@color/light_brown_natural_trans</item>
+          -->
+
+
+
+
+
+
+
+   </style>
 
 
 

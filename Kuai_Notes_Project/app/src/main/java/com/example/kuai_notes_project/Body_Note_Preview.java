@@ -4,9 +4,14 @@ import java.util.ArrayList;
 
 /// 62 V4, 56 V5
 public class Body_Note_Preview {
+    private int line_jump_lc = -1;
+    private int unsupported_jump_lc = -1;
     public String Set_Body_Note_Preview(String title, String note, int max_complete_note_tolerance, int max_preview_note, int bonus_for_lack_of_title, int line_jump_limit){
         /// Original values:    int max_complete_note_tolerance = 60;    int max_preview_note = 55;  int lack_of_title_bonus = 0;    int line_jump_limit = 2;
 
+        //if(note == null){
+        //   return " ";
+        //}
         boolean title_inexistent = title.isEmpty();
         int note_size = note.length() ;
 

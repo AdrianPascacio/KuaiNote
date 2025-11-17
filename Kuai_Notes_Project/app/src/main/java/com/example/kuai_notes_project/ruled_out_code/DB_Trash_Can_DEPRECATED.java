@@ -1,37 +1,49 @@
-package com.example.kuai_notes_project;
+package com.example.kuai_notes_project.ruled_out_code;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.ArrayList;
+import com.example.kuai_notes_project.Note;
+
 import java.util.Objects;
 
-public class DB_Trash_Can extends SQLiteOpenHelper {
-    public DB_Trash_Can(@Nullable Context context) {
+public class DB_Trash_Can_DEPRECATED extends SQLiteOpenHelper {
+    public DB_Trash_Can_DEPRECATED(@Nullable Context context) {
         super(context, "deleted_notes.db", null, 1);
     }
 
     @Override
     public void onCreate(SQLiteDatabase DB_TC) {
-        DB_TC.execSQL("create Table Deleted_Notes(date TEXT, title TEXT, note TEXT, pin INTEGER, reminder LONG, reminder_type INTEGER, reminder_interval INTEGER, expire_days INTEGER, primary key (date))");
+        DB_TC.execSQL("create Table Deleted_Notes("+
+                "_id INTEGER PRIMARY KEY, "+
+                "date TEXT, "+
+                "title TEXT, "+
+                "note TEXT, "+
+                "pin INTEGER, "+
+                "reminder LONG, "+
+                "reminder_type INTEGER, "+
+                "reminder_interval INTEGER, "+
+                "expire_days INTEGER)"
+        );
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase DB_TC, int oldVersion, int newVersion) {
-
         DB_TC.execSQL("drop Table if exists Deleted_Notes");
-
     }
 
-    public Boolean Insert_Note(String date, String title,  String note, Integer pin, Long reminder , int reminder_type , int reminder_interval , Integer expire_days){
+    public Boolean Insert_Note(long note_id, String date, String title,  String note, Integer pin, long reminder , int reminder_type , int reminder_interval , Integer expire_days){
         SQLiteDatabase DB_TC = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
+        contentValues.put("_id",note_id);
         contentValues.put("date",date);
         contentValues.put("title",title);
         contentValues.put("note",note);
@@ -51,7 +63,7 @@ public class DB_Trash_Can extends SQLiteOpenHelper {
         }
     }
 
-    public Boolean Modify_Note(String previous_date, String current_date, String title, String note, Integer pin, Long reminder , int reminder_type , int reminder_interval , Integer expire_days){
+    public Boolean Modify_Note(long note_id, String previous_date, String current_date, String title, String note, Integer pin, long reminder , int reminder_type , int reminder_interval , Integer expire_days){
 
         SQLiteDatabase DB_TC = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -66,7 +78,7 @@ public class DB_Trash_Can extends SQLiteOpenHelper {
 
 
         //long result = DB_N.update("Notes", contentValues, "date=? and time=?", new String[]{date, time});
-        int result = DB_TC.update("Deleted_Notes", contentValues, "date=? ", new String[]{previous_date});
+        int result = DB_TC.update("Deleted_Notes", contentValues, "_id=? ", new String[]{String.valueOf(note_id)});
 
         if (result > 0) {
             Log.d("Inside DB_Trash_Can", "Modify_Note: Note modified");
@@ -78,7 +90,7 @@ public class DB_Trash_Can extends SQLiteOpenHelper {
             return false;
         }
     }
-    public Boolean Reduce_Note_Expire_Days(String previous_date, Integer expire_days){
+    public Boolean Reduce_Note_Expire_Days(long note_id, String previous_date, Integer expire_days){
 
         expire_days --;
 
@@ -87,17 +99,18 @@ public class DB_Trash_Can extends SQLiteOpenHelper {
         contentValues.put("expire_days",expire_days);
 
         //long result = DB_N.update("Notes", contentValues, "date=? and time=?", new String[]{date, time});
-        int result = DB_TC.update("Deleted_Notes", contentValues, "date=? ", new String[]{previous_date});
+        int result = DB_TC.update("Deleted_Notes", contentValues, "_id=? ", new String[]{String.valueOf(note_id)});
 
-        if (result > 0) {
-            Log.d("Inside DB_Trash_Can", "Modify_Note: Note modified");
-            return true;
-        } else {
-            //result == 0 no se encontro | -1 hubo un error
-            if (result == 0) Log.d("Inside DB_Trash_Can", "Modify_Note: Note NOT Found");
-            if (result == -1) Log.d("Inside DB_Trash_Can", "Modify_Note: Error");
-            return false;
-        }
+        Result_Log_treatment(result, "Reduce_Note_Expire_Days");
+        return result > 0;
+    }
+    public long Get_Last_RowId(){
+        //!!--lo ideal seria usar el nativo .insert para recuperar este variable long
+        SQLiteDatabase DB_TC = this.getWritableDatabase();
+        SQLiteStatement statement = DB_TC.compileStatement("SELECT LAST_INSERT_ROWID();");
+        long lastId = statement.simpleQueryForLong();
+        statement.close();
+        return lastId;
     }
     public Cursor get_All_Notes(){
         SQLiteDatabase DB_TC = this.getReadableDatabase();
@@ -113,7 +126,8 @@ public class DB_Trash_Can extends SQLiteOpenHelper {
                 return New_Position;
             }else{
                 while(cursor.moveToNext()){
-                    if(Objects.equals(cursor.getString(0), date)){
+                    int date_index = cursor.getColumnIndex("date");
+                    if(Objects.equals(cursor.getString(date_index), date)){
                         Log.d("Read cursor_Notes", "Cursor Pin_Date : Position: " + cursor.getPosition());
                         return cursor.getPosition();
                     }
@@ -123,15 +137,16 @@ public class DB_Trash_Can extends SQLiteOpenHelper {
 
         return New_Position;
     }
-    public Note getASpecificNote(String date){
+    public Note getASpecificNote(long note_id){
         Note note = new Note();
         SQLiteDatabase DB_N = this.getReadableDatabase();
-        try (Cursor cursor = DB_N.rawQuery("select * from Deleted_Notes where date = ?", new String[] {date}) ){
+        try (Cursor cursor = DB_N.rawQuery("select * from Deleted_Notes where _id = ?", new String[] {String.valueOf(note_id)}) ){
             if(cursor.getCount()==0){
                 Log.d("Read cursor_Deleted_Notes", "Cursor_Deleted_Notes : readcycleplanrecord: No Entry Does not exist");
             }else{
                 if (cursor.moveToFirst()) {
-                    note.setDate(cursor.getString(cursor.getColumnIndexOrThrow("date")));
+                    note.setNote_id(cursor.getLong(cursor.getColumnIndexOrThrow("_id")));
+                    note.setDate(cursor.getLong(cursor.getColumnIndexOrThrow("date")));
                     note.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
                     note.setNote(cursor.getString(cursor.getColumnIndexOrThrow("note")));
                     note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin")));
@@ -143,10 +158,10 @@ public class DB_Trash_Can extends SQLiteOpenHelper {
         }
         return note;
     }
-    public int get_expire_Day(String dateOfNote) {
+    public int get_expire_Day(long note_id) {
         int expire_day = 0;
         SQLiteDatabase DB_N = this.getReadableDatabase();
-        try (Cursor cursor = DB_N.rawQuery("select * from Deleted_Notes where date = ?", new String[] {dateOfNote}) ){
+        try (Cursor cursor = DB_N.rawQuery("select * from Deleted_Notes where _id = ?", new String[] {String.valueOf(note_id)}) ){
             if(cursor.getCount()==0){
                 Log.d("Read cursor_Deleted_Notes", "Cursor_Deleted_Notes : readcycleplanrecord: No Entry Does not exist");
             }else{
@@ -157,40 +172,36 @@ public class DB_Trash_Can extends SQLiteOpenHelper {
         }
         return expire_day;
     }
-    public Boolean Modify_Pin_Status(String previous_date,  Integer pin){
+    public Boolean Modify_Pin_Status(long note_id,  Integer pin){
 
         SQLiteDatabase DB_TC = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("pin",pin);
 
-        int result = DB_TC.update("Deleted_Notes", contentValues, "date=? ", new String[]{previous_date});
+        int result = DB_TC.update("Deleted_Notes", contentValues, "_id=? ", new String[]{String.valueOf(note_id)});
 
-        if (result > 0) {
-            Log.d("Inside DB_Trash_Can", "Modify_Pin_Status: Note modified");
-            return true;
-        } else {
-            //result == 0 no se encontro | -1 hubo un error
-            if (result == 0) Log.d("Inside DB_Trash_Can", "Modify_Pin_Status: Note NOT Found");
-            if (result == -1) Log.d("Inside DB_Trash_Can", "Modify_Pin_Status: Error");
-            return false;
-        }
+        Result_Log_treatment(result, "Modify_Pin_Status");
+        return result > 0;
     }
 
     //Get Array of Notes:
 
-    public Boolean Delete_Specific_Note(String date){
+    public Boolean Delete_Specific_Note(long note_id){
         SQLiteDatabase DB_TC = this.getWritableDatabase();
 
-        int result = DB_TC.delete("Deleted_Notes",  "date=? ", new String[]{date});
+        int result = DB_TC.delete("Deleted_Notes",  "_id=? ", new String[]{String.valueOf(note_id)});
 
+        Result_Log_treatment(result, "Delete_Note");
+        return result > 0;
+    }
+    @NonNull
+    private static void Result_Log_treatment(int result, String from) {
         if (result > 0) {
-            Log.d("Inside DB_Trash_Can", "Delete_Note: Note Deleted");
-            return true;
+            Log.d("Inside DB_Trash_Can", from + ": Note Deleted");
         } else {
             //result == 0 no se encontro | -1 hubo un error
-            if (result == 0) Log.d("Inside DB_Trash_Can", "Delete_Note: NOT Found");
-            if (result == -1) Log.d("Inside DB_Trash_Can", "Delete_Note: Error");
-            return false;
+            if (result == 0) Log.d( "Inside DB_Trash_Can", from + ": NOT Found");
+            if (result == -1) Log.d("Inside DB_Trash_Can", from + ": Error");
         }
     }
 

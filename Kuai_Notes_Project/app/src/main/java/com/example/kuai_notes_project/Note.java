@@ -1,17 +1,21 @@
 package com.example.kuai_notes_project;
 
 public class Note {
-    String date;
+    long note_id = 0;
+    long date;
     String title;
     String note;
     int pin = 0;
-    Long reminder;
+    long reminder;
     int reminder_type = 0;
     int reminder_interval = 0;
+    String category;
+    int expire_days;
 
     public Note() {
     }
-    public Note(String date, String title, String note, int pin, Long reminder, Integer reminder_type, Integer reminder_interval) {
+    public Note(long note_id, long date, String title, String note, int pin, long reminder, Integer reminder_type, Integer reminder_interval) {
+        this.note_id = note_id;
         this.date = date;
         this.title = title;
         this.note = note;
@@ -19,13 +23,25 @@ public class Note {
         this.reminder = reminder;
         this.reminder_type = reminder_type;
         this.reminder_interval = reminder_interval;
+        //!!-categoria no implementada
+        this.category = "";
+        //!!-expire_days no implementada
+        this.expire_days = 20;
     }
     // Getters and Setters
-    public String getDate() {
+    public long getNote_id() {
+        return note_id;
+    }
+
+    public void setNote_id(long note_id) {
+        this.note_id = note_id;
+    }
+
+    public long getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(long date) {
         this.date = date;
     }
 
@@ -53,11 +69,11 @@ public class Note {
         this.pin = pin;
     }
 
-    public Long getReminder() {
+    public long getReminder() {
         return reminder;
     }
 
-    public void setReminder(Long reminder) {
+    public void setReminder(long reminder) {
         this.reminder = reminder;
     }
 
@@ -76,4 +92,20 @@ public class Note {
     public void setReminder_interval(int reminder_interval) {
         this.reminder_interval = reminder_interval;
     }
+    public int getExpire_days() {
+        return expire_days;
+    }
+
+    public void setExpire_days(int expire_days) {
+        this.expire_days = expire_days;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
 }

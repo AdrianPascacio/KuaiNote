@@ -21,21 +21,24 @@ public class Reminder_Notification {
     private static final String CHANNEL_ID = "My_App_Channel";
     public static final int NOTIFICATION_ID = 1;
     static DB_Notes DB_N;
-    public static void sendNotification(Context context, String title, String content, String bigText, String note_date, int hash_requestCode, long reversed_reminder){
+    public static void sendNotification(Context context, String title, String content, String bigText, long note_date, int hash_requestCode, long note_id){
         DB_N = new DB_Notes(context);
         Create_Notification_Channel(context);
         //!!--Agregar la nota especifica, por el momento solo lo envia al Main
 
         Intent intent = new Intent(context, MainActivity.class);
         //intent.putExtra("send_date_of_note",note_date); //Este es el putExtra que necesito
-        intent.putExtra("send_reversed_alarm",reversed_reminder); //Este es el putExtra que necesito
+        //intent.putExtra("send_reversed_alarm",reversed_reminder); //Este es el putExtra que necesito
+        intent.putExtra("send_note_id",note_id); //Este es el putExtra que necesito
         /// original segun gemini:
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         /// Modificacion de flag
         //intent.setFlags(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? Intent.FLAG_ACTIVITY_NEW_TASK : 0);
 
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(context,hash_requestCode,intent,PendingIntent.FLAG_IMMUTABLE);
+        ///PendingIntent pendingIntent = PendingIntent.getActivity(context,hash_requestCode,intent,PendingIntent.FLAG_IMMUTABLE);
+        //--- cambiado flag para update el notificacion en vez de sustituirlo
+        PendingIntent pendingIntent = PendingIntent.getActivity(context,hash_requestCode,intent,PendingIntent.FLAG_MUTABLE);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context,CHANNEL_ID)
                 .setSmallIcon(R.drawable.fire_icon_5)
@@ -82,29 +85,31 @@ public class Reminder_Notification {
         }
     }
 
-    public static void Cancel_Reminder_Modifying_Database(View itemView, long previous_reminder, String note_date  ) {
+    public static void Cancel_Reminder_Modifying_Database(View itemView, long previous_reminder, long note_id  ) {
         DB_Notes DB_N = new DB_Notes(itemView.getContext());
         if(previous_reminder > 0){
 
-            if(DB_N.Modify_Reminder_Status(note_date,0L,0,0)){
+            if(DB_N.Modify_Reminder_Status(note_id,0L,0,0)){
 
                 Cancel_Reminder_Alarm(itemView, previous_reminder);
             }
         }
     }
 
-    private static void Cancel_Reminder_Alarm(View itemView, long previous_reminder ) {
+    public static void Cancel_Reminder_Alarm(View itemView, long note_id ) {
         //int _upperReminder_Half = (int) (_note.reminder >>> 32);
         //int _lowerReminder_Half = (int) (_note.reminder);
         //int _hashreminder = upperReminder_Half ^ lowerReminder_Half;
-        int _hashreminder = (int) (( previous_reminder >>> 32 ) ^ previous_reminder ); //hash creado con XOR operator (upper ^ lower)
+        //int _hashreminder = (int) (( previous_reminder >>> 32 ) ^ previous_reminder ); //hash creado con XOR operator (upper ^ lower)
+        int note_id_As_reminderCode =  (int) (( note_id >>> 32 ) ^ note_id ); //hash creado con XOR operator (upper ^ lower)
         Intent notificationIntent = new Intent(itemView.getContext(), Notification_Receiver.class);
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
                 itemView.getContext(),
-                _hashreminder,
+                note_id_As_reminderCode,
                 notificationIntent,
-                PendingIntent.FLAG_IMMUTABLE
+                //PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_MUTABLE
         );
 
         AlarmManager alarmManager = (AlarmManager) itemView.getContext().getSystemService(Context.ALARM_SERVICE);

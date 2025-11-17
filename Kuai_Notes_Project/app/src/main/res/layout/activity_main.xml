@@ -167,10 +167,10 @@
 
     <FrameLayout
         android:id="@+id/FrameLayout_Change_Reminder_Status"
-        android:layout_width="30dp"
+        android:layout_width="26dp"
         android:layout_height="30dp"
         android:layout_marginTop="14dp"
-        android:background="@drawable/recycler_logo_icon_4"
+        android:background="@drawable/timer_icon_1"
         android:backgroundTint="@color/Neutral_gray_icon_note"
         android:clickable="true"
         android:focusable="true"

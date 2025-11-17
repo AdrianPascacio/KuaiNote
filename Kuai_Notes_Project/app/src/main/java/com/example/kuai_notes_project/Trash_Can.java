@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,8 +21,11 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.kuai_notes_project.ruled_out_code.Date_of_Note_Item_View_DEPRECATED;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
@@ -38,14 +40,14 @@ public class Trash_Can extends AppCompatActivity implements Recycler_Trash_Can_I
     ArrayList<Note> noteList;
     ArrayList<Integer> previous_selected_list;
 
-    DB_Trash_Can DB_TC;
     DB_Notes DB_N;
     Body_Note_Preview BPN;
-    Date_of_Note_Item_View DoN_IV;
+    Date_of_Note_Item_View_DEPRECATED DoN_IV;
+    Date_of_Note DoN;
 
     Adapter_Recycler_Trash_Can adapter;
 
-    String _current_time = null;
+    long start_of_today = 0;
     View fl_return, fl_back_ghost;
     TextView tv_empty_label;
     Animation Animation_empty_label;
@@ -56,44 +58,42 @@ public class Trash_Can extends AppCompatActivity implements Recycler_Trash_Can_I
     @Override
     protected void onResume(){
         super.onResume();
-        _current_time = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()).format(new Date());
-
+        getStartOfToday();
 
         SharedPreferences shared_preferences = getSharedPreferences("Day_change", Context.MODE_PRIVATE);
         String saved_day = shared_preferences.getString("today","numero");
-        //Toast.makeText(this, saved_day, Toast.LENGTH_LONG).show();
 
         //-----Comparar fechas
         //!!----- solo se compara si la fecha actual es igual a la fecha guardada para reducir en '1' los dias restantes, sin embargo,
             //!!----- es un error, ya se si no se entra en este activity no se descontara la diferencia de dias entre el guardado y el presente sino solo 1 dia
-        if(!Objects.equals(_current_time, saved_day)){
+        ///if(!Objects.equals(_current_time, saved_day)){
 
-            try (Cursor cursor = DB_TC.get_All_Notes()) {
-                if(cursor.getCount()==0){
-                    Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
-                }else{
-                    while (cursor.moveToNext()){
-                        int expire_day_index = cursor.getColumnIndexOrThrow("expire_days");
-                        int date_index = cursor.getColumnIndexOrThrow("date");
-                        String _note_saved_date = cursor.getString(date_index);
-                        if (cursor.getInt(expire_day_index) > 0) {
-                            //---Decrementar expire days
-                            DB_TC.Reduce_Note_Expire_Days(_note_saved_date, cursor.getInt(expire_day_index));
-                            Toast.makeText(this, saved_day+"\n"+_current_time+" : "+cursor.getInt(expire_day_index), Toast.LENGTH_LONG).show();
-                        } else {
-                            //---Delete if is less than "1"
-                            DB_TC.Delete_Specific_Note(_note_saved_date);
-                        }
-                    }
-                }
-            }
+        ///    try (Cursor cursor = DB_TC.get_All_Notes()) {
+        ///        if(cursor.getCount()==0){
+        ///            Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
+        ///        }else{
+        ///            while (cursor.moveToNext()){
+        ///                int expire_day_index = cursor.getColumnIndexOrThrow("expire_days");
+        ///                int date_index = cursor.getColumnIndexOrThrow("date");
+        ///                String _note_saved_date = cursor.getString(date_index);
+        ///                if (cursor.getInt(expire_day_index) > 0) {
+        ///                    //---Decrementar expire days
+        ///                    //DB_TC.Reduce_Note_Expire_Days(_note_saved_date, cursor.getInt(expire_day_index));
+        ///                    //!!___Optimizar Reduce_note_expireDays, esta buscandola para luego restarle un dia e incluso asi no funciona bien
+        ///                    //Toast.makeText(this, saved_day+"\n"+_current_time+" : "+cursor.getInt(expire_day_index), Toast.LENGTH_LONG).show();
+        ///                } else {
+        ///                    //---Delete if is less than "1"
+        ///                    //DB_TC.Delete_Specific_Note(_note_saved_date);
+        ///                }
+        ///            }
+        ///        }
+        ///    }
 
-            //---Actualizar la fecha
-            SharedPreferences.Editor editor = shared_preferences.edit();
-            editor.putString("today",_current_time);
-            editor.apply();
-            //Toast.makeText(this, saved_day, Toast.LENGTH_LONG).show();
-        }
+        ///    //---Actualizar la fecha
+        ///    SharedPreferences.Editor editor = shared_preferences.edit();
+        ///    editor.putString("today",_current_time);
+        ///    editor.apply();
+        ///}
 
         recyclerView = findViewById(R.id.Recycler_Trash_Can);
         adapter = new Adapter_Recycler_Trash_Can(this, dateEdited_list,selected_list,noteList,unselected_list,this);
@@ -121,11 +121,11 @@ public class Trash_Can extends AppCompatActivity implements Recycler_Trash_Can_I
         getWindow().setStatusBarColor(getResources().getColor(R.color.light_brown_natural));
         getWindow().setNavigationBarColor(getResources().getColor(R.color.light_brown_natural_trans));
 
-        DB_TC = new DB_Trash_Can(this);
         DB_N = new DB_Notes(this);
 
         BPN = new Body_Note_Preview();
-        DoN_IV = new Date_of_Note_Item_View();
+        DoN_IV = new Date_of_Note_Item_View_DEPRECATED();
+        DoN = new Date_of_Note();
 
 
         dateEdited_list = new ArrayList<>();
@@ -158,15 +158,36 @@ public class Trash_Can extends AppCompatActivity implements Recycler_Trash_Can_I
     }
 
     private void Update_Recycler_View(){
-        try (Cursor cursor_Notes = DB_TC.get_All_Notes()) {
+        try (Cursor cursor_Notes = DB_N.get_All_Notes_Of_Trash()) {
             if(cursor_Notes.getCount()==0){
                 Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
             }else{
+                int id_indx = cursor_Notes.getColumnIndex("_id");
+                int date_indx = cursor_Notes.getColumnIndex("date");
+                int title_indx = cursor_Notes.getColumnIndex("title");
+                int note_indx = cursor_Notes.getColumnIndex("note");
+                int pin_indx = cursor_Notes.getColumnIndex("pin");
+                int reminder_indx = cursor_Notes.getColumnIndex("reminder");
+                int reminder_type_indx = cursor_Notes.getColumnIndex("reminder_type");
+                int reminder_interval_indx = cursor_Notes.getColumnIndex("reminder_interval");
                 while (cursor_Notes.moveToNext()){
-                    //!!---reminder
-                    Note note = new Note(cursor_Notes.getString(0),cursor_Notes.getString(1),BPN.Set_Body_Note_Preview(cursor_Notes.getString(1),cursor_Notes.getString(2),115,100,0,5),cursor_Notes.getInt(3),0L,0,0);
-                    dateEdited_list.add(DoN_IV.Set_Date_of_Note(note.date,_current_time));
-                    noteOriginal_list.add(cursor_Notes.getString(2));
+                    Note note = new Note(cursor_Notes.getLong(id_indx),
+                            cursor_Notes.getLong(date_indx),
+                            cursor_Notes.getString(title_indx),
+                            BPN.Set_Body_Note_Preview(cursor_Notes.getString(title_indx),
+                                    cursor_Notes.getString(note_indx),
+                                    115,
+                                    100,
+                                    0,
+                                    5),
+                            cursor_Notes.getInt(pin_indx),
+                            cursor_Notes.getLong(reminder_indx),
+                            cursor_Notes.getInt(reminder_type_indx),
+                            cursor_Notes.getInt(reminder_interval_indx));
+                    //!!---falta una lista para el expire day
+                    Toast.makeText(this, "date of note: "+cursor_Notes.getString(date_indx), Toast.LENGTH_SHORT).show();
+                    dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(note.date,start_of_today));
+                    noteOriginal_list.add(cursor_Notes.getString(note_indx));
                     selected_list.add(false);
                     noteList.add(note);
                     unselected_list.add(false);
@@ -176,10 +197,18 @@ public class Trash_Can extends AppCompatActivity implements Recycler_Trash_Can_I
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
+    private void  getStartOfToday() {
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+        start_of_today = today.getTimeInMillis();
+    }
 
 
     private void Clear_Lists(){
-        if(noteOriginal_list.isEmpty()){
+        if(noteOriginal_list.isEmpty()&&selected_list.isEmpty()){
             return;
         }
         dateEdited_list.clear();
@@ -200,6 +229,7 @@ public class Trash_Can extends AppCompatActivity implements Recycler_Trash_Can_I
         Note _note = noteList.get(position);
         Intent goTo = new Intent(this, Wasted_Note_Visualizer.class);
         goTo.putExtra("send_date_of_note",_note.date);
+        goTo.putExtra("send_note_id",_note.note_id);
         startActivity(goTo);
         overridePendingTransition(R.anim.slide_left_in,R.anim.slide_left_out);
     }
@@ -265,7 +295,7 @@ public class Trash_Can extends AppCompatActivity implements Recycler_Trash_Can_I
     public void RemoveItem(int position) {
         Note _note = noteList.get(position);
         //----Remove Note from Data Base:
-        if(DB_TC.Delete_Specific_Note(_note.date)) {
+        if(DB_N.Delete_Hard_Specific_Note(_note.note_id)) {
             //----Remove Note from Recycler View
             dateEdited_list.remove(position);
             noteOriginal_list.remove(position);
@@ -318,7 +348,7 @@ public class Trash_Can extends AppCompatActivity implements Recycler_Trash_Can_I
         int _pin = _note.getPin() ^ 1;
 
         //----Database update with new pin status value:
-        if(DB_TC.Modify_Pin_Status(_note.date,_pin)){
+        if(DB_N.Modify_Pin_Status(_note.note_id,_pin)){
             //----RecyclerView pin status update:
             RecyclerView_Pin_Update(position);
         }else{
@@ -328,31 +358,27 @@ public class Trash_Can extends AppCompatActivity implements Recycler_Trash_Can_I
     @Override
     public void RecycleItem(int position) {
         Note _note = noteList.get(position);
-        //----Remove Note from Data Base:
-        //!!-- set_reminder
-        if(DB_N.Insert_Note(_note.date,_note.title,noteOriginal_list.get(position),_note.pin,0L,0,0)){
-            if(DB_TC.Delete_Specific_Note(_note.date)) {
-                //----Remove Note from Recycler View
-                dateEdited_list.remove(position);
-                noteOriginal_list.remove(position);
-                noteList.remove(position);
-                selected_list.remove(position);
-                adapter.notifyItemRemoved(position);
+        if(DB_N.Recycle_Note(_note.note_id,_note.date,_note.title,noteOriginal_list.get(position),_note.pin,0,0,0)){
+            //----Remove Note from Recycler View
+            dateEdited_list.remove(position);
+            noteOriginal_list.remove(position);
+            noteList.remove(position);
+            selected_list.remove(position);
+            adapter.notifyItemRemoved(position);
 
-                if(previous_selected_list.size() > 1){
-                    unselected_list.set(previous_selected_list.get(1),false);
-                }
-                previous_selected_list.clear();
+            if(previous_selected_list.size() > 1){
+                unselected_list.set(previous_selected_list.get(1),false);
+            }
+            previous_selected_list.clear();
 
-                unselected_list.remove(position);
+            unselected_list.remove(position);
 
-                //Previous selection must be equal to -1
-                prev_selectedPosition = -1;
+            //Previous selection must be equal to -1
+            prev_selectedPosition = -1;
 
-                //----- verify if is empty:
-                if (noteList.isEmpty()){
-                    Show_Empty_Label();
-                }
+            //----- verify if is empty:
+            if (noteList.isEmpty()){
+                Show_Empty_Label();
             }
 
         }
@@ -383,7 +409,7 @@ public class Trash_Can extends AppCompatActivity implements Recycler_Trash_Can_I
         unselected_list.remove(position);
         noteList.remove(position);
 
-        int current_pinned_notes = DB_TC.get_Specific_Note_Sorted_by_Pin_and_Date(_note.date);
+        int current_pinned_notes = DB_N.get_Specific_Note_Sorted_by_Pin_and_Date_In_Trash(_note.date);
         prev_selectedPosition = current_pinned_notes;
 
         dateEdited_list.add(current_pinned_notes,_date);
