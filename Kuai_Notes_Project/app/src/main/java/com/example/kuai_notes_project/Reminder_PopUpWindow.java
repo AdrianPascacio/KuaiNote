@@ -1,33 +1,20 @@
 package com.example.kuai_notes_project;
 
-import static android.content.Context.ALARM_SERVICE;
-
-import static androidx.core.content.ContextCompat.getSystemService;
-
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.NumberPicker;
 import android.widget.PopupWindow;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -114,34 +101,34 @@ public class Reminder_PopUpWindow{
 
         //!!--mejorar el minimo y maximo de dia, mes a~o, hora, minuto y meridiano
 
-        Month_Names.init_Days_Names();
+        Date_and_Time_Names.init_Days_Names();
         numberpicker_day.setMinValue(1);
         numberpicker_day.setMaxValue(31);
         numberpicker_day.setValue(10);
-        numberpicker_day.setDisplayedValues(Month_Names.getNameDays());
+        numberpicker_day.setDisplayedValues(Date_and_Time_Names.getNameDays());
 
 
-        Month_Names.init_Month_Names();
+        Date_and_Time_Names.init_Month_Names();
         numberpicker_month.setMinValue(0);
         numberpicker_month.setMaxValue(11);
         numberpicker_month.setValue(10);
-        numberpicker_month.setDisplayedValues(Month_Names.getName());
+        numberpicker_month.setDisplayedValues(Date_and_Time_Names.getNameMonths());
 
         numberpicker_year.setMinValue(year_current);
         numberpicker_year.setMaxValue(year_current + 1 );
         numberpicker_year.setValue(year_current);
 
-        Month_Names.init_Hours_Names();
+        Date_and_Time_Names.init_Hours_Names();
         numberpicker_hour.setMinValue(0);
         numberpicker_hour.setMaxValue(12);
         numberpicker_hour.setValue(5);
-        numberpicker_hour.setDisplayedValues(Month_Names.getNameHours());
+        numberpicker_hour.setDisplayedValues(Date_and_Time_Names.getNameHours());
 
-        Month_Names.init_Minutes_Names();
+        Date_and_Time_Names.init_Minutes_Names();
         numberpicker_minute.setMinValue(0);
         numberpicker_minute.setMaxValue(59);
         numberpicker_minute.setValue(30);
-        numberpicker_minute.setDisplayedValues(Month_Names.getNameMinutes());
+        numberpicker_minute.setDisplayedValues(Date_and_Time_Names.getNameMinutes());
 
         numberpicker_meridian.setMinValue(0);
         numberpicker_meridian.setMaxValue(1);

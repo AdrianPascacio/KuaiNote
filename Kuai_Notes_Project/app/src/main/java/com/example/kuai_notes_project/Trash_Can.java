@@ -263,6 +263,7 @@ public class Trash_Can extends AppCompatActivity implements Recycler_Trash_Can_I
     }
 
     private void Set_Unselected_List(int position) {
+        //!!--cual es la forma mas eficiente de hacer una cola?
         previous_selected_list.add(0, position);
 
         if(previous_selected_list.size()==2){       //--size 2 : current and just unselected:

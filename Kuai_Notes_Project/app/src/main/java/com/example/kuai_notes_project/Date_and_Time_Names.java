@@ -2,11 +2,11 @@ package com.example.kuai_notes_project;
 
 import java.util.ArrayList;
 
-public class Month_Names {
-    private static ArrayList<Month_Names> LanguageArrayList;
+public class Date_and_Time_Names {
+    private static ArrayList<Date_and_Time_Names> LanguageArrayList;
 
 
-    private static String[] name;
+    private static String[] nameMonths;
     private static String[] nameDays;
     private static String[] nameHours;
     private static String[] nameMinutes;
@@ -17,7 +17,7 @@ public class Month_Names {
     //    this.name = name;
     //}
     public static void init_Month_Names(){
-        name = new String[]{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+        nameMonths = new String[]{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     }
     public static void init_Days_Names(){
         nameDays = new String[]{"01", "02", "03", "04", "05", "06", "07", "08", "09",
@@ -37,10 +37,10 @@ public class Month_Names {
                 "50","51", "52", "53", "54", "55", "56", "57", "58", "59"};
     }
     public static int Months_Count(){
-        return name.length;
+        return nameMonths.length;
     }
-    public static String[] getName() {
-        return name;
+    public static String[] getNameMonths() {
+        return nameMonths;
     }
     public static String[] getNameDays() {
         return nameDays;
@@ -52,8 +52,8 @@ public class Month_Names {
         return nameMinutes;
     }
 
-    public static void setName(String[] name) {
-        Month_Names.name = name;
+    public static void setNameMonths(String[] nameMonths) {
+        Date_and_Time_Names.nameMonths = nameMonths;
     }
 
 

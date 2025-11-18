@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -49,6 +50,8 @@ public class Wasted_Note_Visualizer extends AppCompatActivity implements Reminde
     private View wasted_note_global;
     private Animation AnimationDate , AnimationDateInvert, AnimationInfo, AnimationInfoInvert, AnimationPin, AnimationReminder, AnimationRecycler;
     private Animation AnimationFade , AnimationAppear;
+    int previous_note_size = -1;
+    private char last_deleted_char = '0';
 
     @Override
     protected void onPause(){
@@ -204,6 +207,8 @@ public class Wasted_Note_Visualizer extends AppCompatActivity implements Reminde
                 if(change_to_add_information){
                     tv_Info.setText(DoN.Set_Date_Note_Only_Information( et_Note.getText().toString()));
                 }
+
+                Indent_Replicator();
             }
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
@@ -220,6 +225,154 @@ public class Wasted_Note_Visualizer extends AppCompatActivity implements Reminde
                 }
             }
         });
+    }
+    private void Indent_Replicator() {
+        //!!---como se puede obtener solo una parte del text (para optimizar. solo necesito los ultimos caracteres)
+        Editable note_editable = et_Note.getText();
+        if(previous_note_size > note_editable.length()){
+            Log.d("Indent_Replicator","  menor que previo. SALIR");
+            previous_note_size = note_editable.length();
+
+            //!!--separar metodo para quitar indentado
+
+            int cursor_position = et_Note.getSelectionStart();
+            if (cursor_position <= 1){ //debe ser mayor que uno
+                Log.d("Indent_Replicator","  Cursor no es mayor que uno. SALIR");
+                return;
+            }
+
+            char c = note_editable.charAt(cursor_position - 1);
+            if (c != ' ' && c != '\t' && c != '-' && c != '*') {
+                Log.d("Indent_Replicator","  no hay indentado previo al cursor.");
+                last_deleted_char = c;
+                return;
+            }
+
+            int jump_before_cursor = note_editable.toString().lastIndexOf('\n',cursor_position - 1);
+
+            if (jump_before_cursor == -1){
+                Log.d("Indent_Replicator","  no se encuentra salto previo. SALIR");
+                last_deleted_char = c;
+                return;
+            }
+
+
+            int indent_length = 0;
+
+            Log.d("Indent_Replicator","  caracter_current:"+c+ "    caracter_previo:"+last_deleted_char);
+            if (last_deleted_char != ' ' && last_deleted_char != '\t' && last_deleted_char != '-' && last_deleted_char != '*') {
+                Log.d("Indent_Replicator","  el caracter borrado en la vez anterior no era indentado. SALIR");
+                last_deleted_char = c;
+                return ;
+            }
+            last_deleted_char = c;
+
+            for (int i = jump_before_cursor + 1; i < cursor_position ; i++){
+                c = note_editable.charAt(i);
+                //!!-- optimizar para evaluar vi~etas aparte de los espacios
+                if (c == ' ' || c == '\t' || c == '-' || c == '*') {
+                    Log.d("Indent_Replicator","  ++c:("+c+")");
+                    indent_length++;
+                }else{
+                    Log.d("Indent_Replicator","  --c:("+c+")");
+                    //--Existe texto importante antes del indentado que no debe borrarse.
+                    Log.d("Indent_Replicator","  Existe texto importante que no puede borrarse. SALIR");
+                    return;
+                }
+            }
+
+            note_editable.delete(cursor_position - indent_length, cursor_position);
+            Log.d("Indent_Replicator","  Existe indentado antes de cursor: ELIMINAR INDENTADO ");
+
+            return;
+        }
+        last_deleted_char = '0';
+
+        if(previous_note_size == note_editable.length()){
+            Log.d("Indent_Replicator","  igual a previo. SALIR");
+            previous_note_size = note_editable.length();
+            return;
+        }
+        previous_note_size = note_editable.length();
+
+        int jumpBeforeEnd = note_editable.toString().indexOf('\n',note_editable.length()-1);
+
+
+        //if(jumpBeforeEnd == -1){
+        //    Log.d("Indent_Replicator","  no existe salto previo al cursor: ");
+        //    return;
+        //}
+
+        int cursor_position = et_Note.getSelectionStart();
+        Log.d("Indent_Replicator","Jump Before End: "+jumpBeforeEnd+"   cursorPosition:"+ cursor_position+
+                "        previo_size: "+ previous_note_size + "   size: "+note_editable.length());
+        //int cursor_position = et_Note.getSelectionStart();
+
+
+        int jump_before_cursor = note_editable.toString().lastIndexOf('\n',cursor_position - 1);
+        int penultimum__newLineIndex = note_editable.toString().lastIndexOf('\n',cursor_position - 2);
+        Log.d("Indent_Replicator","  indx_salto_prev_cursor: "+jump_before_cursor+"   indx_penultimum_salto:"+ penultimum__newLineIndex);
+
+
+        if (jump_before_cursor == -1){
+            Log.d("Indent_Replicator","  no se encuentra salto previo.");
+            return;
+        }
+
+        if (jump_before_cursor != (cursor_position - 1)){
+            Log.d("Indent_Replicator","     indx_salto_prev_cursor: "+jump_before_cursor+
+                    "   cursor_position:"+ cursor_position+" cursor --:"+(cursor_position - 1));
+            Log.d("Indent_Replicator","  no existe salto previo al cursor ");
+            return;
+        }
+
+        if(penultimum__newLineIndex == jump_before_cursor - 1){
+            Log.d("Indent_Replicator","  Existen dos saltos seguidos. SALIR");
+            return;
+        }
+
+
+        //tal vez aqui ayude el tamano del texto antes de la modificacion para saber cuando se borro, sin embargo esto es muy costoso
+        Log.d("Indent_Replicator","  Existe salto justo antes de cursor: GENERAR INDENTADO ");
+
+
+
+        int indentation_start = penultimum__newLineIndex + 1;
+        StringBuilder indentation = new StringBuilder();
+
+        for (int i = indentation_start; i < cursor_position ; i++){
+            char c = note_editable.charAt(i);
+            //!!-- optimizar para evaluar vi~etas aparte de los espacios
+            if(c == ' ' || c == '\t' || c == '-'|| c == '*'){
+                indentation.append(c);
+            }else{
+                break;
+            }
+        }
+
+        Log.d("Indent_Replicator","  Indentation:(" + indentation + ")");
+
+        //!!-- verifica cual metodo es el mas eficiente para saber si esta vacio
+
+        if(indentation.length() > 0){
+            ///Editable note_editable = et_Note.getText(); // O usa la variable que ya tenías
+            ///int cursor_position = et_Note.getSelectionStart(); // Vuelves a obtener la posición actual del cursor
+
+            // 1. Insertar el indentado en la posición del cursor
+            note_editable.insert(cursor_position, indentation.toString());
+
+            // 2. Opcional: Mover el cursor al final del texto insertado
+            // Esto es lo que probablemente quieres para que el usuario pueda empezar a escribir
+            et_Note.setSelection(cursor_position + indentation.length());
+        }
+        last_deleted_char = ' ';
+
+        previous_note_size = note_editable.length();
+
+
+        //if(indentation.length() > 0){
+        //    et_Note.append(indentation.toString());
+        //}
     }
 
     private void Change_to_Recycled_View(){
