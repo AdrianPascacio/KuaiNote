@@ -11,20 +11,38 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.PopupWindow;
+import android.widget.Space;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.core.content.ContextCompat;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-public class Reminder_PopUpWindow{
+public class Reminder_PopUpWindow  {
     LayoutInflater layoutInflater;
     PopupWindow popupWindow;
     Calendar calendar = null;
     DB_Notes DB_N;
+    boolean action_took = false;
     private int position = 0;
+    private int original_reminder_type = 0;
+    private boolean repeat_alarm = false;
+    Animation Animation_setter_need_update;
+
+    public interface PopupDismissListener{//esto puede ir tambien en una clase separada
+        void onPopupClosed(int salida); // 0 nada/normal, 1 cambio realizado, 2 cancelado
+    }
+    private PopupDismissListener listener_dismiss;
+
     public interface OnValueSelectedListener{
         void OnValueSelected(int position, long alarm_Time);
     }
@@ -40,33 +58,67 @@ public class Reminder_PopUpWindow{
     public void setListener(OnValueSelectedListener listener){
         this.listener = listener;
     }
+    public void setListener_dismiss(PopupDismissListener listener){
+        this.listener_dismiss = listener;
+    }
 
+    private void Disable_Editing_NumberPicker(NumberPicker numberPicker){
+        int child_Count = numberPicker.getChildCount();
+        for (int i = 0; i < child_Count; i++){
+            View child = numberPicker.getChildAt(i);
+
+            if (child instanceof EditText){
+                child.setFocusable(false);
+                child.setFocusableInTouchMode(false);
+                child.setClickable(false);
+
+                return;
+            }
+        }
+    }
     public void show(View view_brought, Note note){
         DB_N = new DB_Notes(context);
         String note_title = note.title;
         layoutInflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
         ViewGroup container = (ViewGroup) layoutInflater.inflate(R.layout.reminder_setter,null);
+        TextView label_in_reminder,name_in_reminder ;
+        FrameLayout btn_set_reminder_alarm, btn_cancel_reminder_alarm;
+        View divider_1, divider_2,divider_3,divider_4 ;
+        NumberPicker numberpicker_day, numberpicker_month, numberpicker_year, numberpicker_hour, numberpicker_minute, numberpicker_meridian;
+        name_in_reminder = container.findViewById(R.id.Note_title_in_Reminder_Setter);
+        label_in_reminder = container.findViewById(R.id.Label_Reminder_Setter);
+        btn_set_reminder_alarm = container.findViewById(R.id.Reminder_Ok_Button);
+        btn_cancel_reminder_alarm = container.findViewById(R.id.Reminder_Cancel_Button);
+        View layout_np_container = container.findViewById(R.id.Layout_numberpicker_container);
+        Space space_date = container.findViewById(R.id.Space_date);
+        Space space_time = container.findViewById(R.id.Space_time);
+        LinearLayout layout_date = container.findViewById(R.id.layot_space_date);
+        LinearLayout layout_time = container.findViewById(R.id.layot_space_time);
+        divider_1 = container.findViewById(R.id.divider1);
+        divider_2 = container.findViewById(R.id.divider2);
+        divider_3 = container.findViewById(R.id.divider3);
+        divider_4 = container.findViewById(R.id.divider4);
+
+        Animation_setter_need_update = AnimationUtils.loadAnimation(context, R.anim.reminder_setter_btn_need_update);
 
         popupWindow = new PopupWindow(container, 800,900 , true);
         //popupWindow.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#FFFFFF")));
         if(position == -1){
             //---note Visualizer activity
+            popupWindow.setAnimationStyle(R.style.ReminderAnimationInOut_NoteVisualizer);
             popupWindow.showAtLocation(view_brought, Gravity.CENTER,00,-300);
+            name_in_reminder.setVisibility(View.GONE);
+            layout_np_container.setPadding(0,90,0,20);
+            layout_date.setPadding(0,-20,0,0);
+            layout_time.setPadding(0,-20,0,0);
 
         }else{
+            popupWindow.setAnimationStyle(R.style.ReminderAnimationInOut_ItemVisualizer);
             popupWindow.showAtLocation(view_brought, Gravity.CENTER,00,-400);
         }
 
         //!!--- utiliza update para actualizar el tama~o del pop up
         //popupWindow.update(800,1200);
-
-
-        //!!---- verificar las animaciones
-        popupWindow.setAnimationStyle(0);
-        //Go_To_Reminder_Setter();
-        TextView label_in_reminder,name_in_reminder ;
-        FrameLayout btn_set_reminder_alarm, btn_cancel_reminder_alarm;
-        NumberPicker numberpicker_day, numberpicker_month, numberpicker_year, numberpicker_hour, numberpicker_minute, numberpicker_meridian;
 
         numberpicker_year = container.findViewById(R.id.Reminder_year_number_picker);
         numberpicker_month = container.findViewById(R.id.Reminder_month_number_picker);
@@ -76,30 +128,12 @@ public class Reminder_PopUpWindow{
         numberpicker_meridian = container.findViewById(R.id.Reminder_meridian_number_picker);
 
         View itemView = container.findViewById(R.id.Reminder_relative_item_view);
-        label_in_reminder = container.findViewById(R.id.Label_Reminder_Setter);
-        name_in_reminder = container.findViewById(R.id.Note_title_in_Reminder_Setter);
         View layout_set_repeat_alarm_Ghost = container.findViewById(R.id.Layout_Repeat_Ghost);
         FrameLayout fl_set_repeat_alarm = container.findViewById(R.id.FL_Repeat_Icon);
-        btn_set_reminder_alarm = container.findViewById(R.id.Reminder_Ok_Button);
-        btn_cancel_reminder_alarm = container.findViewById(R.id.Reminder_Cancel_Button);
 
         Calendar calendar_prev =  Calendar.getInstance();
 
-        boolean repeat_alarm = false;
         int year_current = calendar_prev.get(Calendar.YEAR);
-
-        //!!-- esto es un inconveniente, si no le coloco null no se coloca el color que eleji para el desde el xml
-        //btn_cancel_reminder_alarm.setBackgroundTintList(null);
-
-        //int year = 0;
-        //int month = 0;
-        //int day = 0;
-        //int time_hour = 0;
-        //int time_minute = 0;
-        //int time_meridian = 0;
-
-
-        //!!--mejorar el minimo y maximo de dia, mes a~o, hora, minuto y meridiano
 
         Date_and_Time_Names.init_Days_Names();
         numberpicker_day.setMinValue(1);
@@ -134,13 +168,20 @@ public class Reminder_PopUpWindow{
         numberpicker_meridian.setMaxValue(1);
         numberpicker_meridian.setValue(0);
         numberpicker_meridian.setDisplayedValues(new String[]  {"AM","PM"});
+        Disable_Editing_NumberPicker(numberpicker_year);
+        Disable_Editing_NumberPicker(numberpicker_month);
+        Disable_Editing_NumberPicker(numberpicker_day);
+        Disable_Editing_NumberPicker(numberpicker_hour);
+        Disable_Editing_NumberPicker(numberpicker_minute);
+        Disable_Editing_NumberPicker(numberpicker_meridian);
 
+        original_reminder_type = note.reminder_type;
         if( note.reminder > 0){
             calendar_prev.setTimeInMillis( note.reminder);
             repeat_alarm = note.reminder_type > 0;
         }
         if(repeat_alarm == true){
-            fl_set_repeat_alarm.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#53E3A1")));
+            fl_set_repeat_alarm.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context, R.color.repeat_alarm_on)));
             fl_set_repeat_alarm.setBackgroundResource(R.drawable.repeat_normal_2);
         }
 
@@ -148,19 +189,24 @@ public class Reminder_PopUpWindow{
         numberpicker_month.setValue(calendar_prev.get(Calendar.MONTH));
         numberpicker_year.setValue(calendar_prev.get(Calendar.YEAR));
         int hour = calendar_prev.get(Calendar.HOUR_OF_DAY);
-        Log.d("Calendar_prev","hour prev:"+hour);
         if(hour > 12){
-            Log.d("Calendar_prev","es mayor:");
             numberpicker_meridian.setValue(1);
             hour -= 12;
         }
         numberpicker_hour.setValue(hour);
-        //!!--- Arreglar, esta desfasado un minuto entre lo que se muestra y el valor que se utiliza realmente
         numberpicker_minute.setValue(calendar_prev.get(Calendar.MINUTE));
-        Log.d("Calendar_prev","hour:"+calendar_prev.getTime());
-
 
         name_in_reminder.setText(   position == -1 ? "" :   note_title ); //Ternary Operator
+
+        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener(){ @Override
+        public void onDismiss(){
+            if(!action_took){
+                note.reminder_type = original_reminder_type;
+                Reminder_PopUpWindow.this.listener_dismiss.onPopupClosed(0);
+            }
+        }
+        });
+
 
         layout_set_repeat_alarm_Ghost.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -168,14 +214,23 @@ public class Reminder_PopUpWindow{
                 //!!--- habilitar cuando se oportuno la capacidad de integrar otros tipos de repeticion
                 if(note.reminder_type > 0){
                     note.reminder_type = 0;
-                    fl_set_repeat_alarm.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#C5C1B7")));
+                    fl_set_repeat_alarm.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context, R.color.repeat_alarm_off)));
                     fl_set_repeat_alarm.setBackgroundResource(R.drawable.repeat_never_2);
                 }else{
                     note.reminder_type = 1;
                     note.reminder_interval = 1; //24horas en milisegundos
-                    fl_set_repeat_alarm.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#53E3A1")));
+                    fl_set_repeat_alarm.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context, R.color.repeat_alarm_on)));
                     fl_set_repeat_alarm.setBackgroundResource(R.drawable.repeat_normal_2);
                 }
+
+                if(note.reminder_type != original_reminder_type){
+                    btn_set_reminder_alarm.startAnimation(Animation_setter_need_update);
+                }else{
+                    Toast.makeText(context, "es igual", Toast.LENGTH_SHORT).show();
+                    btn_set_reminder_alarm.clearAnimation();
+                }
+                //btn_set_reminder_alarm.setScaleX(1.1f);
+                //btn_set_reminder_alarm.setScaleY(1.1f);
 
             }
         });
@@ -220,6 +275,7 @@ public class Reminder_PopUpWindow{
                     Reminder_Notification.Cancel_Reminder_Alarm(itemView,note.note_id);
                 }
 
+
                 int _hashreminder = (int) (( note.note_id >>> 32 ) ^ note.note_id ); //hash creado con XOR operator (upper ^ lower)
 
                 //!!--- cuando tenga type and interval se debe corregir
@@ -244,10 +300,15 @@ public class Reminder_PopUpWindow{
                         );
                     }
 
+                    action_took = true;
+
                     if (listener != null) {
                         listener.OnValueSelected(position, alarm_Time); // Devolver el valor
                     }
                     popupWindow.dismiss();
+                    if (listener_dismiss != null) {
+                        listener_dismiss.onPopupClosed(1); // Devolver el valor
+                    }
                 }
             }
         });
@@ -256,10 +317,15 @@ public class Reminder_PopUpWindow{
             public void onClick(View v) {
                 Reminder_Notification.Cancel_Reminder_Modifying_Database(itemView,note.reminder,note.note_id);
 
+                action_took = true;
+
                 if (listener != null) {
                     listener.OnValueSelected(position, 0); // Devolver el valor
                 }
                 popupWindow.dismiss();
+                if (listener_dismiss != null) {
+                    listener_dismiss.onPopupClosed(2); // Devolver el valor
+                }
             }
         });
     }

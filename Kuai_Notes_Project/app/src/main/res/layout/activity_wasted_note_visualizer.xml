@@ -5,7 +5,7 @@
     android:id="@+id/wasted_note_global"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8E3C1"
+    android:background="@color/trashcan_item_visualizer_main_background"
     tools:context=".MainActivity"
     >
     <!--android:background="#FFECC4"-->
@@ -19,8 +19,8 @@
         android:paddingHorizontal="20dp"
         android:background="@android:color/transparent"
         android:hint="Title"
-        android:textColorHint="#3A3C3C3C"
-        android:textColor="#210E05"
+        android:textColorHint="@color/note_visualizer_title_hint"
+        android:textColor="@color/note_visualizer_wasted_title_text_color"
         android:textSize="30sp"
         android:textStyle="bold"
         android:textAlignment="center"
@@ -48,7 +48,7 @@
             android:lineSpacingExtra="2sp"
             android:paddingTop="10dp"
             android:paddingBottom="1dp"
-            android:textColor="#AB9C87"
+            android:textColor="@color/note_visualizer_wasted_information_text_color"
             android:textSize="13sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -65,7 +65,7 @@
             android:hint=""
             android:lineSpacingExtra="2sp"
             android:paddingBottom="15dp"
-            android:textColor="#AB9C87"
+            android:textColor="@color/note_visualizer_wasted_information_text_color"
             android:textSize="13sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -90,28 +90,30 @@
 
 
             <ScrollView
-            android:id="@+id/ScrollView_Note"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="vertical"
+                android:id="@+id/ScrollView_Note"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="vertical"
+                android:paddingBottom="10dp"
+                android:clipToPadding="false"
 
             >
 
 
-        <EditText
-            android:id="@+id/Body_Note"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingHorizontal="30dp"
-            android:background="@android:color/transparent"
-            android:gravity="top"
-            android:hint=""
-            android:lineSpacingExtra="7sp"
-            android:textColor="#686868"
-            android:textColorHint="#4E4D4D4D"
-            android:textColorHighlight="@color/green_nai_cha"
-            android:textSize="18sp"
-            />
+            <EditText
+                android:id="@+id/Body_Note"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingHorizontal="30dp"
+                android:background="@android:color/transparent"
+                android:gravity="top"
+                android:hint=""
+                android:lineSpacingExtra="7sp"
+                android:textColor="@color/note_visualizer_note_text_color"
+                android:textColorHint="@color/note_visualizer_note_hint_color"
+                android:textColorHighlight="@color/green_nai_cha"
+                android:textSize="18sp"
+                />
 
         </ScrollView>
 
@@ -153,7 +155,7 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:background="@drawable/recycler_logo_icon_4"
-        android:backgroundTint="#5CAD6D"
+        android:backgroundTint="@color/item_visualizer_icon_recycler_tint"
         android:layout_marginTop="12dp"
         android:clickable="true"
         android:focusable="true"
@@ -168,7 +170,7 @@
         android:layout_marginRight="16dp"
         android:layout_marginTop="11dp"
         android:background="@drawable/fire_icon_5"
-        android:backgroundTint="@color/red_bloody_1"
+        android:backgroundTint="@color/fire_icon"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
     <FrameLayout
@@ -231,6 +233,22 @@
         android:background="@color/transparent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/layout_dim_wastedNoteVisualizer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white_sand_light_trans"
+        android:orientation="vertical"
+        android:visibility="gone"
+
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        >
+
+    </LinearLayout>
 
 
 

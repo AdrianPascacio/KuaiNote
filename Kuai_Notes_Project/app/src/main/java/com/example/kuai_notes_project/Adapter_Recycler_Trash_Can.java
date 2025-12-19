@@ -14,6 +14,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -23,16 +24,29 @@ public class Adapter_Recycler_Trash_Can extends RecyclerView.Adapter<Adapter_Rec
     private ArrayList date_id;
     private ArrayList<Boolean> selected_id;
     private ArrayList<Note> noteList;
-    private ArrayList<Boolean> unselected_id;
 
     private final Recycler_Trash_Can_Interface recycler_trash_can_interface;
+    private boolean multi_selection_state = false;
+    private boolean is_repeated = false;
+    private int pending_deactivation = -1;
+    private int multi_first_count = 2;
 
-    public Adapter_Recycler_Trash_Can(Context context, ArrayList date_id, ArrayList<Boolean> selected_id, ArrayList noteList,ArrayList unselected_id, Recycler_Trash_Can_Interface recyclerTrashCanInterface){
+
+/// Test:
+    private int selected_in_single_mode = -1;
+
+    public void Change_multi_selection_state (boolean multi_selection_state){
+        this.multi_selection_state = multi_selection_state;
+    }
+    public void Change_is_repeated_value (boolean is_repeated){
+        this.is_repeated = is_repeated;
+    }
+
+    public Adapter_Recycler_Trash_Can(Context context, ArrayList date_id, ArrayList<Boolean> selected_id, ArrayList noteList, Recycler_Trash_Can_Interface recyclerTrashCanInterface){
         this.context = context;
         this.date_id = date_id;
         this.selected_id = selected_id;
         this.noteList = noteList;
-        this.unselected_id = unselected_id;
         this.recycler_trash_can_interface =recyclerTrashCanInterface ;
     }
 
@@ -51,57 +65,100 @@ public class Adapter_Recycler_Trash_Can extends RecyclerView.Adapter<Adapter_Rec
         Animation Animation_Pin_Gray_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.recycler_appear_trashcan_invert);
         Animation Animation_TrashCan_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.fire_appear_trashcan);
         Animation Animation_TrashCan_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.fire_appear_trashcan_invert);
+        Animation Animation_Extend = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.extend_item);
+        Animation Animation_Extend_Invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.extend_item_invert);
 
         //------Title Visibility depending on emptiness:
         if((!note.title.isEmpty())){
             holder.title_id.setVisibility(View.VISIBLE);
             holder.title_id.setText(note.title);
-        }else{
+        }else {
             holder.title_id.setVisibility(View.GONE);
         }
 
+        Log.d("Adapter","pending_deactivation: "+pending_deactivation + "   position: "+position);
+
         holder.date_id.setText(String.valueOf(date_id.get(position)));
-        holder.note_id.setText(note.note);
+        holder.note_preview_id.setText(note.note);
 
         //------Visibility depending if it is Selected:
         if(selected_id.get(position)==true){
-            holder.note_id.setPadding(0,0,0,14);
-            holder.date_id.setTextColor(Color.parseColor("#717171"));
-            holder.note_id.setTextColor(Color.parseColor("#616161"));
-            holder.title_id.setTextColor(Color.parseColor("#454545"));
+            holder.note_preview_id.setMaxLines(5);
+            holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_background_trashcan_selected)));
 
+            holder.note_preview_id.setPadding(0,0,0,14);
+            //holder.fl_item.startAnimation(Animation_Extend);
+            holder.date_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_date_selected));
+            holder.note_preview_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_note_preview_selected));
+            holder.title_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_title_selected));
 
-            //Button Layout Visibility:
-            holder.fl_pin.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#5CAD6D")));
-            holder.fl_pin.startAnimation(Animation_Pin_Gray_Appear);
-            holder.fl_delete.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#A12015")));
-            holder.fl_delete.setAnimation(Animation_TrashCan_Appear);
-            holder.layout_btn_options.setVisibility(View.VISIBLE);
-            holder.layout_btn_options_ghost.setVisibility(View.VISIBLE);
+            if(multi_selection_state){
+                if(multi_first_count > 0) {
+                    Unselecting_View(holder, Animation_Pin_Gray_Appear_invert, Animation_TrashCan_Appear_invert);
+                    multi_first_count--;
+                }
+                holder.layout_btn_options.setVisibility(View.GONE);
 
-            holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#84FDF1E8")));
+            }else{
+                Selecting_View(holder, Animation_Pin_Gray_Appear, Animation_TrashCan_Appear);
+            }
 
         }else{
-            holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#008F8F8F")));
+            holder.note_preview_id.setMaxLines(3);
+            Not_Selected_View(holder,Animation_Extend_Invert);
 
-            //Button Layout Visibility:
-            holder.layout_btn_options.setVisibility(View.GONE);
-            holder.layout_btn_options_ghost.setVisibility(View.GONE);
-
-            holder.note_id.setPadding(0,0,0,0);
-            holder.date_id.setTextColor(Color.parseColor("#787777"));
-            holder.note_id.setTextColor(Color.parseColor("#686868"));
-            holder.title_id.setTextColor(Color.parseColor("#616161"));
-
-            if(unselected_id.get(position)==true){
-                holder.layout_btn_options.setVisibility(View.VISIBLE);
-
-                holder.fl_pin.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#686868")));
-                holder.fl_delete.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#686868")));
-                holder.fl_pin.startAnimation(Animation_Pin_Gray_Appear_invert);
-                holder.fl_delete.setAnimation(Animation_TrashCan_Appear_invert);
+            if(is_repeated){
+                Unselecting_View(holder, Animation_Pin_Gray_Appear_invert, Animation_TrashCan_Appear_invert);
+                is_repeated = false;
+                pending_deactivation = position;
+                Log.d("Adapter","       Setting- pending_deactivation: "+pending_deactivation + "   position: "+position);
             }
         }
+
+        if (!multi_selection_state){
+            multi_first_count = 2;
+        }
+
+    }
+    private static void Selecting_View(@NonNull MyViewHolder holder, Animation Animation_Pin_Gray_Appear, Animation Animation_TrashCan_Appear) {
+        //Button Layout Visibility:
+        holder.layout_btn_options.setVisibility(View.VISIBLE);
+        holder.layout_btn_options_ghost.setVisibility(View.VISIBLE);
+
+        holder.fl_pin.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_icon_recycler_tint)));
+        holder.fl_delete.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.fire_icon)));
+        holder.fl_pin.startAnimation(Animation_Pin_Gray_Appear);
+        holder.fl_delete.startAnimation(Animation_TrashCan_Appear);
+    }
+
+    private static void Not_Selected_View(@NonNull MyViewHolder holder, Animation Animation_Extend_Invert) {
+        holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_background_trashcan_notselected)));
+
+        //Button Layout Visibility:
+        holder.layout_btn_options.setVisibility(View.GONE);
+        holder.layout_btn_options_ghost.setVisibility(View.GONE);
+
+        holder.note_preview_id.setPadding(0,0,0,0);
+        holder.date_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_date_notselected));
+        holder.note_preview_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_note_preview_notselected));
+        holder.title_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_title_notselected));
+    }
+
+    private static void Unselecting_View(@NonNull MyViewHolder holder, Animation Animation_Pin_Gray_Appear_invert, Animation Animation_TrashCan_Appear_invert) {
+        holder.layout_btn_options.setVisibility(View.GONE);
+
+        //holder.fl_item.startAnimation(Animation_Extend_Invert);
+        holder.fl_pin.clearAnimation();
+        holder.fl_delete.clearAnimation();
+
+
+        //Original:
+        ///holder.layout_btn_options.setVisibility(View.VISIBLE);
+
+        ///holder.fl_pin.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#686868")));
+        ///holder.fl_delete.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#686868")));
+        ///holder.fl_pin.startAnimation(Animation_Pin_Gray_Appear_invert);
+        ///holder.fl_delete.startAnimation(Animation_TrashCan_Appear_invert);
     }
 
     @Override
@@ -110,17 +167,18 @@ public class Adapter_Recycler_Trash_Can extends RecyclerView.Adapter<Adapter_Rec
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        TextView date_id, title_id, note_id;
+        TextView date_id, title_id, note_preview_id;
         View layout_btn_options, layout_btn_options_ghost, layout_global_item;
         FrameLayout fl_delete, fl_pin , fl_delete_ghost, fl_pin_ghost , framelayout_pin_icon;
         FrameLayout fl_item;
+        View layout_space;
 
 
         public MyViewHolder(@NonNull View itemView, Recycler_Trash_Can_Interface recyclerTrashCanInterface){
             super(itemView);
             date_id = itemView.findViewById(R.id.Text_Note_Date);
             title_id = itemView.findViewById(R.id.Text_Note_Title);
-            note_id = itemView.findViewById(R.id.Text_Note_Preview);
+            note_preview_id = itemView.findViewById(R.id.Text_Note_Preview);
             layout_btn_options = itemView.findViewById(R.id.Layout_Item_Options);
             layout_btn_options_ghost = itemView.findViewById(R.id.Layout_Item_Options_Ghost);
             layout_global_item = itemView.findViewById(R.id.Layout_Global_Item);
@@ -130,6 +188,7 @@ public class Adapter_Recycler_Trash_Can extends RecyclerView.Adapter<Adapter_Rec
             fl_pin_ghost = itemView.findViewById(R.id.Fl_Item_Pin_Ghost);
             framelayout_pin_icon = itemView.findViewById(R.id.FrameLayout_Pin_Icon);
             fl_item = itemView.findViewById((R.id.Layout_Item));
+            layout_space = itemView.findViewById(R.id.Space_T_I);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -139,7 +198,7 @@ public class Adapter_Recycler_Trash_Can extends RecyclerView.Adapter<Adapter_Rec
                         int pos = getAbsoluteAdapterPosition();
 
                         if (pos != RecyclerView.NO_POSITION){
-                            recyclerTrashCanInterface.onItemClick(pos);
+                            recyclerTrashCanInterface.onItemClick(pos, v);
                         }
                     }
                 }
@@ -149,7 +208,7 @@ public class Adapter_Recycler_Trash_Can extends RecyclerView.Adapter<Adapter_Rec
                     if (recyclerTrashCanInterface != null){
                         int pos = getAbsoluteAdapterPosition();
                         if (pos != RecyclerView.NO_POSITION){
-                            recyclerTrashCanInterface.onItemHold(pos);
+                            recyclerTrashCanInterface.onItemHold(pos, v);
                             return true;
                         }
                     }

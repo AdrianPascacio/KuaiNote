@@ -5,6 +5,31 @@ import java.util.Objects;
 public class Memo_Board_BackUp {
 
 
+    //@Override
+    public void onItemHold(int position) {
+
+    //    if(position == prev_selectedPosition){
+    //        selected_list.set(position,!selected_list.get(position));// invert value
+    //    }else{
+    //        //--Si previo esta activado entonces desactivar
+    //        if(prev_selectedPosition != -1){
+    //            boolean previousIsSelected = selected_list.get(prev_selectedPosition);
+    //            if(previousIsSelected){
+    //                selected_list.set(prev_selectedPosition,false);
+    //                adapter.notifyItemChanged(prev_selectedPosition);
+    //            }
+    //        }
+    //        selected_list.set(position,true);
+    //    }
+
+    //    adapter.notifyItemChanged(position);
+
+    //    Set_Unselected_List(position);
+
+    //    postprev_selectedPosition = prev_selectedPosition;
+    //    prev_selectedPosition = position;
+
+    }
     private void Set_Unselected_List_V1_BackUp(int position) {
         //!!--- if the selected item is selected again, if you select another one, the first selected item get changed with no need
         //previous_selected_list.add(0, position);

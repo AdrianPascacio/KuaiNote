@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Base application theme. original
     <style name="Base.Theme.Kuai_Notes_Project" parent="Theme.Material3.DayNight.NoActionBar">
     -->
@@ -11,7 +11,7 @@
     -->
 
     <!-- Primary brand color. -->
-    <item name="colorPrimary">#9E9E9E</item>
+    <item name="colorPrimary">@color/color_primary</item>
         <!--
     <item name="colorPrimaryDark">@color/green_dark_1</item>
         <item name="colorAccent">#F2E68D</item>
@@ -131,9 +131,8 @@
       <item name="android:statusBarColor">#BFFBE8DC</item>
           -->
 
-
         <item name="colorControlNormal">@color/transparent</item>
-        <item name="android:textSize">20sp</item>
+        <item name="android:textSize">20dp</item>
         <item name="android:textColor">@color/orange_hard</item>
         <item name="android:textColorHighlight">@color/orange_hard</item>
         <item name="android:textColorAlertDialogListItem">@color/orange_hard</item>
@@ -146,17 +145,35 @@
       <!--
           <item name="android:windowLightStatusBar">@color/light_brown_natural_trans</item>
           <item name="android:actionBarDivider">@color/light_brown_natural_trans</item>
+
+        <item name="android:focusable">false</item>
+        <item name="android:longClickable">false</item>
+
+        <item name="android:clickable">false</item>
+        <item name="android:editable">false</item>
+        <item name="android:focusableInTouchMode">false</item>
+        <item name="android:cursorVisible">false</item>
           -->
-
-
-
-
-
-
 
    </style>
 
 
+
+
+    <style name="ReminderAnimationInOut_NoteVisualizer">
+        <item name="android:windowEnterAnimation">@anim/reminder_popup_appear_note_visualizer</item>
+        <item name="android:windowExitAnimation">@anim/reminder_popup_disappear_note_visualizer</item>
+    </style>
+
+    <style name="ReminderAnimationInOut_ItemVisualizer">
+        <item name="android:windowEnterAnimation">@anim/reminder_popup_appear_note_visualizer</item>
+        <item name="android:windowExitAnimation">@anim/reminder_popup_disappear_note_visualizer</item>
+    </style>
+
+    <style name="SelectionMenuAnimationInOut_ItemVisualizer">
+        <item name="android:windowEnterAnimation">@anim/reminder_popup_appear_item_visualizer</item>
+        <item name="android:windowExitAnimation">@anim/reminder_popup_disappear_item_visualizer</item>
+    </style>
 
 
 

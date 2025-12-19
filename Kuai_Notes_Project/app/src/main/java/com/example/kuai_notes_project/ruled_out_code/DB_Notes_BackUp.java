@@ -182,7 +182,7 @@ public class DB_Notes_BackUp extends SQLiteOpenHelper {
                         note.setDate(cursor.getLong(cursor.getColumnIndexOrThrow("date")));
                         note.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
                         note.setNote(cursor.getString(cursor.getColumnIndexOrThrow("note")));
-                        note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin")));
+                        note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin"))==1);
                         note.setReminder(cursor.getLong(cursor.getColumnIndexOrThrow("reminder")));
                         note.setReminder_type(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_type")));
                         note.setReminder_interval(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_interval")));
@@ -243,7 +243,7 @@ public class DB_Notes_BackUp extends SQLiteOpenHelper {
                         note.setDate(cursor.getLong(cursor.getColumnIndexOrThrow("date")));
                         note.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
                         note.setNote(cursor.getString(cursor.getColumnIndexOrThrow("note")));
-                        note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin")));
+                        note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin"))==1);
                         note.setReminder(cursor.getLong(cursor.getColumnIndexOrThrow("reminder")));
                         note.setReminder_type(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_type")));
                         note.setReminder_interval(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_interval")));
@@ -265,7 +265,7 @@ public class DB_Notes_BackUp extends SQLiteOpenHelper {
                     note.setDate(cursor.getLong(cursor.getColumnIndexOrThrow("date")));
                     note.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
                     note.setNote(cursor.getString(cursor.getColumnIndexOrThrow("note")));
-                    note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin")));
+                    note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin"))==1);
                     note.setReminder(cursor.getLong(cursor.getColumnIndexOrThrow("reminder")));
                     note.setReminder_type(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_type")));
                     note.setReminder_interval(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_interval")));

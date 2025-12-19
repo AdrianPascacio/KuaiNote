@@ -5,6 +5,7 @@
         android:startColor="@color/transparent"
         android:centerColor="@color/white_bamboo_trans"
         android:endColor="@color/transparent"
+        android:gradientRadius="100%"
         android:angle="270"
         android:centerY="50%"
         />

@@ -12,6 +12,18 @@
 
     >
     <LinearLayout
+        android:id="@+id/Space_T_I"
+        android:layout_width="20dp"
+        android:layout_height="match_parent"
+        >
+        <Space
+            android:layout_width="20dp"
+            android:layout_height="56dp"
+            >
+        </Space>
+    </LinearLayout>
+
+    <LinearLayout
         xmlns:app="http://schemas.android.com/apk/res-auto"
         app:cardCornerRadius="25dp"
         android:id="@+id/Layout_Global_Item"
@@ -39,7 +51,7 @@
             android:layout_height="wrap_content"
             android:text="Title"
             android:textSize="24sp"
-            android:textColor="#616161"
+            android:textColor="@color/item_visualizer_title_notselected"
             android:textStyle="normal" />
         <LinearLayout
             android:id="@+id/Layout_Body_Note"
@@ -61,7 +73,7 @@
                 android:layout_weight="0"
                 android:text="12 de Agosto 2025\n12:00PM"
                 android:textAlignment="viewStart"
-                android:textColor="#787777"
+                android:textColor="@color/item_visualizer_date_notselected"
                 android:textSize="12sp"
                 android:textStyle="normal" />
 
@@ -73,7 +85,7 @@
                 android:layout_weight="1"
                 android:lineSpacingExtra="3sp"
                 android:text="Cuerpo del mensaje, este es solo un texto de refer ..."
-                android:textColor="#686868"
+                android:textColor="@color/item_visualizer_note_preview_notselected"
                 android:textSize="14sp"
                 android:textStyle="normal"
                 />
@@ -106,13 +118,13 @@
             android:longClickable="false"
             android:focusable="false"
             android:clickable="false"
-            android:backgroundTint="#5CAD6D"
+            android:backgroundTint="@color/item_visualizer_icon_recycler_tint"
 
             />
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="13dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             />
 
@@ -126,7 +138,7 @@
             android:longClickable="false"
             android:focusable="false"
             android:clickable="false"
-            android:backgroundTint="@color/red_bloody_1"
+            android:backgroundTint="@color/fire_icon"
             />
 
     </LinearLayout>
@@ -156,7 +168,7 @@
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="12dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             />
 

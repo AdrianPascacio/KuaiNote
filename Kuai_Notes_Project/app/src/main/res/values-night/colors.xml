@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+    <color name="color_primary">#616161</color>
+
+
+    <color name="white">#FF000000</color>
+    <color name="white_softy_1">#FF080D08</color>
+    <color name="purple_200">#FF447903</color>
+    <color name="magenta_1">#FF44CE03</color>
+    <color name="purple_500">#FF9DFF11</color>
+    <color name="purple_700">#FFC8FF4C</color>
+    <color name="light_blue1">#501100</color>
+    <color name="teal_200">#FFFC253A</color>
+    <color name="teal_700">#FFFE7879</color>
+    <color name="matcha_1">#9179BE</color>
+    <color name="white_bamboo">#FF0E141E</color>
+    <color name="white_bamboo_trans">#BF0E141E</color>
+    <color name="light_brown_natural">#FF31485E</color>
+    <color name="light_brown_natural_trans">#BF31485E</color>
+    <color name="red_expensive_1">#1A9A43</color>
+    <color name="red_expensive_2">#2AAF55</color>
+    <color name="black">#FFFFFFFF</color>
+    <color name="gray">#FFBBBBBB</color>
+
+    <color name="white_sand_light">#FF050A0E</color>
+    <color name="orange_mild">#FF04769F</color>
+    <color name="orange_hard">#FF2090E6</color>
+    <color name="pink_mild">#FF27B170</color>
+    <color name="pink_mild_2">#FF45C7A0</color>
+    <color name="light_blue_x1">#FF4D2817</color>
+    <color name="light_blue_x2">#FFB0644D</color>
+    <color name="sand_light_1">#FF1F2427</color>
+    <color name="sand_mild_1">#FF3E535D</color>
+    <color name="sand_mild_2">#FF708591</color>
+    <color name="gray_light_1">#FF555451</color>
+    <color name="gray_light_2">#FF777471</color>
+    <color name="gray_light_3">#FF9A9689</color>
+    <color name="gray_dark_1">#FFBCBCBC</color>
+    <color name="gray_dark_2">#FFD6D0C9</color>
+    <color name="gray_neutral_trans">#70747474</color>
+    <color name="dark_chocolate_1">#FFD6D0C9</color>
+    <color name="blue_dark_gray">#FFDAD9BA</color>
+    <color name="green_baby_bamboo">#FF312244</color>
+    <color name="green_dark_1">#FFECC3C1</color>
+    <color name="transparent">#00707070</color>
+
+    <color name="light_green">#FF753967</color>
+    <color name="light_blue">#FF7C6437</color>
+    <color name="light_green_bright1">#FF59085E</color>
+    <color name="light_green_bright2">#FF830367</color>
+
+    <color name="yellow_focus">#FF102AFF</color>
+    <color name="light_orange_notification">#FF0A555F</color>
+    <color name="lavender_misty_heather">#FF54825B</color>
+
+    <color name="ex_red">#FF177474</color>
+    <color name="ex_yellow">#FF0C1864</color>
+    <color name="ex_green">#FF753967</color>
+    <color name="ex_light_blue">#FF63341C</color>
+
+    <color name="Item_selected_light_green">#A0100429</color>
+    <color name="Light_Status_Bar_Color">#BF0D233A</color>
+    <color name="Light_Navigation_Bar_Color">#BF041B33</color>
+    <color name="Neutral_gray_icon_note">#5B5B5B</color>
+    <color name="Medium_dark_brown_date">#667378</color>
+    <color name="Medium_Recycler_green">#B673A5</color>
+    <color name="green_battery">#983AD6</color>
+    <color name="Brown_Navigation_bar_Wasted_Note">#243D55</color>
+    <color name="white_sand_light_trans">#84020E17</color>
+
+
+    <color name="white_bamboo_trans_dark">#926B7794</color>
+    <color name="white_bamboo_trans_light">#6A050F27</color>
+
+
+    <!-- Specific Color Type::-->
+    <color name="note_visualizer_main_background">#000610</color>
+    <color name="note_visualizer_title_text_color">#CCCCCC</color>
+    <color name="note_visualizer_title_hint">#3AC3C3C3</color>
+    <color name="note_visualizer_note_text_color">#979797</color>
+    <color name="note_visualizer_note_hint_color">#4EB2B2B2</color>
+    <color name="note_visualizer_information_text_color">#5F5F5F</color>
+
+    <color name="memoboard_add_button_background">#3B8C8D8D</color>
+
+    <color name="item_visualizer_title_text_color">#9E9E9E</color>
+    <color name="item_visualizer_date_info_text_color">#878888</color>
+    <color name="item_visualizer_preview_text_color">#979797</color>
+    <color name="item_visualizer_icon_neutral_tint">#777777</color>
+
+
+    <color name="item_visualizer_title_selected">#BABABA</color>
+    <color name="item_visualizer_date_selected">#8E8E8E</color>
+    <color name="item_visualizer_note_preview_selected">#9E9E9E</color>
+
+    <color name="item_visualizer_title_notselected">#9E9E9E</color>
+    <color name="item_visualizer_date_notselected">#878888</color>
+    <color name="item_visualizer_note_preview_notselected">#979797</color>
+
+
+    <color name="item_background_selected">#AE020D27</color>
+    <color name="item_background_unselected">#00707070</color>
+
+
+    <color name="trashcan_item_visualizer_main_background">#1A0000</color>
+
+
+    <color name="item_background_trashcan_selected">#84370000</color>
+    <color name="item_background_trashcan_notselected">#00707070</color>
+
+    <color name="note_visualizer_wasted_note">#E4E6E6</color>
+    <color name="note_visualizer_wasted_title_text_color">#DEF1FA</color>
+    <color name="note_visualizer_wasted_information_text_color">#546378</color>
+
+    <color name="repeat_alarm_off">#3A3E48</color>
+
+    <color name="matcha_1_trans">#BFACBE79</color>
+    <!--    <color name="matcha_1_trans">#BF6E8641</color> Antiguo -->
+
+    <color name="item_visualizer_icon_reminder_tint">#3292C2</color>
+    <!--    <color name="item_visualizer_icon_reminder_tint">#2E91AA</color> Try1    -->
+    <!--    <color name="item_visualizer_icon_reminder_tint">#55BCD1</color> Antiguo -->
+
+
+    <color name="item_visualizer_icon_recycler_tint">#70a46e</color>
+    <!--    <color name="item_visualizer_icon_recycler_tint">#52A564</color> Try2 -->
+    <!--    <color name="item_visualizer_icon_recycler_tint">#5CAD6D</color> Antiguo -->
+
+    <color name="repeat_alarm_on">#2AD991</color>
+    <!--    <color name="repeat_alarm_on">#1CAC70</color> Try1      -->
+    <!--    <color name="repeat_alarm_on">#53E3A1</color> Antiguo   -->
+
+    a73b49
+    <color name="red_bloody_1">#A73B49</color>
+    <!--    <color name="red_bloody_1">#9C3844</color>      Try6    -->
+    <!--    <color name="red_bloody_1">#993B46</color>      Try5    -->
+    <!--    <color name="red_bloody_1">#863643</color>      Try4    -->
+    <!--    <color name="red_bloody_1">#9F2130</color>      Try3    -->
+    <!--    <color name="red_bloody_1">#AA1627</color>      Try2    -->
+    <!--    <color name="red_bloody_1">#EA6C5E</color>      Try1    -->
+    <!--    <color name="red_bloody_1">#FFA12015</color>    Antiguo -->
+
+    <color name="ex_orange">#D48349</color>
+    <!--    <color name="ex_orange">#7C380B</color>     Try1    -->
+    <!--    <color name="ex_orange">#FFF4B183</color>   Antuguo -->
+
+    d75b45
+    <color name="salmon_light">#D75B45</color>
+    <!--    <color name="salmon_light">#E93E1B</color>      Try2    -->
+    <!--    <color name="salmon_light">#6C1405</color>      Try1    -->
+    <!--    <color name="salmon_light">#FFFAA493</color>    Antiguo -->
+
+    <color name="green_nai_cha">#538421</color>
+    <!--    <color name="green_nai_cha">#aede7b</color> Antiguo -->
+
+    <color name="green_dark_cha">#89BF50</color>
+    <!--    <color name="green_dark_cha">#7baf40</color>    Antiguo -->
+
+
+
+    <color name="reminder_discard">#F49F83</color>
+    <color name="reminder_confirm">#FF8AC698</color>
+
+    <color name="main_navigation_bar">#AD0C1424</color>
+    <!--    <color name="main_navigation_bar">#AD0C1424</color>    Antiguo -->
+    <color name="Trashcan_navigation_bar">#321C18</color>
+    <color name="Trashcan_status_bar">#412936</color>
+
+
+    <color name="lavender_grey">#797DA3</color>
+    <color name="space_indigo">#24304A</color>
+    <color name="cornflower_ocean">#406F9B</color>
+    <color name="dark_coffee">#321C18</color>
+    <color name="tangerine_dream">#FDAB83</color>
+
+    <color name="Medium_dark_brown">#868186</color>
+
+    <color name="Light_medium_brown">#7C7457</color>
+
+    <color name="selection_menu_trashcan_color">#BF451515</color>
+
+    <color name="fire_icon">#FFCF5f4b</color>
+
+
+</resources>

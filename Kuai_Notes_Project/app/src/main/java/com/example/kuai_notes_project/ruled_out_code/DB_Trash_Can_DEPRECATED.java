@@ -20,6 +20,38 @@ public class DB_Trash_Can_DEPRECATED extends SQLiteOpenHelper {
         super(context, "deleted_notes.db", null, 1);
     }
 
+    //-----Comparar fechas
+    //!!----- solo se compara si la fecha actual es igual a la fecha guardada para reducir en '1' los dias restantes, sin embargo,
+    //!!----- es un error, ya se si no se entra en este activity no se descontara la diferencia de dias entre el guardado y el presente sino solo 1 dia
+    ///if(!Objects.equals(_current_time, saved_day)){
+
+    ///    try (Cursor cursor = DB_TC.get_All_Notes()) {
+    ///        if(cursor.getCount()==0){
+    ///            Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
+    ///        }else{
+    ///            while (cursor.moveToNext()){
+    ///                int expire_day_index = cursor.getColumnIndexOrThrow("expire_days");
+    ///                int date_index = cursor.getColumnIndexOrThrow("date");
+    ///                String _note_saved_date = cursor.getString(date_index);
+    ///                if (cursor.getInt(expire_day_index) > 0) {
+    ///                    //---Decrementar expire days
+    ///                    //DB_TC.Reduce_Note_Expire_Days(_note_saved_date, cursor.getInt(expire_day_index));
+    ///                    //!!___Optimizar Reduce_note_expireDays, esta buscandola para luego restarle un dia e incluso asi no funciona bien
+    ///                    //Toast.makeText(this, saved_day+"\n"+_current_time+" : "+cursor.getInt(expire_day_index), Toast.LENGTH_LONG).show();
+    ///                } else {
+    ///                    //---Delete if is less than "1"
+    ///                    //DB_TC.Delete_Specific_Note(_note_saved_date);
+    ///                }
+    ///            }
+    ///        }
+    ///    }
+
+    ///    //---Actualizar la fecha
+    ///    SharedPreferences.Editor editor = shared_preferences.edit();
+    ///    editor.putString("today",_current_time);
+    ///    editor.apply();
+    ///}
+
     @Override
     public void onCreate(SQLiteDatabase DB_TC) {
         DB_TC.execSQL("create Table Deleted_Notes("+
@@ -149,7 +181,7 @@ public class DB_Trash_Can_DEPRECATED extends SQLiteOpenHelper {
                     note.setDate(cursor.getLong(cursor.getColumnIndexOrThrow("date")));
                     note.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
                     note.setNote(cursor.getString(cursor.getColumnIndexOrThrow("note")));
-                    note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin")));
+                    note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin"))==1);
                     note.setReminder(cursor.getLong(cursor.getColumnIndexOrThrow("reminder")));
                     note.setReminder_type(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_type")));
                     note.setReminder_interval(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_interval")));

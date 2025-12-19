@@ -46,6 +46,34 @@ public class DB_Notes_BackUp2 extends SQLiteOpenHelper {
         DB_N.execSQL("drop Table if exists Notes");
     }
 
+    public Boolean Insert_Note_Deprecated_21nov2025(long current_date, String title,  String note, Integer pin, long reminder, int reminder_type, int reminder_interval){
+        SQLiteDatabase DB_N = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("date",current_date);
+        contentValues.put("title",title);
+        contentValues.put("note",note);
+        contentValues.put("pin",pin);
+        contentValues.put("reminder",reminder);
+        contentValues.put("reminder_type",reminder_type);
+        contentValues.put("reminder_interval",reminder_interval);
+        //!!--categoria_id no implementada todavia
+        contentValues.put("category_id",0);
+        //!!--expire_days no implementada todavia
+        contentValues.put("expire_days",0);
+        contentValues.put("deleted",0);
+
+        long result = DB_N.insert("Notes", null,contentValues);
+        Log.d("Inside DB_Notes","result = "+result);
+        //.insert devuelve el id de la fila insertada y "-1" si se produce algun error
+        if (result == -1){
+            Log.d("Inside DB_Notes","Insert_Note: NOT inserted");
+            return false;
+        }else{
+            Log.d("Inside DB_Notes","Insert_Note: Note Inserted Satisfactorily");
+            return true;
+        }
+    }
+
     public Boolean Insert_Note(String current_date, String title,  String note, Integer pin, long reminder, int reminder_type, int reminder_interval){
         SQLiteDatabase DB_N = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -218,7 +246,7 @@ public class DB_Notes_BackUp2 extends SQLiteOpenHelper {
                         note.setDate(cursor.getLong(cursor.getColumnIndexOrThrow("date")));
                         note.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
                         note.setNote(cursor.getString(cursor.getColumnIndexOrThrow("note")));
-                        note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin")));
+                        note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin"))==1);
                         note.setReminder(cursor.getLong(cursor.getColumnIndexOrThrow("reminder")));
                         note.setReminder_type(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_type")));
                         note.setReminder_interval(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_interval")));
@@ -241,7 +269,7 @@ public class DB_Notes_BackUp2 extends SQLiteOpenHelper {
                     note.setDate(cursor.getLong(cursor.getColumnIndexOrThrow("date")));
                     note.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
                     note.setNote(cursor.getString(cursor.getColumnIndexOrThrow("note")));
-                    note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin")));
+                    note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin"))==1);
                     note.setReminder(cursor.getLong(cursor.getColumnIndexOrThrow("reminder")));
                     note.setReminder_type(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_type")));
                     note.setReminder_interval(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_interval")));
@@ -284,13 +312,135 @@ public class DB_Notes_BackUp2 extends SQLiteOpenHelper {
 
         return New_Position;
     }
+    public boolean Note_Exist_In_Trash_Deprecated_21nov2025(long note_id){
+        //!!--Verificar si es necesesario en caso de que se cambie el pin en el wastednote y se deba ubicar la nota (parece innecesario)
 
+        SQLiteDatabase DB_N = this.getReadableDatabase();
+        boolean exist = false;
+        //--implementar un .query en lugar de un rawquery para evitar sqlinyectoins
+        try (Cursor cursor = DB_N.query("Notes",new String[] {"_id"},"_id = ? AND deleted = 1",new String[] {String.valueOf(note_id)},null,null,null,"1" )){
+            if (cursor.moveToFirst()) {
+                exist = true;
+            } else {
+                Log.d("Read cursor_Notes", "Cursor_Notes :  No Entry Does not exist");
+            }
+        }
+        return exist;
+    }
+    public long Get_Note_Reminder_Deprecated_21Nov2025(long note_id){
+        //Manera mas eficiente de consultar por una coincidencia
+        //Se detiene al encontrar solo una coincidencia con LIMIT 1
+        SQLiteDatabase DB_N = this.getReadableDatabase();
+        try (Cursor cursor = DB_N.rawQuery("select reminder from Notes where _id = ? LIMIT 1", new String[] {String.valueOf(note_id)}) ){
+            if(cursor.getCount()==0){
+                Log.d("Read cursor_Notes", "Cursor_Notes :  No Entry Does not exist");
+            }else{
+                if (cursor.moveToFirst()) {
+                    return cursor.getLong(cursor.getColumnIndexOrThrow("reminder"));
+                }
+            }
+        }
+        return 0L;
+    }
+    public Boolean Recycle_Note_DEPRECATED_20nov2025(long note_id, long current_date, String title, String note, Integer pin, long reminder, int reminder_type, int reminder_interval){
+
+        SQLiteDatabase DB_N = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("date",current_date);
+        contentValues.put("title",title);
+        contentValues.put("note",note);
+        contentValues.put("pin",pin);
+        contentValues.put("reminder",reminder);
+        contentValues.put("reminder_type",reminder_type);
+        contentValues.put("reminder_interval",reminder_interval);
+        //!!--categoria_id no implementada todavia
+        contentValues.put("category_id",0);
+        contentValues.put("expire_days",0);
+        contentValues.put("deleted",0);
+
+        int result = DB_N.update("Notes", contentValues, "_id = ? ", new String[]{String.valueOf(note_id)});
+
+        String log_from = "Recycle_Note";
+        Result_Log_treatment(result, log_from);
+        return result > 0;
+    }
+    public Note getASpecificNote_ByReminder_Deprecated_21nov2025(long reminder){//!!----Debe corregirse para utilizar el id
+        Note note = new Note();
+        SQLiteDatabase DB_N = this.getReadableDatabase();
+        try (Cursor cursor = DB_N.rawQuery("select * from Notes where reminder = ? LIMIT 2", new String[] {String.valueOf(reminder)}) ) {
+            if (cursor.getCount() == 0) {
+                Log.d("Read cursor_Notes", "Cursor_Notes :  No Entry Does not exist");
+            }else if(cursor.getCount() == 2){
+                Log.d("Read cursor_Notes", "Cursor_Notes : getASpecificNote_ByReminder : Note is duplicate");
+            }else{
+                if (cursor.moveToFirst()) {
+                    note.setNote_id(cursor.getLong(cursor.getColumnIndexOrThrow("_id")));
+                    note.setDate(cursor.getLong(cursor.getColumnIndexOrThrow("date")));
+                    note.setTitle(cursor.getString(cursor.getColumnIndexOrThrow("title")));
+                    note.setNote(cursor.getString(cursor.getColumnIndexOrThrow("note")));
+                    note.setPin(cursor.getInt(cursor.getColumnIndexOrThrow("pin"))==1);
+                    note.setReminder(cursor.getLong(cursor.getColumnIndexOrThrow("reminder")));
+                    note.setReminder_type(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_type")));
+                    note.setReminder_interval(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_interval")));
+                }
+            }
+        }
+        return note;
+    }
+    public String getASpecificNoteDate_ByReminder_Deprecated_21nov2025(long reminder){//!!----Debe corregirse para utilizar el id
+        SQLiteDatabase DB_N = this.getReadableDatabase();
+        try (Cursor cursor = DB_N.rawQuery("select * from Notes where reminder = ? LIMIT 2", new String[] {String.valueOf(reminder)}) ) {
+            if (cursor.getCount() == 0) {
+                Log.d("Read cursor_Notes", "Cursor_Notes :  No Entry Does not exist");
+            }else if(cursor.getCount() == 2){
+                Log.d("Read cursor_Notes", "Cursor_Notes : getASpecificNote_ByReminder : Note is duplicate");
+            }else{
+                if (cursor.moveToFirst()) {
+                    return cursor.getString(cursor.getColumnIndexOrThrow("date"));
+                }
+            }
+        }
+        return null;
+    }
+
+    public int get_Specific_Note_Sorted_by_Date_In_Trash_Deprecated_21nov2025(long note_id){ //se utiliza para pin, pero no se utiliza
+        int New_Position = 0;
+        SQLiteDatabase DB_N = this.getReadableDatabase(); //!! esta seleccionando el date
+        try (Cursor cursor = DB_N.rawQuery("select _id from Notes where deleted = 1 order by date DESC", null)) {
+            if(cursor.getCount()==0){
+                Log.d("Read cursor_Notes", "Cursor_Notes :  No Entry Exist");
+                return New_Position;
+            }else{
+                while(cursor.moveToNext()){
+                    if(Objects.equals(cursor.getLong(cursor.getColumnIndexOrThrow("_id")), note_id)){
+                        Log.d("Read cursor_Notes", "Cursor Pin_Date : Position: " + cursor.getPosition());
+                        return cursor.getPosition();
+                    }
+                }
+            }
+        }
+
+        return New_Position;
+    }
     public Boolean Delete_Specific_Note(long note_id){
         SQLiteDatabase DB_N = this.getWritableDatabase();
 
         int result = DB_N.delete("Notes",  "_id=? ", new String[]{String.valueOf(note_id)});
 
         String log_from = "Delete_Note";
+        Result_Log_treatment(result, log_from);
+        return result > 0;
+    }
+
+    public Boolean Delete_DB_DEPRECATED(long note_id, int expire_days){
+        SQLiteDatabase DB_N = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("expire_days",expire_days);
+        contentValues.put("deleted",1);
+
+        int result = DB_N.update("Notes", contentValues, "_id = ? ", new String[]{String.valueOf(note_id)});
+
+        String log_from = "Send_To_Trash_Specific_Note";
         Result_Log_treatment(result, log_from);
         return result > 0;
     }
@@ -304,5 +454,13 @@ public class DB_Notes_BackUp2 extends SQLiteOpenHelper {
             if (result == 0) Log.d("Inside DB_Notes", from + ": NOT Found");
             if (result == -1) Log.d("Inside DB_Notes", from + ": Error");
         }
+    }
+    private int Word_Counter(String text){
+        if (text == null || text.trim().isEmpty()){
+            return 0;
+        }
+        String [] words = text.trim().split("\\s+");
+
+        return words.length;
     }
 }

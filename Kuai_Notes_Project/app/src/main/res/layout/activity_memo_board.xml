@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFF9EF"
+    android:background="@color/note_visualizer_main_background"
     tools:context=".Memo_Board">
 
     <LinearLayout
@@ -15,10 +15,15 @@
         android:layout_marginTop="91dp"
         android:orientation="vertical">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/Recycler_MemoBoard"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/Recycler_MemoBoard"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="50dp"
+                android:clipToPadding="false"
+                />
+
+
 
 
     </LinearLayout>
@@ -30,7 +35,7 @@
         android:clickable="true"
         android:focusable="true"
         android:onClick="Go_To_Add_New_Note"
-        app:backgroundTint="#3B737272"
+        app:backgroundTint="@color/memoboard_add_button_background"
         app:fabCustomSize="100dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -57,6 +62,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!--
     <Button
         android:id="@+id/button_aux"
         android:layout_width="10dp"
@@ -67,10 +73,26 @@
         android:backgroundTintMode="multiply"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+     -->
     <!--
         android:layout_width="9dp"
         android:layout_height="36dp"
         android:background="@drawable/option_icon"
      -->
+    <LinearLayout
+        android:id="@+id/layout_dim_itemVisualizer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white_sand_light_trans"
+        android:orientation="vertical"
+        android:visibility="gone"
+
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        >
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -52,10 +52,11 @@
             android:inputType="text"
             android:text="Note Title"
             android:textAlignment="center"
-            android:textSize="16dp"
+            android:textSize="16sp"
             android:textStyle="bold" />
 
         <LinearLayout
+            android:id="@+id/Layout_numberpicker_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal"
@@ -105,7 +106,7 @@
                         android:text="/"
                         android:textStyle="bold"
                         android:textColor="@color/gray_neutral_trans"
-                        android:textSize="20dp"
+                        android:textSize="20sp"
                         >
                     </TextView>
                     <NumberPicker
@@ -126,7 +127,7 @@
                         android:text="/"
                         android:textStyle="bold"
                         android:textColor="@color/gray_neutral_trans"
-                        android:textSize="20dp"
+                        android:textSize="20sp"
                         >
                     </TextView>
                     <NumberPicker
@@ -174,7 +175,7 @@
 
                     <NumberPicker
                         android:id="@+id/Reminder_hour_number_picker"
-                        android:layout_width="28dp"
+                        android:layout_width="29dp"
                         android:layout_height="150dp"
                         android:layout_weight="2"
                         android:theme="@style/Custom_Number_Picker"
@@ -189,7 +190,7 @@
                         android:text=":"
                         android:textStyle="bold"
                         android:textColor="@color/gray_neutral_trans"
-                        android:textSize="20dp"
+                        android:textSize="20sp"
                         >
                     </TextView>
                     <NumberPicker
@@ -203,7 +204,7 @@
                     </NumberPicker>
                     <NumberPicker
                         android:id="@+id/Reminder_meridian_number_picker"
-                        android:layout_width="40dp"
+                        android:layout_width="36dp"
                         android:layout_height="150dp"
                         android:layout_weight="2"
                         android:theme="@style/Custom_Number_Picker"
@@ -218,22 +219,21 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="55dp"
             android:orientation="horizontal"
-            android:layout_marginTop="15dp"
             android:layout_marginBottom="15dp"
-            android:gravity="center"
+            android:gravity="center|bottom"
             >
             <FrameLayout
                 android:id="@+id/Reminder_Ok_Button"
                 android:layout_width="36dp"
                 android:layout_height="40dp"
-                android:gravity="center"
+                android:gravity="center|bottom"
                 android:layout_below="@+id/Note_title_in_Reminder_Setter"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentEnd="true"
                 android:background="@drawable/timer_icon_1"
-                android:backgroundTint="#55BCD1"
+                android:backgroundTint="@color/item_visualizer_icon_reminder_tint"
                 />
 
             <Space
@@ -246,7 +246,7 @@
                 android:id="@+id/Reminder_Cancel_Button"
                 android:layout_width="36dp"
                 android:layout_height="40dp"
-                android:gravity="center"
+                android:gravity="center|bottom"
                 android:layout_below="@+id/Note_title_in_Reminder_Setter"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentEnd="true"
@@ -266,6 +266,7 @@
         >
 
         <LinearLayout
+            android:id="@+id/layot_space_date"
             android:layout_width="wrap_content"
             android:layout_height="300dp"
             android:layout_marginVertical="15dp"
@@ -273,6 +274,7 @@
             android:orientation="vertical"
             >
             <Space
+                android:id="@+id/Space_date"
                 android:layout_width="match_parent"
                 android:layout_height="140dp"
                 >
@@ -328,12 +330,13 @@
         </LinearLayout>
 
         <Space
-            android:layout_width="40dp"
+            android:layout_width="36dp"
             android:layout_height="10dp"
             >
         </Space>
 
         <LinearLayout
+            android:id="@+id/layot_space_time"
             android:layout_width="wrap_content"
             android:layout_height="300dp"
             android:layout_marginVertical="15dp"
@@ -341,6 +344,7 @@
             android:orientation="vertical"
             >
             <Space
+                android:id="@+id/Space_time"
                 android:layout_width="match_parent"
                 android:layout_height="140dp"
                 >
@@ -349,6 +353,7 @@
                 android:id="@+id/divider3"
                 android:layout_width="100dp"
                 android:layout_height="2dp"
+                android:layout_gravity="right"
                 android:background="@color/matcha_1_trans" />
             <Space
                 android:layout_width="match_parent"
@@ -388,7 +393,7 @@
                 android:inputType="text"
                 android:text="Repeat"
                 android:textAlignment="center"
-                android:textSize="25dp"
+                android:textSize="25sp"
                 android:textStyle="bold" />
     </LinearLayout>
 

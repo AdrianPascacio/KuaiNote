@@ -5,18 +5,18 @@
     >
     <scale
         android:fromXScale="1"
-        android:toXScale="1.39"
+        android:toXScale="1.43"
         android:fromYScale="1"
-        android:toYScale="1.76"
+        android:toYScale="1.65"
         android:pivotX="135%"
         android:pivotY="-25%"
         android:duration="500"
         />
     <translate
         android:fromXDelta="0"
-        android:toXDelta="-10.5"
+        android:toXDelta="-8.7"
         android:fromYDelta="0"
-        android:toYDelta="1"
+        android:toYDelta="6"
         android:duration="500"
         />
     <rotate

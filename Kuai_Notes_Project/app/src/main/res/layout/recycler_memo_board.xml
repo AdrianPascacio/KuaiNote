@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:text="Title"
             android:textSize="24sp"
-            android:textColor="#616161"
+            android:textColor="@color/item_visualizer_title_text_color"
             android:textStyle="normal" />
         <LinearLayout
             android:id="@+id/Layout_Body_Note"
@@ -61,7 +61,7 @@
                 android:layout_weight="0"
                 android:text="12 de Agosto 2025\n12:00PM"
                 android:textAlignment="viewStart"
-                android:textColor="#787777"
+                android:textColor="@color/item_visualizer_date_info_text_color"
                 android:textSize="12sp"
                 android:textStyle="normal" />
 
@@ -73,7 +73,7 @@
                 android:layout_weight="1"
                 android:lineSpacingExtra="3sp"
                 android:text="Cuerpo del mensaje, este es solo un texto de refer ..."
-                android:textColor="#686868"
+                android:textColor="@color/item_visualizer_preview_text_color"
                 android:textSize="14sp"
                 android:textStyle="normal"
                 />
@@ -105,7 +105,7 @@
             android:longClickable="false"
             android:focusable="false"
             android:clickable="false"
-            android:backgroundTint="#888888"
+            android:backgroundTint="@color/item_visualizer_icon_neutral_tint"
             />
 
         <Space
@@ -116,7 +116,7 @@
 
         <FrameLayout
             android:id="@+id/FL_Item_Delete"
-            android:layout_width="17dp"
+            android:layout_width="19dp"
             android:layout_height="27dp"
             android:layout_gravity="bottom"
             android:background="@drawable/trash_can_icon_1"
@@ -194,7 +194,7 @@
             android:layout_marginLeft="2dp"
             android:layout_marginBottom="6dp"
             android:background="@drawable/timer_icon_1"
-            android:backgroundTint="#888888"
+            android:backgroundTint="@color/item_visualizer_icon_neutral_tint"
             android:clickable="false"
             android:focusable="false"
             android:longClickable="false" />
@@ -223,7 +223,7 @@
     </LinearLayout>
     <FrameLayout
         android:id="@+id/FrameLayout_Pin_Icon"
-        android:layout_width="11dp"
+        android:layout_width="10dp"
         android:layout_height="16dp"
         android:layout_gravity="end"
         android:layout_marginTop="3dp"
@@ -242,7 +242,7 @@
         android:layout_marginBottom="3dp"
         android:layout_marginEnd="6dp"
         android:background="@drawable/timer_icon_1"
-        android:backgroundTint="#55BCD1"
+        android:backgroundTint="@color/item_visualizer_icon_reminder_tint"
         android:longClickable="false"
         >
     </FrameLayout>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    <resources>
+        <style android:name="ReminderAnimationInOut">
+            <item android:name="android:windowEnterAnimation">@anim/pin_appear_memoboard</item>
+            <item android:name="android:windowExitAnimation">@anim/pin_appear_memoboard</item>
+        </style>
+    </resources>
+
+</set>

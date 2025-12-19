@@ -5,7 +5,8 @@ public class Note {
     long date;
     String title;
     String note;
-    int pin = 0;
+    //int pin = 0;
+    boolean pin = false;
     long reminder;
     int reminder_type = 0;
     int reminder_interval = 0;
@@ -14,7 +15,7 @@ public class Note {
 
     public Note() {
     }
-    public Note(long note_id, long date, String title, String note, int pin, long reminder, Integer reminder_type, Integer reminder_interval) {
+    public Note(long note_id, long date, String title, String note, boolean pin, long reminder, Integer reminder_type, Integer reminder_interval) {
         this.note_id = note_id;
         this.date = date;
         this.title = title;
@@ -61,11 +62,11 @@ public class Note {
         this.note = note;
     }
 
-    public int getPin() {
+    public boolean getPin() {
         return pin;
     }
 
-    public void setPin(int pin) {
+    public void setPin(boolean pin) {
         this.pin = pin;
     }
 

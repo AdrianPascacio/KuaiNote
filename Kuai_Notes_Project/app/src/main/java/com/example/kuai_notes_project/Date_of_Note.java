@@ -57,11 +57,23 @@ public class Date_of_Note {
         return Information = ("Character" + ": " + note.length() + "   |   " + "Words" + ": " + Word_Counter(note)) ;
     }
     private int Word_Counter(String text){
-        if (text == null || text.trim().isEmpty()){
+        if (text == null || text.isEmpty()) {
             return 0;
         }
-        String [] words = text.trim().split("\\s+");
 
-        return words.length;
+        int wordCount = 0;
+        boolean inWord = false;
+
+        for (int i = 0; i < text.length(); i++) {
+            char currentChar = text.charAt(i);
+
+            if (Character.isWhitespace(currentChar)) {
+                inWord = false;
+            }else if (!inWord) {
+                wordCount++;  //--Incio de nueva palabra
+                inWord = true;
+            }
+        }
+        return wordCount;
     }
 }

@@ -24,21 +24,21 @@ public class Reminder_Notification {
     public static void sendNotification(Context context, String title, String content, String bigText, long note_date, int hash_requestCode, long note_id){
         DB_N = new DB_Notes(context);
         Create_Notification_Channel(context);
-        //!!--Agregar la nota especifica, por el momento solo lo envia al Main
 
         Intent intent = new Intent(context, MainActivity.class);
-        //intent.putExtra("send_date_of_note",note_date); //Este es el putExtra que necesito
-        //intent.putExtra("send_reversed_alarm",reversed_reminder); //Este es el putExtra que necesito
         intent.putExtra("send_note_id",note_id); //Este es el putExtra que necesito
-        /// original segun gemini:
+
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
         /// Modificacion de flag
         //intent.setFlags(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? Intent.FLAG_ACTIVITY_NEW_TASK : 0);
 
-
-        ///PendingIntent pendingIntent = PendingIntent.getActivity(context,hash_requestCode,intent,PendingIntent.FLAG_IMMUTABLE);
-        //--- cambiado flag para update el notificacion en vez de sustituirlo
-        PendingIntent pendingIntent = PendingIntent.getActivity(context,hash_requestCode,intent,PendingIntent.FLAG_MUTABLE);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                context,
+                hash_requestCode,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE
+        );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context,CHANNEL_ID)
                 .setSmallIcon(R.drawable.fire_icon_5)
@@ -64,7 +64,7 @@ public class Reminder_Notification {
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        notificationManager.notify(NOTIFICATION_ID,builder.build());
+        notificationManager.notify(hash_requestCode,builder.build());
 
     }
     private static void Create_Notification_Channel(Context context){
@@ -79,9 +79,25 @@ public class Reminder_Notification {
             notificationManager.createNotificationChannel(channel);
         }
     }
-    public static void Cancel_Reminder_just_reminder(View itemView, long previous_reminder  ) {
-        if (previous_reminder > 0) {
-            Cancel_Reminder_Alarm(itemView, previous_reminder);
+    public static void Set_Reminder_Alarm(Context context, int hashreminder,long alarm_Time,Intent notificationIntent  ) {
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context,
+                hashreminder,
+                notificationIntent,
+                PendingIntent.FLAG_IMMUTABLE
+        );
+
+        //Ya que no es un activity se debe cambiar:
+        //AlarmManager alarmManager = (AlarmManager) getSystemService(context,ALARM_SERVICE);
+        //AlarmManager alarmManager = (AlarmManager) itemView.getContext().getSystemService(Context.ALARM_SERVICE);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        if( alarmManager != null ){
+            alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    alarm_Time,
+                    pendingIntent
+            );
         }
     }
 
@@ -89,9 +105,11 @@ public class Reminder_Notification {
         DB_Notes DB_N = new DB_Notes(itemView.getContext());
         if(previous_reminder > 0){
 
+            boolean mayor = note_id > 0;
+            Toast.makeText(itemView.getContext(), "Reminder Previo mayor 0"+mayor, Toast.LENGTH_SHORT).show();
             if(DB_N.Modify_Reminder_Status(note_id,0L,0,0)){
 
-                Cancel_Reminder_Alarm(itemView, previous_reminder);
+                Cancel_Reminder_Alarm(itemView, note_id);
             }
         }
     }
@@ -108,8 +126,7 @@ public class Reminder_Notification {
                 itemView.getContext(),
                 note_id_As_reminderCode,
                 notificationIntent,
-                //PendingIntent.FLAG_IMMUTABLE
-                PendingIntent.FLAG_MUTABLE
+                PendingIntent.FLAG_IMMUTABLE
         );
 
         AlarmManager alarmManager = (AlarmManager) itemView.getContext().getSystemService(Context.ALARM_SERVICE);
