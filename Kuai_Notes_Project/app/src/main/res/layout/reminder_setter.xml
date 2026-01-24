@@ -52,7 +52,7 @@
             android:inputType="text"
             android:text="Note Title"
             android:textAlignment="center"
-            android:textSize="16sp"
+            android:textSize="16dp"
             android:textStyle="bold" />
 
         <LinearLayout
@@ -106,7 +106,7 @@
                         android:text="/"
                         android:textStyle="bold"
                         android:textColor="@color/gray_neutral_trans"
-                        android:textSize="20sp"
+                        android:textSize="20dp"
                         >
                     </TextView>
                     <NumberPicker
@@ -127,7 +127,7 @@
                         android:text="/"
                         android:textStyle="bold"
                         android:textColor="@color/gray_neutral_trans"
-                        android:textSize="20sp"
+                        android:textSize="20dp"
                         >
                     </TextView>
                     <NumberPicker
@@ -190,7 +190,7 @@
                         android:text=":"
                         android:textStyle="bold"
                         android:textColor="@color/gray_neutral_trans"
-                        android:textSize="20sp"
+                        android:textSize="20dp"
                         >
                     </TextView>
                     <NumberPicker
@@ -300,7 +300,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:gravity="bottom|left"
+                android:gravity="bottom|start"
                 >
                 <LinearLayout
                     android:id="@+id/Layout_Repeat_Ghost"
@@ -313,11 +313,11 @@
                         android:id="@+id/FL_Repeat_Icon"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:layout_marginLeft="6dp"
+                        android:layout_marginStart="6dp"
                         android:layout_marginTop="3dp"
 
                         android:background="@drawable/repeat_never_2"
-                        android:backgroundTint="@color/gray_neutral_trans"
+                        android:backgroundTint="@color/repeat_alarm_off"
                         >
 
                     </FrameLayout>
@@ -375,26 +375,12 @@
     </LinearLayout>
 
     <LinearLayout
-
-        android:layout_below="@+id/Layout_Reminder_Main"
+        android:id="@+id/Layout_Dim_Reminder_Setter"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="330dp"
+        android:background="@color/white_sand_light"
         android:orientation="vertical"
-        android:gravity="center"
+        android:visibility="gone"
         >
-
-            <TextView
-                android:id="@+id/Label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true"
-                android:ems="10"
-                android:inputType="text"
-                android:text="Repeat"
-                android:textAlignment="center"
-                android:textSize="25sp"
-                android:textStyle="bold" />
     </LinearLayout>
-
 </RelativeLayout>

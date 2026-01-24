@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/Reminder_relative_item_view"
+    android:background="@drawable/reminder_popup_back_layout"
+
+    >
+    <LinearLayout
+        android:id="@+id/Layout_Repeater_Main"
+        android:layout_width="match_parent"
+        android:layout_height="330dp"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginVertical="15dp"
+        android:background="@drawable/reminder_popup_layout"
+        android:orientation="horizontal">
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/Label_Repeater_Setter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:ems="10"
+            android:inputType="text"
+            android:text="Repeater"
+            android:textAlignment="center"
+            android:textSize="25dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/Note_title_in_Repeater_Setter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/Label_Reminder_Setter"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="20dp"
+            android:ems="10"
+            android:inputType="text"
+            android:text="By"
+            android:textAlignment="center"
+            android:textSize="20dp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/Layout_numberpicker_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_horizontal"
+            >
+            <LinearLayout
+                android:id="@+id/Layout_Set_Date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="start"
+                >
+                <TextView
+                    android:id="@+id/Repeater_Label_None"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:inputType="text"
+                    android:text="None"
+                    android:textAlignment="center"
+                    android:textSize="20dp"
+                    android:textStyle="bold" />
+                <Space
+                    android:layout_width="1dp"
+                    android:layout_height="5dp">
+                </Space>
+                <TextView
+                    android:id="@+id/Repeater_Label_Every_Day"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:inputType="text"
+                    android:text="Daily"
+                    android:textAlignment="center"
+                    android:textSize="20dp"
+                    android:textStyle="bold" />
+                <Space
+                    android:layout_width="1dp"
+                    android:layout_height="5dp">
+                </Space>
+                <TextView
+                    android:id="@+id/Repeater_Label_Every_X_Hour"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:inputType="text"
+                    android:text="Every X Hour"
+                    android:textAlignment="center"
+                    android:textSize="20dp"
+                    android:textStyle="bold" />
+                <Space
+                    android:layout_width="1dp"
+                    android:layout_height="5dp">
+                </Space>
+                <TextView
+                    android:id="@+id/Repeater_Label_Every_Day_Of_Week"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:inputType="text"
+                    android:text="Every Day Of Week"
+                    android:textAlignment="center"
+                    android:textSize="20dp"
+                    android:textStyle="bold" />
+                <Space
+                    android:layout_width="1dp"
+                    android:layout_height="5dp">
+                </Space>
+                <TextView
+                    android:id="@+id/Repeater_Label_Every_Day_Of_Month"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:inputType="text"
+                    android:text="Every Day Of Month"
+                    android:textAlignment="center"
+                    android:textSize="20dp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:gravity="right|bottom"
+                >
+                <FrameLayout
+                    android:id="@+id/Repeater_Setter_Cancel_Button"
+                    android:layout_width="40dp"
+                    android:layout_height="30dp"
+                    android:layout_marginRight="55dp"
+                    android:gravity="right|bottom"
+                    android:layout_marginBottom="5dp"
+                    android:layout_below="@+id/Note_title_in_Reminder_Setter"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:background="@drawable/arrow_left_4"
+                    android:backgroundTint="@color/repeat_alarm_off"
+                    />
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/Layout_Dim_Repeater_Setter"
+        android:layout_width="match_parent"
+        android:layout_height="330dp"
+        android:background="@color/white_sand_light"
+        android:orientation="vertical"
+        android:visibility="gone"
+        >
+    </LinearLayout>
+
+</RelativeLayout>

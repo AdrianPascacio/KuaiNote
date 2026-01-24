@@ -11,6 +11,8 @@ public class Date_and_Time_Names {
     private static String[] nameHours;
     private static String[] nameMinutes;
 
+    private static String[] nameRepeater_Hours;
+    private static String[] nameRepeater_Minutes;
 
 
     //public Month_Names( String name){
@@ -36,6 +38,14 @@ public class Date_and_Time_Names {
                 "40","41", "42", "43", "44", "45", "46", "47", "48", "49",
                 "50","51", "52", "53", "54", "55", "56", "57", "58", "59"};
     }
+    public static void init_RepeaterHours_Names(){
+        nameRepeater_Hours = new String[]{"00","01", "02", "03", "04", "05", "06", "07", "08", "09",
+                "10","11", "12", "13", "14", "15", "16", "17", "18", "19",
+                "20","21", "22", "23", "24"};
+    }
+    public static void init_RepeaterMinutes_Names(){
+        nameRepeater_Minutes = new String[]{"00","15", "30", "45"};
+    }
     public static int Months_Count(){
         return nameMonths.length;
     }
@@ -50,6 +60,12 @@ public class Date_and_Time_Names {
     }
     public static String[] getNameMinutes() {
         return nameMinutes;
+    }
+    public static String[] getNameRepeater_Hours() {
+        return nameRepeater_Hours;
+    }
+    public static String[] getNameRepeater_Minutes() {
+        return nameRepeater_Minutes;
     }
 
     public static void setNameMonths(String[] nameMonths) {

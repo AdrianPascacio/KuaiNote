@@ -198,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
                     tv_Info.setAlpha(0.9f);
                     et_Note.setAlpha(0.8f);
                     layout_dim.setVisibility(View.VISIBLE);
-                    layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.white_sand_light_trans)));
+                    layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.white_sand_light)));
                     layout_dim.startAnimation(AnimationLayoutDimAppear);
 
                     Set_Reminder_Note();

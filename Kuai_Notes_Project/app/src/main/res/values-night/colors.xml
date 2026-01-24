@@ -68,7 +68,7 @@
     <color name="Medium_Recycler_green">#B673A5</color>
     <color name="green_battery">#983AD6</color>
     <color name="Brown_Navigation_bar_Wasted_Note">#243D55</color>
-    <color name="white_sand_light_trans">#84020E17</color>
+    <color name="white_sand_light_trans">#BB020E17</color>
 
 
     <color name="white_bamboo_trans_dark">#926B7794</color>
@@ -114,7 +114,8 @@
     <color name="note_visualizer_wasted_title_text_color">#DEF1FA</color>
     <color name="note_visualizer_wasted_information_text_color">#546378</color>
 
-    <color name="repeat_alarm_off">#3A3E48</color>
+    <color name="repeat_alarm_on">#2AD991</color>
+    <color name="repeat_alarm_off">#4F525B</color>
 
     <color name="matcha_1_trans">#BFACBE79</color>
     <!--    <color name="matcha_1_trans">#BF6E8641</color> Antiguo -->
@@ -128,9 +129,6 @@
     <!--    <color name="item_visualizer_icon_recycler_tint">#52A564</color> Try2 -->
     <!--    <color name="item_visualizer_icon_recycler_tint">#5CAD6D</color> Antiguo -->
 
-    <color name="repeat_alarm_on">#2AD991</color>
-    <!--    <color name="repeat_alarm_on">#1CAC70</color> Try1      -->
-    <!--    <color name="repeat_alarm_on">#53E3A1</color> Antiguo   -->
 
     a73b49
     <color name="red_bloody_1">#A73B49</color>

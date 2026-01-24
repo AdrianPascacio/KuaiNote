@@ -76,7 +76,7 @@
     <color name="green_nai_cha">#aede7b</color>
     <color name="green_battery">#67c529</color>
     <color name="Brown_Navigation_bar_Wasted_Note">#DBC2AA</color>
-    <color name="white_sand_light_trans">#84FDF1E8</color>
+    <color name="white_sand_light_trans">#BAFDF1E8</color>
 
 
     <color name="white_bamboo_trans_dark">#9294886B</color>
@@ -129,7 +129,7 @@
     <color name="note_visualizer_wasted_information_text_color">#AB9C87</color>
 
     <color name="repeat_alarm_on">#53E3A1</color>
-    <color name="repeat_alarm_off">#C5C1B7</color>
+    <color name="repeat_alarm_off">#B6B2A8</color>
 
 
 

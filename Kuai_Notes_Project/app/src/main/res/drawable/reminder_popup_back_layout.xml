@@ -10,12 +10,12 @@
         android:type="radial"
         />
     <corners
-        android:radius="30dp"
+        android:radius="15dp"
         >
     </corners>
 
     <size
-        android:height="750dp"
-        android:width="700dp"
+        android:height="320dp"
+        android:width="300dp"
         />
 </shape>

@@ -132,7 +132,7 @@
           -->
 
         <item name="colorControlNormal">@color/transparent</item>
-        <item name="android:textSize">20dp</item>
+        <item name="android:textSize">20sp</item>
         <item name="android:textColor">@color/orange_hard</item>
         <item name="android:textColorHighlight">@color/orange_hard</item>
         <item name="android:textColorAlertDialogListItem">@color/orange_hard</item>
@@ -166,8 +166,17 @@
     </style>
 
     <style name="ReminderAnimationInOut_ItemVisualizer">
-        <item name="android:windowEnterAnimation">@anim/reminder_popup_appear_note_visualizer</item>
-        <item name="android:windowExitAnimation">@anim/reminder_popup_disappear_note_visualizer</item>
+        <item name="android:windowEnterAnimation">@anim/reminder_popup_appear_item_visualizer</item>
+        <item name="android:windowExitAnimation">@anim/reminder_popup_disappear_item_visualizer</item>
+    </style>
+
+    <style name="RepeaterReminderAnimationInOut_NoteVisualizer">
+        <item name="android:windowEnterAnimation">@anim/repeater_reminder_popup_appear_note_visualizer</item>
+        <item name="android:windowExitAnimation">@anim/repeater_reminder_popup_disappear_note_visualizer</item>
+    </style>
+    <style name="SpecialRepeaterAnimationInOut_NoteVisualizer">
+        <item name="android:windowEnterAnimation">@anim/special_repeater_popup_appear_note_visualizer</item>
+        <item name="android:windowExitAnimation">@anim/special_repeater_popup_disappear_note_visualizer</item>
     </style>
 
     <style name="SelectionMenuAnimationInOut_ItemVisualizer">

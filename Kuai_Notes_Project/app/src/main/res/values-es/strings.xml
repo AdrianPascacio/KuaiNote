@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kuai_Notes_Project</string>
+    <string name="Today">Hoy</string>
+    <string name="today_today">Hoy</string>
+    <string name="start_here">comienza aquí...</string>
+</resources>

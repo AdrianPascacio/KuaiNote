@@ -13,9 +13,10 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="false"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher_f_concept_2"
+        android:icon="@mipmap/ic_launcher_f_concept_7"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_f_concept_2_round"
+        android:roundIcon="@mipmap/ic_launcher_f_concept_6_round"
+        android:alternateLauncherIcons="@mipmap/ic_launcher_f_concept_2_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Kuai_Notes_Project" >
         <receiver android:name=".Notification_Receiver"
