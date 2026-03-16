@@ -6,20 +6,19 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -28,11 +27,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Objects;
 
-///324 V3, 305 V4, 358 V6, 306 V7, 450 V7.2
-public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board_Interface, Reminder_PopUpWindow.OnValueSelectedListener,Reminder_PopUpWindow.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener {
+///354 V4, 461 V6, 411 V7, 442 V7.2,
+public class Check_Lists extends AppCompatActivity implements Recycler_Check_Lists_Interface, Reminder_PopUpWindow.OnValueSelectedListener,Reminder_PopUpWindow.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener {
     RecyclerView recyclerView;
+    Adapter_Recycler_Check_Lists adapter;
+    private Check_ViewModel checkViewModel;
     ArrayList<String> dateEdited_list;
     ArrayList<String> noteOriginal_list;
     ArrayList<Boolean> selected_list;
@@ -40,13 +42,14 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     ArrayList<Integer> selected_positions_list;
 
     DB_Notes DB_N;
+    FloatingActionButton floating_button;
 
-    Adapter_Recycler_Memo_Board adapter;
 
     long start_of_today = 0;
-    Button btn_config, btn_check_lists;
+    ///Button btn_config, btn_check_lists;
     View main;
     View layout_dim;
+    View fl_return, fl_back_ghost;
     Body_Note_Preview BNP;
     Date_of_Note_Item_View_DEPRECATED DoN_IV;
     Date_of_Note DoN;
@@ -73,12 +76,25 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         super.onResume();
         getStartOfToday();
 
-        recyclerView = findViewById(R.id.Recycler_MemoBoard);
-        adapter = new Adapter_Recycler_Memo_Board(this, dateEdited_list,selected_list,noteList,this);
+        //recyclerView = findViewById(R.id.Recycler_Check_Lists);
+        //adapter = new Adapter_Recycler_Check_Lists(this,this);
+        //recyclerView.setAdapter(adapter);
+
+        //checkViewModel = new ViewModelProvider(this).get(Check_ViewModel.class);
+
+        //Clear_Lists();
+        Log.d("CheckList","   OnResume  ");
+
+        //Update_Recycler_View();
+
+        recyclerView = findViewById(R.id.Recycler_Check_Lists);
+        adapter = new Adapter_Recycler_Check_Lists(this,this);
         recyclerView.setAdapter(adapter);
 
-        Clear_Lists();
+        checkViewModel = new ViewModelProvider(this).get(Check_ViewModel.class);
+
         Update_Recycler_View();
+
     }
 
     @Override
@@ -91,7 +107,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_memo_board);
+        setContentView(R.layout.activity_check_lists);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -116,6 +132,11 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         main = findViewById(R.id.main);
         layout_dim = findViewById(R.id.layout_dim_itemVisualizer);
 
+        fl_return = findViewById(R.id.FrameLayout_Return);
+        fl_back_ghost = findViewById(R.id.fl_Back_Ghost);
+
+        floating_button = findViewById(R.id.floatingActionButton);
+
         AnimationAddNoteButton = AnimationUtils.loadAnimation(this,R.anim.add_note_button_zoom);
         AnimationLayoutDimAppear = AnimationUtils.loadAnimation(this, R.anim.layout_dim_appear);
         AnimationLayoutDimDisappear_Normal = AnimationUtils.loadAnimation(this, R.anim.layout_dim_disappear_normal);
@@ -124,22 +145,38 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         Animation_FloatingButton_Appear = AnimationUtils.loadAnimation(this, R.anim.floating_button_appear);
         Animation_FloatingButton_Disappear = AnimationUtils.loadAnimation(this, R.anim.floating_buttton_disappear);
 
-        btn_config = findViewById(R.id.button_Config);
-        btn_check_lists = findViewById(R.id.button_Check_Lists);
+        ///btn_config = findViewById(R.id.button_Config);
+        ///btn_check_lists = findViewById(R.id.button_Check_Lists);
         fa_btn.startAnimation(AnimationAddNoteButton);
 
-        btn_config.setOnClickListener(new View.OnClickListener() {
+
+
+        fl_back_ghost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Go_To_Trash_Can();
+                Return_To_Memo_Board();
             }
         });
-        btn_check_lists.setOnClickListener(new View.OnClickListener() {
+        floating_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Go_To_Check_Lists();
+                New_check_list();
+                Update_Recycler_View();
             }
         });
+
+        ///btn_config.setOnClickListener(new View.OnClickListener() {
+        ///    @Override
+        ///    public void onClick(View view) {
+        ///        Go_To_Trash_Can();
+        ///    }
+        ///});
+        ///btn_check_lists.setOnClickListener(new View.OnClickListener() {
+        ///    @Override
+        ///    public void onClick(View view) {
+        ///        Go_To_Check_Lists();
+        ///    }
+        ///});
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -168,46 +205,56 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     }
 
     private void Update_Recycler_View(){
-        try (Cursor cursor_Notes = DB_N.get_All_Notes()) {
-            if(cursor_Notes.getCount()==0){
-                //Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
-            }else{
-                int id_indx = cursor_Notes.getColumnIndex("_id");
-                int date_indx = cursor_Notes.getColumnIndex("date");
-                int title_indx = cursor_Notes.getColumnIndex("title");
-                int note_indx = cursor_Notes.getColumnIndex("note");
-                int pin_indx = cursor_Notes.getColumnIndex("pin");
-                int reminder_indx = cursor_Notes.getColumnIndex("reminder");
-                int reminder_type_indx = cursor_Notes.getColumnIndex("reminder_type");
-                int reminder_interval_indx = cursor_Notes.getColumnIndex("reminder_interval");
+        //try (Cursor cursor_Notes = DB_N.get_All_Notes()) {
+        //    if(cursor_Notes.getCount()==0){
+        //        //Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
+        //    }else{
+        //        int id_indx = cursor_Notes.getColumnIndex("_id");
+        //        int date_indx = cursor_Notes.getColumnIndex("date");
+        //        int title_indx = cursor_Notes.getColumnIndex("title");
+        //        int note_indx = cursor_Notes.getColumnIndex("note");
+        //        int pin_indx = cursor_Notes.getColumnIndex("pin");
+        //        int reminder_indx = cursor_Notes.getColumnIndex("reminder");
+        //        int reminder_type_indx = cursor_Notes.getColumnIndex("reminder_type");
+        //        int reminder_interval_indx = cursor_Notes.getColumnIndex("reminder_interval");
 
-                while (cursor_Notes.moveToNext()){
-                    //!!---debe actualizarse
-                    Note note = new Note(cursor_Notes.getLong(id_indx),
-                            cursor_Notes.getLong(date_indx),
-                            cursor_Notes.getString(title_indx),
-                            ///BNP.Set_Body_Note_Preview(cursor_Notes.getString(title_indx),
-                            ///        cursor_Notes.getString(note_indx),
-                            ///        60,
-                            ///        55,
-                            ///        0,
-                            ///        3,
-                            ///        1,
-                            ///        30),
-                            cursor_Notes.getString(note_indx),
-                            cursor_Notes.getInt(pin_indx)==1,
-                            cursor_Notes.getLong(reminder_indx),
-                            cursor_Notes.getInt(reminder_type_indx),
-                            cursor_Notes.getInt(reminder_interval_indx));
-                    dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(note.date,start_of_today));
-                    noteOriginal_list.add(cursor_Notes.getString(note_indx));
-                    selected_list.add(false);
-                    noteList.add(note);
-                }
-            }
-        }
+        //        while (cursor_Notes.moveToNext()){
+        //            //!!---debe actualizarse
+        //            Note note = new Note(cursor_Notes.getLong(id_indx),
+        //                    cursor_Notes.getLong(date_indx),
+        //                    cursor_Notes.getString(title_indx),
+        //                    ///BNP.Set_Body_Note_Preview(cursor_Notes.getString(title_indx),
+        //                    ///        cursor_Notes.getString(note_indx),
+        //                    ///        60,
+        //                    ///        55,
+        //                    ///        0,
+        //                    ///        3,
+        //                    ///        1,
+        //                    ///        30),
+        //                    cursor_Notes.getString(note_indx),
+        //                    cursor_Notes.getInt(pin_indx)==1,
+        //                    cursor_Notes.getLong(reminder_indx),
+        //                    cursor_Notes.getInt(reminder_type_indx),
+        //                    cursor_Notes.getInt(reminder_interval_indx));
+        //            dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(note.date,start_of_today));
+        //            noteOriginal_list.add(cursor_Notes.getString(note_indx));
+        //            selected_list.add(false);
+        //            noteList.add(note);
+        //        }
+        //    }
+        //}
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        checkViewModel.getAllChecks().observe(this,checkWithSubs -> {
+
+            List<DB_Check_Main> onlyMain = new ArrayList<>();
+            for (Check_With_Subs item : checkWithSubs ){
+                Log.d("CheckList","   hh  "+item.checkMain.note);
+                onlyMain.add(item.checkMain);
+            }
+            adapter.setChecks(onlyMain);
+
+        });
     }
     private void Clear_Lists(){
         if(noteOriginal_list.isEmpty()&&selected_list.isEmpty()){
@@ -219,11 +266,14 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         noteList.clear();
     }
 
-    public void Go_To_Add_New_Note(View view){
+    public void New_check_list(){
         if(!selection_mode) {
-            Intent goTo = new Intent(this, MainActivity.class);
-            startActivity(goTo);
-            overridePendingTransition(R.anim.slide_left_in, R.anim.slide_left_out);
+            ///Intent goTo = new Intent(this, Main_Check_Visualizer.class);
+            ///startActivity(goTo);
+            ///overridePendingTransition(R.anim.slide_left_in, R.anim.slide_left_out);
+
+            //!!-- pasar al main check visualizer
+            checkViewModel.saveCheck("2", null);
         }
     }
 
@@ -312,7 +362,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
 
 
         //!!--en modo multiple seleccion, cambiar el pin dependiendo del color del pin
-            //!!--no invertir todo
+        //!!--no invertir todo
         if(pin_multi_change && pin_initial_state_MS ^ _note.getPin()){///XOR Operator
             selected_list.set(position,!selected_list.get(position));// invert value
             adapter.notifyItemChanged(position);
@@ -328,7 +378,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         if(DB_N.Modify_Pin_Status(_note.note_id,_pin)){
             RecyclerView_Pin_Update(position);
         }else{
-            Toast.makeText(Memo_Board.this, "Not_Pin_Modified", Toast.LENGTH_SHORT).show();
+            Toast.makeText(Check_Lists.this, "Not_Pin_Modified", Toast.LENGTH_SHORT).show();
         }
     }
     public void RecyclerView_Pin_Update(int position){
@@ -393,32 +443,26 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         adapter.notifyItemChanged(position);
     }
     @Override
-    public void onPopupClosed(int salida, int position) {
+    public void onPopupClosed(int salida, int postion) {
         layout_dim.setVisibility(View.VISIBLE);
         Restart_Selection();
         if(salida == 1){//setter
             layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.reminder_confirm)));
             layout_dim.startAnimation(AnimationLayoutDimDisappear_Setter);
 
-            Toast.makeText(this, "reminder"+" setter", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "reminder dismiss"+"setter", Toast.LENGTH_SHORT).show();
             return;
         }
         if(salida == 2){//cancel
             layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.reminder_discard)));
             layout_dim.startAnimation(AnimationLayoutDimDisappear_Cancel);
-            Toast.makeText(this, "reminder"+" cancel", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "reminder dismiss"+"cancel", Toast.LENGTH_SHORT).show();
 
             return;
         }
-        selected_list.set(position,false);
-
-        adapter.notifyItemChanged(position);
         layout_dim.startAnimation(AnimationLayoutDimDisappear_Normal);
 
-        ///!!-- duplicated
-        //Restart_Selection();
-
-        Toast.makeText(this, "reminder"+" normal", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "reminder dismiss"+"normal", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -489,14 +533,14 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
 
         if(option == 2){
             Toast.makeText(this, "reminder", Toast.LENGTH_SHORT).show();
-        //    int count = 0;
-        //    for(int i = 0;i-count < selected_list.size(); i++){
-        //        if(selected_list.get(i-count)){
-        //            RemoveItem(i-count);
-        //            count ++;
-        //        }
-        //    }
-        //    selected_positions_list.clear();
+            //    int count = 0;
+            //    for(int i = 0;i-count < selected_list.size(); i++){
+            //        if(selected_list.get(i-count)){
+            //            RemoveItem(i-count);
+            //            count ++;
+            //        }
+            //    }
+            //    selected_positions_list.clear();
         }
         if(option == 3){
             Toast.makeText(this, "delete", Toast.LENGTH_SHORT).show();
@@ -510,5 +554,9 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             selected_positions_list.clear();
         }
 
+    }
+    public void Return_To_Memo_Board(){
+        finish();
+        overridePendingTransition(R.anim.return_activity_slide_right_in_from_trash,R.anim.return_activity_slide_right_out_from_trash);
     }
 }

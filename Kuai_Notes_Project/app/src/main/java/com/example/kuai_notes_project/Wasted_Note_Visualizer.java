@@ -349,7 +349,7 @@ public class Wasted_Note_Visualizer extends AppCompatActivity implements Reminde
         Change_Reminder_Status_Style();
     }
     @Override
-    public void onPopupClosed(int salida) {
+    public void onPopupClosed(int salida, int position) {
         tv_Date.setAlpha(1f);
         tv_Info.setAlpha(1f);
         et_Note.setAlpha(1f);

@@ -158,7 +158,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
 
 
     public interface PopupDismissListener{//esto puede ir tambien en una clase separada
-        void onPopupClosed(int salida); // 0 nada/normal, 1 cambio realizado, 2 cancelado
+        void onPopupClosed(int salida, int position); // 0 nada/normal, 1 cambio realizado, 2 cancelado
     }
     private PopupDismissListener listener_dismiss;
     private View view_brought;
@@ -337,7 +337,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
                 note_reminder_type = original_reminder_type;
                 note_reminder_interval = original_reminder_interval;
                 ///note.reminder_type = original_reminder_type;
-                Reminder_PopUpWindow.this.listener_dismiss.onPopupClosed(0);
+                Reminder_PopUpWindow.this.listener_dismiss.onPopupClosed(0, position);
             }
         }
         });
@@ -492,7 +492,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
                     }
                     popupWindow.dismiss();
                     if (listener_dismiss != null) {
-                        listener_dismiss.onPopupClosed(1); // Devolver el valor
+                        listener_dismiss.onPopupClosed(1, position); // Devolver el valor
                     }
                 }
             }
@@ -511,7 +511,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
                 }
                 popupWindow.dismiss();
                 if (listener_dismiss != null) {
-                    listener_dismiss.onPopupClosed(2); // Devolver el valor
+                    listener_dismiss.onPopupClosed(2, position); // Devolver el valor
                 }
             }
         });

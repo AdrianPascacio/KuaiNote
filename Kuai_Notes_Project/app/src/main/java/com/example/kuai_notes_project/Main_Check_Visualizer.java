@@ -2,7 +2,6 @@ package com.example.kuai_notes_project;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
@@ -14,7 +13,6 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,8 +22,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-///290 V03 , 347 V04, 281 V05, 485 V06, 429 V07, 529 V07antes de refactorizar DB con _id, DB con date = long, DB unificado (soft deleted flag)A , 740L 32264c V07.02 indentado repeticiones diarias en reminder, 784 V07.3.1 antes de optimizar y refactorizar
-public class MainActivity extends AppCompatActivity implements Reminder_PopUpWindow.OnValueSelectedListener, Reminder_PopUpWindow.PopupDismissListener,Note_Update_Listener {
+public class Main_Check_Visualizer extends AppCompatActivity implements Reminder_PopUpWindow.OnValueSelectedListener, Reminder_PopUpWindow.PopupDismissListener,Note_Update_Listener {
     private DB_Notes DB_N;
     private TextView tv_Date, tv_Info;
     private EditText et_Title, et_Note;
@@ -327,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
         }
 
         if (DB_N.Modify_Pin_Status(note.note_id, note.pin)) {
-            Toast.makeText(MainActivity.this, "Modified_Pin_Status", Toast.LENGTH_SHORT).show();
+            Toast.makeText(Main_Check_Visualizer.this, "Modified_Pin_Status", Toast.LENGTH_SHORT).show();
             Change_Pin_Status_Style();
         } else {
             Log.d("Main Activity", "Not_Pin_Modified");
@@ -426,7 +423,7 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
                 return  getNoteInTrashCan(note.date,note.title,note.note, 20, "1-Insertado datos previous");
             } else {
                 Log.d("Delete","2-");
-                Toast.makeText(MainActivity.this, "2- No hay nada que guardar ", Toast.LENGTH_SHORT).show();//si se utiliza reminder y luego se borra
+                Toast.makeText(Main_Check_Visualizer.this, "2- No hay nada que guardar ", Toast.LENGTH_SHORT).show();//si se utiliza reminder y luego se borra
                 return true;
             }
         }
@@ -444,11 +441,11 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
     private Boolean getNoteInTrashCan(long date, String title, String _note, int expire_days, String Delete_Case) {
         if ( note.note_id == 0 ) {
             Log.d("Delete","5-");
-            Toast.makeText(MainActivity.this, "5- Cambios realizados, directo a TrashCan ", Toast.LENGTH_SHORT).show();//salvado previo con cambios sin guardar
+            Toast.makeText(Main_Check_Visualizer.this, "5- Cambios realizados, directo a TrashCan ", Toast.LENGTH_SHORT).show();//salvado previo con cambios sin guardar
             change_in_note = false;
             return DB_N.Insert_Note_Directly_in_Trash(date,title,_note,note.pin,20); //!!--Check cual es la mejor opcion para este valor de expire days
         }
-        Toast.makeText(MainActivity.this, Delete_Case, Toast.LENGTH_SHORT).show();//salvado previo con cambios sin guardar
+        Toast.makeText(Main_Check_Visualizer.this, Delete_Case, Toast.LENGTH_SHORT).show();//salvado previo con cambios sin guardar
         return DB_N.Send_Note_To_Trash(note.note_id, date, title, _note, note.pin,  expire_days);
     }
 

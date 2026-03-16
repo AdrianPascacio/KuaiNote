@@ -52,4 +52,11 @@ dependencies {
     //para traducir dependencias de java time:
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+
+    //dependecias de room:
+    implementation("androidx.room:room-runtime:2.8.4")
+    annotationProcessor("androidx.room:room-compiler:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.10.0")
+    implementation("androidx.lifecycle:lifecycle-livedata:2.10.0")
+
 }

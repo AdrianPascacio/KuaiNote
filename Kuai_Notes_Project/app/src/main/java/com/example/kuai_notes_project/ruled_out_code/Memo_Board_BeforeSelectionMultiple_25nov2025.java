@@ -397,7 +397,7 @@ public class Memo_Board_BeforeSelectionMultiple_25nov2025 extends AppCompatActiv
         adapter.notifyItemChanged(position);
     }
     @Override
-    public void onPopupClosed(int salida) {
+    public void onPopupClosed(int salida, int position) {
         layout_dim.setVisibility(View.VISIBLE);
         if(salida == 1){//setter
             layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.ex_green)));
