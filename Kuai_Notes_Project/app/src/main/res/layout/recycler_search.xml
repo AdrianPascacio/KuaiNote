@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/Layout_Item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="7dp"
+    android:outlineSpotShadowColor="@color/Light_medium_brown"
+    android:outlineAmbientShadowColor="@color/transparent"
+    android:layout_marginTop="10dp"
+    android:layout_marginHorizontal="15dp"
+
+    >
+
+    <LinearLayout
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        app:cardCornerRadius="25dp"
+        android:id="@+id/Layout_Global_Item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="10dp"
+        android:paddingHorizontal="15dp"
+        android:requiresFadingEdge="horizontal"
+        android:fadingEdge="horizontal"
+        android:background="@drawable/rounded_layout_7dp"
+        android:outlineSpotShadowColor="@color/Light_medium_brown"
+        android:outlineAmbientShadowColor="@color/transparent"
+        android:fadingEdgeLength="20dp"
+        android:orientation="vertical"
+        >
+        <!--
+        si le falta titulo 20 arriba y 10 abajo
+        android:layout_marginVertical="10dp"
+
+        -->
+
+        <TextView
+            android:id="@+id/Text_Note_Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Title"
+            android:textSize="24sp"
+            android:textColor="@color/item_visualizer_title_notselected"
+            android:textStyle="normal" />
+        <LinearLayout
+            android:id="@+id/Layout_Body_Note"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginBottom="5dp"
+            android:orientation="horizontal"
+            android:layout_gravity="start"
+            android:gravity="start"
+            android:foregroundGravity="left"
+            >
+
+            <TextView
+                android:id="@+id/Text_Note_Preview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_weight="1"
+                android:lineSpacingExtra="3sp"
+                android:text="Cuerpo del mensaje, este es solo un texto de refer ..."
+                android:textColor="@color/item_visualizer_note_preview_notselected"
+                android:textSize="14sp"
+                android:textStyle="normal"
+                />
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

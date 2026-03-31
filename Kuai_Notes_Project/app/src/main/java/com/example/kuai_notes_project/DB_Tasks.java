@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,8 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 ///330 V6, 331 V7despues de refactorizar DB con _id, 479 V7.2.1,
-public class DB_Notes extends SQLiteOpenHelper {
-    public DB_Notes(@Nullable Context context) {
+public class DB_Tasks extends SQLiteOpenHelper {
+    public DB_Tasks(@Nullable Context context) {
         super(context, "notes.db", null, 1);
     }
 

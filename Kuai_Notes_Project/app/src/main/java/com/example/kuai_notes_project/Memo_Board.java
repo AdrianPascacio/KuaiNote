@@ -4,18 +4,13 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -44,7 +39,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     Adapter_Recycler_Memo_Board adapter;
 
     long start_of_today = 0;
-    Button btn_config, btn_check_lists;
+    Button btn_config, btn_check_lists, btn_search;
     View main;
     View layout_dim;
     Body_Note_Preview BNP;
@@ -126,6 +121,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
 
         btn_config = findViewById(R.id.button_Config);
         btn_check_lists = findViewById(R.id.button_Check_Lists);
+        btn_search = findViewById(R.id.button_Search);
         fa_btn.startAnimation(AnimationAddNoteButton);
 
         btn_config.setOnClickListener(new View.OnClickListener() {
@@ -138,6 +134,12 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             @Override
             public void onClick(View view) {
                 Go_To_Check_Lists();
+            }
+        });
+        btn_search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Go_To_Search();
             }
         });
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -157,6 +159,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             }
         });
     }
+
 
     private void  getStartOfToday() {
         Calendar today = Calendar.getInstance();
@@ -459,6 +462,11 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         Intent goTo = new Intent(this, Check_Lists.class);
         startActivity(goTo);
         overridePendingTransition(R.anim.slide_left_in_trash,R.anim.slide_left_out_trash);
+    }
+    private void Go_To_Search() {
+        Intent goTo = new Intent(this, Aux_Search.class);
+        startActivity(goTo);
+        overridePendingTransition(R.anim.slide_left_in_search,R.anim.slide_left_out_search);
     }
 
     @Override
