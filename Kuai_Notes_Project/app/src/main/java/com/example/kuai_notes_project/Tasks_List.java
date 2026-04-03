@@ -4,13 +4,10 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -27,21 +24,24 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Objects;
 
-///354 V4, 461 V6, 411 V7, 442 V7.2,
-public class Check_Lists extends AppCompatActivity implements Recycler_Check_Lists_Interface, Reminder_PopUpWindow.OnValueSelectedListener,Reminder_PopUpWindow.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener {
+import kotlinx.coroutines.scheduling.Task;
+
+public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List_Interface, Recycler_Tasks_Sub_List_Interface, Reminder_PopUpWindow.OnValueSelectedListener,Reminder_PopUpWindow.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener {
     RecyclerView recyclerView;
-    Adapter_Recycler_Check_Lists adapter;
+    Adapter_Recycler_Tasks_List adapter;
     private Check_ViewModel checkViewModel;
     ArrayList<String> dateEdited_list;
     ArrayList<String> noteOriginal_list;
     ArrayList<Boolean> selected_list;
     ArrayList<Note> noteList;
+    ArrayList<Task_Main> taskList;
+    ArrayList<Task_Sub> task_subList;
+    ArrayList<Task_Element> task_elements;
     ArrayList<Integer> selected_positions_list;
 
-    DB_Notes DB_N;
+    DB_Tasks DB_T;
     FloatingActionButton floating_button;
 
 
@@ -83,16 +83,38 @@ public class Check_Lists extends AppCompatActivity implements Recycler_Check_Lis
         //checkViewModel = new ViewModelProvider(this).get(Check_ViewModel.class);
 
         //Clear_Lists();
+
+
+        ///recyclerView = findViewById(R.id.Recycler_MemoBoard);
+        ///adapter = new Adapter_Recycler_Memo_Board(this, dateEdited_list,selected_list,noteList,this);
+        ///recyclerView.setAdapter(adapter);
+
+        ///Clear_Lists();
+        ///Update_Recycler_View();
+
+
+
+
+
+
+
+
+
+
+
+
         Log.d("CheckList","   OnResume  ");
 
         //Update_Recycler_View();
 
-        recyclerView = findViewById(R.id.Recycler_Check_Lists);
-        adapter = new Adapter_Recycler_Check_Lists(this,this);
+        recyclerView = findViewById(R.id.Recycler_Tasks_List);
+        adapter = new Adapter_Recycler_Tasks_List(this, dateEdited_list,selected_list,taskList,task_subList,task_elements,this,this);
+        //adapter = new Adapter_Recycler_Memo_Board(this, dateEdited_list,selected_list,noteList,this);
         recyclerView.setAdapter(adapter);
 
         checkViewModel = new ViewModelProvider(this).get(Check_ViewModel.class);
 
+        Clear_Lists();
         Update_Recycler_View();
 
     }
@@ -107,7 +129,7 @@ public class Check_Lists extends AppCompatActivity implements Recycler_Check_Lis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_check_lists);
+        setContentView(R.layout.activity_tasks_list);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -117,12 +139,15 @@ public class Check_Lists extends AppCompatActivity implements Recycler_Check_Lis
         getWindow().setStatusBarColor(getResources().getColor(R.color.light_brown_natural));
         getWindow().setNavigationBarColor(getResources().getColor(R.color.main_navigation_bar));
 
-        DB_N = new DB_Notes(this);
+        DB_T = new DB_Tasks(this);
 
         dateEdited_list = new ArrayList<>();
         noteOriginal_list = new ArrayList<>();
         selected_list = new ArrayList<>();
         noteList = new ArrayList<>();
+        taskList = new ArrayList<>();
+        task_subList = new ArrayList<>();
+        task_elements = new ArrayList<>();
         selected_positions_list = new ArrayList<>();
 
         BNP = new Body_Note_Preview();
@@ -205,56 +230,103 @@ public class Check_Lists extends AppCompatActivity implements Recycler_Check_Lis
     }
 
     private void Update_Recycler_View(){
-        //try (Cursor cursor_Notes = DB_N.get_All_Notes()) {
-        //    if(cursor_Notes.getCount()==0){
-        //        //Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
-        //    }else{
-        //        int id_indx = cursor_Notes.getColumnIndex("_id");
-        //        int date_indx = cursor_Notes.getColumnIndex("date");
-        //        int title_indx = cursor_Notes.getColumnIndex("title");
-        //        int note_indx = cursor_Notes.getColumnIndex("note");
-        //        int pin_indx = cursor_Notes.getColumnIndex("pin");
-        //        int reminder_indx = cursor_Notes.getColumnIndex("reminder");
-        //        int reminder_type_indx = cursor_Notes.getColumnIndex("reminder_type");
-        //        int reminder_interval_indx = cursor_Notes.getColumnIndex("reminder_interval");
+        try (Cursor cursor_Tasks= DB_T.get_All_Tasks()) {
+            if(cursor_Tasks.getCount()==0){
+                Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
+            }else{
+                int id_indx = cursor_Tasks.getColumnIndex("_id");
+                int date_indx = cursor_Tasks.getColumnIndex("date");
+                int title_indx = cursor_Tasks.getColumnIndex("title");
+                int note_indx = cursor_Tasks.getColumnIndex("note");
+                int pin_indx = cursor_Tasks.getColumnIndex("pin");
+                int reminder_indx = cursor_Tasks.getColumnIndex("reminder");
+                int reminder_type_indx = cursor_Tasks.getColumnIndex("reminder_type");
+                int reminder_interval_indx = cursor_Tasks.getColumnIndex("reminder_interval");
 
-        //        while (cursor_Notes.moveToNext()){
-        //            //!!---debe actualizarse
-        //            Note note = new Note(cursor_Notes.getLong(id_indx),
-        //                    cursor_Notes.getLong(date_indx),
-        //                    cursor_Notes.getString(title_indx),
-        //                    ///BNP.Set_Body_Note_Preview(cursor_Notes.getString(title_indx),
-        //                    ///        cursor_Notes.getString(note_indx),
-        //                    ///        60,
-        //                    ///        55,
-        //                    ///        0,
-        //                    ///        3,
-        //                    ///        1,
-        //                    ///        30),
-        //                    cursor_Notes.getString(note_indx),
-        //                    cursor_Notes.getInt(pin_indx)==1,
-        //                    cursor_Notes.getLong(reminder_indx),
-        //                    cursor_Notes.getInt(reminder_type_indx),
-        //                    cursor_Notes.getInt(reminder_interval_indx));
-        //            dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(note.date,start_of_today));
-        //            noteOriginal_list.add(cursor_Notes.getString(note_indx));
-        //            selected_list.add(false);
-        //            noteList.add(note);
-        //        }
-        //    }
-        //}
+                //while (cursor_Tasks.moveToNext()){
+                //    //!!---debe actualizarse
+                //    Log.d("Read cursor_Notes", " Task_id: " + cursor_Tasks.getLong(id_indx));
+                //    Note note = new Note(cursor_Tasks.getLong(id_indx),
+                //            cursor_Tasks.getLong(date_indx),
+                //            cursor_Tasks.getString(title_indx),
+                //            ///BNP.Set_Body_Note_Preview(cursor_Notes.getString(title_indx),
+                //            ///        cursor_Notes.getString(note_indx),
+                //            ///        60,
+                //            ///        55,
+                //            ///        0,
+                //            ///        3,
+                //            ///        1,
+                //            ///        30),
+                //            cursor_Tasks.getString(note_indx),
+                //            cursor_Tasks.getInt(pin_indx)==1,
+                //            cursor_Tasks.getLong(reminder_indx),
+                //            cursor_Tasks.getInt(reminder_type_indx),
+                //            cursor_Tasks.getInt(reminder_interval_indx));
+                //    dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(note.date,start_of_today));
+                //    noteOriginal_list.add(cursor_Tasks.getString(note_indx));
+                //    selected_list.add(false);
+                //    noteList.add(note);
+                //}
+                while (cursor_Tasks.moveToNext()){
+                    //!!---debe actualizarse
+                    Log.d("Read cursor_Notes", " Task_id: " + cursor_Tasks.getLong(id_indx));
+                    Task_Main task = new Task_Main(cursor_Tasks.getLong(id_indx),
+                            cursor_Tasks.getLong(date_indx),
+                            cursor_Tasks.getLong(2),
+                            cursor_Tasks.getLong(3),
+                            cursor_Tasks.getLong(4),
+                            cursor_Tasks.getString(title_indx),
+                            cursor_Tasks.getString(note_indx),
+                            cursor_Tasks.getInt(pin_indx)==1,
+                            cursor_Tasks.getLong(reminder_indx),
+                            cursor_Tasks.getInt(reminder_type_indx),
+                            cursor_Tasks.getInt(reminder_interval_indx),
+                            cursor_Tasks.getInt(13)==1,
+                            cursor_Tasks.getInt(14)==1);
+                    dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(task.date,start_of_today));
+                    noteOriginal_list.add(cursor_Tasks.getString(note_indx));
+                    selected_list.add(false);
+                    taskList.add(task);
+                    task_elements.add(task);
+                }
+            }
+        }
+        try (Cursor cursor_Tasks_Sub= DB_T.get_All_Tasks_Sub()) {
+            if(cursor_Tasks_Sub.getCount()==0){
+                Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
+            }else{
+                int id_indx = cursor_Tasks_Sub.getColumnIndex("_id");
+                int parent_indx = cursor_Tasks_Sub.getColumnIndex("parent_id");
+                int note_indx = cursor_Tasks_Sub.getColumnIndex("note");
+                int completed_indx = cursor_Tasks_Sub.getColumnIndex("completed");
+                int task_sub_position_indx = cursor_Tasks_Sub.getColumnIndex("task_sub_position");
+
+                while (cursor_Tasks_Sub.moveToNext()){
+                    //!!---debe actualizarse
+                    Log.d("Read cursor_Notes", " Task_id: " + cursor_Tasks_Sub.getLong(id_indx));
+                    Task_Sub task_sub = new Task_Sub(cursor_Tasks_Sub.getLong(id_indx),
+                            cursor_Tasks_Sub.getLong(parent_indx),
+                            cursor_Tasks_Sub.getString(note_indx),
+                            cursor_Tasks_Sub.getInt(completed_indx)==1,
+                            cursor_Tasks_Sub.getInt(task_sub_position_indx));
+                    task_subList.add(task_sub);
+                    task_elements.add(task_sub);
+                }
+                Log.d("TasksSubList","   TaskSub size:  "+ task_subList.size());
+            }
+        }
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        checkViewModel.getAllChecks().observe(this,checkWithSubs -> {
+        ///checkViewModel.getAllChecks().observe(this,checkWithSubs -> {
 
-            List<DB_Check_Main> onlyMain = new ArrayList<>();
-            for (Check_With_Subs item : checkWithSubs ){
-                Log.d("CheckList","   hh  "+item.checkMain.note);
-                onlyMain.add(item.checkMain);
-            }
-            adapter.setChecks(onlyMain);
+        ///    List<DB_Check_Main> onlyMain = new ArrayList<>();
+        ///    for (Check_With_Subs item : checkWithSubs ){
+        ///        Log.d("CheckList","   hh  "+item.checkMain.note);
+        ///        onlyMain.add(item.checkMain);
+        ///    }
+        ///    adapter.setChecks(onlyMain);
 
-        });
+        ///});
     }
     private void Clear_Lists(){
         if(noteOriginal_list.isEmpty()&&selected_list.isEmpty()){
@@ -264,6 +336,9 @@ public class Check_Lists extends AppCompatActivity implements Recycler_Check_Lis
         noteOriginal_list.clear();
         selected_list.clear();
         noteList.clear();
+        taskList.clear();
+        task_subList.clear();
+        task_elements.clear();
     }
 
     public void New_check_list(){
@@ -273,7 +348,10 @@ public class Check_Lists extends AppCompatActivity implements Recycler_Check_Lis
             ///overridePendingTransition(R.anim.slide_left_in, R.anim.slide_left_out);
 
             //!!-- pasar al main check visualizer
-            checkViewModel.saveCheck("2", null);
+            long _current_time = System.currentTimeMillis();
+            long task_new_id = DB_T.Insert_Task_L(_current_time, "Task Title", "Task 1", false, 0, 0, 0);
+            long task_sub_new_id = DB_T.Insert_Task_Sub_L(task_new_id,"sub_note",false,0);
+            //checkViewModel.saveCheck("2", null);
         }
     }
 
@@ -358,6 +436,7 @@ public class Check_Lists extends AppCompatActivity implements Recycler_Check_Lis
     @Override
     public void PinItem(int position) {
         Note _note = noteList.get(position);
+        Task_Main _task = taskList.get(position);
         //int _pin = _note.getPin() ^ 1;      //XOR Operator
 
 
@@ -375,10 +454,10 @@ public class Check_Lists extends AppCompatActivity implements Recycler_Check_Lis
         boolean _pin = pin_multi_change ? !pin_initial_state_MS : !_note.getPin();///Ternary Operator
 
 
-        if(DB_N.Modify_Pin_Status(_note.note_id,_pin)){
+        if(DB_T.Modify_Pin_Status(_note.note_id,_pin)){
             RecyclerView_Pin_Update(position);
         }else{
-            Toast.makeText(Check_Lists.this, "Not_Pin_Modified", Toast.LENGTH_SHORT).show();
+            Toast.makeText(Tasks_List.this, "Not_Pin_Modified", Toast.LENGTH_SHORT).show();
         }
     }
     public void RecyclerView_Pin_Update(int position){
@@ -396,7 +475,7 @@ public class Check_Lists extends AppCompatActivity implements Recycler_Check_Lis
 
         noteList.remove(position);
 
-        int current_pinned_notes = DB_N.get_Specific_Note_Sorted_by_Pin_and_Date(_note.note_id);
+        int current_pinned_notes = DB_T.get_Specific_Note_Sorted_by_Pin_and_Date(_note.note_id);
         //Log.d("Pin","   current_pin:" + current_pinned_notes+ "    position:" + position);
 
         dateEdited_list.add(current_pinned_notes,_date);
@@ -468,14 +547,16 @@ public class Check_Lists extends AppCompatActivity implements Recycler_Check_Lis
     @Override
     public void RemoveItem(int position) {
         Note _note = noteList.get(position);
+        Task_Main _task = taskList.get(position);
 
         Reminder_Notification.Cancel_Reminder_Alarm(main,_note.note_id);
 
-        if(DB_N.Send_Note_To_Trash(_note.note_id,_note.date,_note.title,noteOriginal_list.get(position),_note.pin,20)){
+        if(DB_T.Send_Note_To_Trash(_note.note_id,_note.date,_note.title,noteOriginal_list.get(position),_note.pin,20)){
             //----Remove Note from Recycler View
             dateEdited_list.remove(position);
             noteOriginal_list.remove(position);
             noteList.remove(position);
+            taskList.remove(position);
             selected_list.remove(position);
             adapter.notifyItemRemoved(position);
 
@@ -500,7 +581,7 @@ public class Check_Lists extends AppCompatActivity implements Recycler_Check_Lis
         overridePendingTransition(R.anim.slide_left_in_trash,R.anim.slide_left_out_trash);
     }
     public void Go_To_Check_Lists(){
-        Intent goTo = new Intent(this, Check_Lists.class);
+        Intent goTo = new Intent(this, Tasks_List.class);
         startActivity(goTo);
         overridePendingTransition(R.anim.slide_left_in_trash,R.anim.slide_left_out_trash);
     }

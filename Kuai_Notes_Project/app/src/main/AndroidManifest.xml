@@ -50,7 +50,7 @@
             android:name=".Trash_Can"
             android:exported="false" />
         <activity
-            android:name=".Check_Lists"
+            android:name=".Tasks_List"
             android:exported="false" />
         <activity
             android:name=".Aux_Search"

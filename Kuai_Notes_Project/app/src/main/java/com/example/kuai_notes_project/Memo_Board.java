@@ -459,7 +459,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         overridePendingTransition(R.anim.slide_left_in_trash,R.anim.slide_left_out_trash);
     }
     public void Go_To_Check_Lists(){
-        Intent goTo = new Intent(this, Check_Lists.class);
+        Intent goTo = new Intent(this, Tasks_List.class);
         startActivity(goTo);
         overridePendingTransition(R.anim.slide_left_in_trash,R.anim.slide_left_out_trash);
     }

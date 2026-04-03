@@ -16,7 +16,7 @@
         android:orientation="vertical">
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/Recycler_Check_Lists"
+                android:id="@+id/Recycler_Tasks_List"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:paddingBottom="50dp"
@@ -35,7 +35,6 @@
         android:layout_height="wrap_content"
         android:clickable="true"
         android:focusable="true"
-        android:onClick="Aux_new_check_list"
         app:backgroundTint="@color/memoboard_add_button_background"
         app:fabCustomSize="100dp"
         app:layout_constraintBottom_toBottomOf="parent"

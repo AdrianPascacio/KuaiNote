@@ -37,7 +37,9 @@
             android:id="@+id/Text_Note_Title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Title"
+            android:layout_marginLeft="30dp"
+            android:text=""
+            android:hint="Title Example"
             android:textSize="24sp"
             android:textColor="@color/item_visualizer_title_text_color"
             android:textStyle="normal" />
@@ -46,7 +48,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="1dp"
-            android:layout_marginLeft="2dp"
+            android:layout_marginLeft="25dp"
             android:layout_marginBottom="5dp"
             android:orientation="horizontal"
             android:layout_gravity="start"
@@ -59,20 +61,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0"
-                android:text="12 de Agosto 2025\n12:00PM"
+                android:text=""
+                android:hint="12 de Example 2025\n12:00PM"
                 android:textAlignment="viewStart"
                 android:textColor="@color/item_visualizer_date_info_text_color"
                 android:textSize="12sp"
+                android:visibility="gone"
                 android:textStyle="normal" />
 
             <TextView
                 android:id="@+id/Text_Note_Preview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
+                android:layout_marginLeft="25dp"
+                android:layout_marginTop="8dp"
                 android:layout_weight="1"
                 android:lineSpacingExtra="3sp"
-                android:text="Cuerpo del mensaje, este es solo un texto de refer ..."
+                android:text=""
+                android:hint="texto de ejemplo"
                 android:textColor="@color/item_visualizer_preview_text_color"
                 android:textSize="14sp"
                 android:textStyle="normal"
@@ -105,6 +111,7 @@
             android:longClickable="false"
             android:focusable="false"
             android:clickable="false"
+            android:visibility="gone"
             android:backgroundTint="@color/item_visualizer_icon_neutral_tint"
             />
 
@@ -125,6 +132,7 @@
             android:longClickable="false"
             android:focusable="false"
             android:clickable="false"
+            android:visibility="gone"
             android:backgroundTint="@color/red_bloody_1"
             />
 
@@ -183,6 +191,7 @@
         android:layout_marginRight="38dp"
         android:layout_marginBottom="0dp"
         android:gravity="bottom"
+        android:visibility="gone"
         android:orientation="vertical">
 
 
@@ -230,7 +239,7 @@
         android:layout_marginEnd="6dp"
         android:background="@drawable/clip_icon_1"
         android:backgroundTint="@color/ex_orange"
-        android:visibility="visible"
+        android:visibility="gone"
         >
 
     </FrameLayout>
@@ -243,8 +252,68 @@
         android:layout_marginEnd="6dp"
         android:background="@drawable/timer_icon_1"
         android:backgroundTint="@color/item_visualizer_icon_reminder_tint"
+        android:visibility="gone"
         android:longClickable="false"
         >
     </FrameLayout>
+    <LinearLayout
+        android:id="@+id/Layout_Completed_Mark_Ghost"
+        android:layout_width="32dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start|center_vertical"
+        android:layout_marginTop="0dp"
+        android:layout_marginRight="38dp"
+        android:layout_marginBottom="0dp"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+
+        <FrameLayout
+            android:id="@+id/Fl_Completed_Mark_Ghost"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginBottom="0dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:longClickable="false" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/Layout_Completed_Mark"
+        android:layout_width="32dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start|center_vertical"
+        android:layout_marginTop="0dp"
+        android:layout_marginRight="38dp"
+        android:layout_marginBottom="0dp"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+
+        <FrameLayout
+            android:id="@+id/Fl_Completed_Mark"
+            android:layout_width="22dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center"
+            android:layout_marginLeft="2dp"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/outline_fact_check_24"
+            android:backgroundTint="@color/item_visualizer_icon_neutral_tint"
+            android:clickable="false"
+            android:focusable="false"
+            android:longClickable="false" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/Layout_Upper_Line"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:layout_gravity="top"
+        android:layout_marginTop="0dp"
+        android:gravity="center_vertical"
+        android:background="@color/green_dark_cha"
+        android:orientation="vertical">
+
+    </LinearLayout>
+
 
 </androidx.cardview.widget.CardView>

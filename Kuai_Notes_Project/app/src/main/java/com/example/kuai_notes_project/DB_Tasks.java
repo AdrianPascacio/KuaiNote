@@ -15,17 +15,19 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-///330 V6, 331 V7despues de refactorizar DB con _id, 479 V7.2.1,
 public class DB_Tasks extends SQLiteOpenHelper {
     public DB_Tasks(@Nullable Context context) {
-        super(context, "notes.db", null, 1);
+        super(context, "tasks.db", null, 1);
     }
 
     @Override
-    public void onCreate(SQLiteDatabase DB_N) {
-        DB_N.execSQL("create Table Notes("+
+    public void onCreate(SQLiteDatabase DB_T) {
+        DB_T.execSQL("create Table Tasks("+
                 "_id INTEGER PRIMARY KEY AUTOINCREMENT, "+
                 "date LONG, "+
+                "date_created LONG, "+
+                "date_modified LONG, "+
+                "date_completed LONG, "+
                 "title TEXT, "+
                 "note TEXT, "+
                 "pin INTEGER, "+
@@ -34,35 +36,42 @@ public class DB_Tasks extends SQLiteOpenHelper {
                 "reminder_interval INTEGER,"+
                 "category_id INTEGER,"+
                 "expire_days INTEGER,"+
+                "completed INTEGER, "+
+                "has_sub_tasks INTEGER, "+
                 "deleted INTEGER)"
         );
-        ///DB_N.execSQL("create Virtual Table Notes_fts Using fts4(" +
-        ///        "_id, " +
-        ///        "title, "+
-        ///        "note, " +
-        ///        "content='Note')"
-        ///);
-        DB_N.execSQL("create Virtual Table Notes_fts Using fts4(" +
+        DB_T.execSQL("create Table Tasks_Sub("+
+                "_id INTEGER PRIMARY KEY AUTOINCREMENT, "+
+                "parent_id LONG, "+
+                "note TEXT, "+
+                "completed INTEGER, "+
+                "task_sub_position INTEGER, "+
+                "deleted INTEGER)"
+        );
+
+        DB_T.execSQL("create Virtual Table Tasks_fts Using fts4(" +
                 "title, "+
                 "note, " +
                 "deleted, " +
-                "content='Notes')"
+                "content='Tasks')"
         );
 
-        //DB_N.execSQL("create Virtual Table Notes_fts Using fts4(content=\"Notes\", title, note)");
 
         //El LONG en sqlite solo se reconoce como un Integer
         //Los integer en SQL tienen un almacenamietno variable dependiendo del dato guardado 1,2,3 o bytes dependiendo del tama~o
         //Indexado complejo para evitar el sort
             //Indice antiguo:   //DB_N.execSQL("CREATE INDEX idx_delete ON Notes (deleted, date DESC)"); //Creacion de indice para optimizar la consulta mas comun (deleted, sorted por date
-        DB_N.execSQL("CREATE INDEX idx_principal_default ON Notes (deleted, pin DESC, date DESC)");
-        DB_N.execSQL("CREATE INDEX idx_trashcan_default ON Notes (deleted, date DESC)");
+        DB_T.execSQL("CREATE INDEX idx_principal_default ON Tasks (deleted, pin DESC, date DESC)");
+        DB_T.execSQL("CREATE INDEX idx_trashcan_default ON Tasks (deleted, date DESC)");
 
+        //!!--se debe verificar la eficacia de los indices para los sub_tasks
 
         //Triggers para update de indice fts4:
-        DB_N.execSQL("Create TRIGGER Notes_after_insert AFTER INSERT ON Notes BEGIN " +
-                "INSERT INTO Notes_fts(docid, title, note, deleted) VALUES(new._id, new.title, new.note, new.deleted); "+
+        DB_T.execSQL("Create TRIGGER Tasks_after_insert AFTER INSERT ON Tasks BEGIN " +
+                "INSERT INTO Tasks_fts(docid, title, note, deleted) VALUES(new._id, new.title, new.note, new.deleted); "+
                 "END;");
+
+        //!!--verificar si es necesario una busqueda por fts4 para los sub_tasks
 
         //DB_N.execSQL("Create TRIGGER Notes_after_delete AFTER DELETE ON Notes BEGIN " +
         //        "DELETE FROM Notes_fts WHERE docid = old._id; "+
@@ -74,28 +83,44 @@ public class DB_Tasks extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase DB_N, int oldVersion, int newVersion) {
-        DB_N.execSQL("drop Table if exists Notes");
+    public void onUpgrade(SQLiteDatabase DB_T, int oldVersion, int newVersion) {
+        DB_T.execSQL("drop Table if exists Tasks");
+        DB_T.execSQL("drop Table if exists Tasks_Sub");
+        //!!--en el DB de notes hace falta el drop if exist de la tabla Note_fts
+        DB_T.execSQL("drop Table if exists Tasks_fts");
     }
 
-    public long Insert_Note_L(long current_date, String title,  String note, boolean pin, long reminder, int reminder_type, int reminder_interval){
-        SQLiteDatabase DB_N = this.getWritableDatabase();
-        ContentValues contentValues = ContentValues_Complete_Setter(current_date, title, note, pin,
-                reminder, reminder_type, reminder_interval,0,0,0);
+    public long Insert_Task_L(long current_date, String title,  String note, boolean pin, long reminder, int reminder_type, int reminder_interval){
+        SQLiteDatabase DB_T = this.getWritableDatabase();
+        //!!--Corregir valores de: fechas, completed, has_sub_task
+        ContentValues contentValues = ContentValues_Complete_Setter_Main_Task(current_date,current_date,current_date,current_date, title, note, pin,
+                reminder, reminder_type, reminder_interval,0,0,false,false,0);
 
-        long result = DB_N.insert("Notes", null,contentValues);
+        long result = DB_T.insert("Tasks", null,contentValues);
 
         //.insert devuelve el id de la fila insertada y "-1" si se produce algun error
-        Log.d("Inside DB_Notes","Insert_Note: " + (result == -1 ? "NOT inserted"   :   "Note Inserted Satisfactorily"));  ///Ternary Operator
+        Log.d("Inside DB_Tasks","Insert_Task: " + (result == -1 ? "NOT inserted"   :   "Task Inserted Satisfactorily"));  ///Ternary Operator
+        return  result;
+    }
+    public long Insert_Task_Sub_L( long parent_id, String note, boolean completed, int task_sub_position){
+        SQLiteDatabase DB_T = this.getWritableDatabase();
+        ContentValues contentValues = ContentValues_Complete_Setter_Sub_Task(parent_id, note, completed, task_sub_position, false);
+
+        long result = DB_T.insert("Tasks_Sub", null,contentValues);
+
+        //.insert devuelve el id de la fila insertada y "-1" si se produce algun error
+        Log.d("Inside DB_Tasks_Sub","Insert_Task_Sub: " + "number of insertion:"  + result );  ///Ternary Operator
+        Log.d("Inside DB_Tasks_Sub","Insert_Task_Sub: " + (result == -1 ? "NOT inserted"   :   "Task Inserted Satisfactorily"));  ///Ternary Operator
         return  result;
     }
 
-    public Boolean Insert_Note_Directly_in_Trash(long current_date, String title,  String note, boolean pin, int expire_days){
+    public Boolean Insert_Task_Directly_in_Trash(long current_date, String title,  String note, boolean pin, int expire_days){
         SQLiteDatabase DB_N = this.getWritableDatabase();
-        ContentValues contentValues = ContentValues_Complete_Setter(current_date, title, note, pin,
-                0, 0, 0,0,expire_days,1);
+        //!!--Corregir valores de: fechas, completed, has_sub_task
+        ContentValues contentValues = ContentValues_Complete_Setter_Main_Task(current_date, current_date, current_date, current_date, title, note, pin,
+                0, 0, 0,0,expire_days,false,false,1);
 
-        long result = DB_N.insert("Notes", null,contentValues);
+        long result = DB_N.insert("Tasks", null,contentValues);
 
         //.insert devuelve el id de la fila insertada y "-1" si se produce algun error
         Log.d("Inside DB_Notes","Insert_Directly in Trash: " + (result == -1 ? "NOT inserted"   :   "Note Inserted Satisfactorily"));    ///Ternary Operator
@@ -109,7 +134,7 @@ public class DB_Tasks extends SQLiteOpenHelper {
         statement.close();
         return lastId;
     }
-    public Boolean Modify_Note(long note_id, long current_date, String title, String note, boolean pin, long reminder, int reminder_type, int reminder_interval){
+    public Boolean Modify_Task(long note_id, long current_date, String title, String note, boolean pin, long reminder, int reminder_type, int reminder_interval){
 
         SQLiteDatabase DB_N = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -163,31 +188,15 @@ public class DB_Tasks extends SQLiteOpenHelper {
         return result > 0;
     }
 
-    public Cursor get_All_Notes(){
-        SQLiteDatabase DB_N = this.getReadableDatabase();
-        Cursor cursor = DB_N.rawQuery("select * from Notes where deleted = 0 order by pin DESC, date DESC", null);
+    //--updated to Tasks: get_All_Notes:
+    public Cursor get_All_Tasks(){
+        SQLiteDatabase DB_T = this.getReadableDatabase();
+        Cursor cursor = DB_T.rawQuery("select * from Tasks where deleted = 0 order by pin DESC, date DESC", null);
         return cursor;
     }
-    ///public Cursor get_All_Notes_fts(){
-    ///    SQLiteDatabase DB_N = this.getReadableDatabase();
-    ///    //Cursor cursor = DB_N.rawQuery("select * from Notes where deleted = 0 order by pin DESC, date DESC", null);
-    ///    Cursor cursor = DB_N.rawQuery("select snippet( Notes_fts, '[', ']', '...', -1, 10) as extract, id  from Notes_fts where Notes_fts MATCH 'Com*'", null);
-    ///    return cursor;
-    ///}
-    public Cursor get_All_Notes_fts(String searched_text){
-        SQLiteDatabase DB_N = this.getReadableDatabase();
-
-        //!! update:
-        ///searched_text = "Com";
-        String queryInput = searched_text + "*";
-
-        ///Cursor cursor = DB_N.rawQuery("select snippet( Notes_fts, '[', ']', '...', -1, 10) as extract, id  from Notes_fts where Notes_fts MATCH 'Com*'", null);
-        //Cursor cursor = DB_N.rawQuery("select n._id, n.title, n.note From Notes n Join Notes_fts f ON n._id = f.docid where Notes_fts MATCH ?", new String[]{queryInput});
-
-        //Cursor cursor = DB_N.rawQuery("select n._id, n.title, n.note , n.deleted From Notes n Join Notes_fts f ON n._id = f.docid where  f.Notes_fts MATCH ? AND n.deleted = 0", new String[]{queryInput});
-
-        //---esto solo funciona con las notas no eliminadas
-        Cursor cursor = DB_N.rawQuery("select n._id, n.title, n.note From Notes n Join Notes_fts f ON n._id = f.docid where  f.Notes_fts MATCH ? AND n.deleted = 0", new String[]{queryInput});
+    public Cursor get_All_Tasks_Sub(){
+        SQLiteDatabase DB_T = this.getReadableDatabase();
+        Cursor cursor = DB_T.rawQuery("select * from Tasks_Sub where deleted = 0 order by task_sub_position DESC", null);
         return cursor;
     }
     public Cursor get_All_Notes_fts_2(String searched_text){
@@ -207,19 +216,6 @@ public class DB_Tasks extends SQLiteOpenHelper {
         ///Cursor cursor = DB_N.rawQuery("select n._id, n.title, snippet(Notes_fts, '[', ']', '...') As somthingelse From Notes n Join Notes_fts f ON n._id = f.docid where  f.Notes_fts MATCH ? AND n.deleted = 0", new String[]{queryInput});
         ///Cursor cursor = DB_N.rawQuery("select n._id, n.title, n.note, snippet(Notes_fts, '[', ']', '...') As search_snippet From Notes n Join Notes_fts f ON n._id = f.rowid where  f.Notes_fts MATCH ? AND n.deleted = 0", new String[]{queryInput});
         Cursor cursor = DB_N.rawQuery("select n._id, n.title, n.note, snippet(Notes_fts, '[', ']', '...', 1, 13) As search_snippet, snippet(Notes_fts, '[', ']', '...', 0, 13) As search_snippetTitle From Notes n Join Notes_fts f ON n._id = f.docid where  f.Notes_fts MATCH ? AND n.deleted = 0", new String[]{queryInput});
-        return cursor;
-
-    }
-    public Cursor get_All_Notes_fts_3(String searched_text){
-        SQLiteDatabase DB_N = this.getReadableDatabase();
-
-        //!! update:
-        ///searched_text = "Com";
-        String queryInput = searched_text + "*";
-
-
-        //Cursor cursor = DB_N.rawQuery("select snippet(Notes_fts, '[', ']', '...') As search_snippet From Notes n Join Notes_fts f ON n._id = f.docid where  f.Notes_fts MATCH ? AND n.deleted = 0", new String[]{queryInput});
-        Cursor cursor = DB_N.rawQuery("select snippet(Notes_fts, '[', ']', '...') From Notes_fts  where  Notes_fts MATCH ? ", new String[]{queryInput});
         return cursor;
 
     }
@@ -331,17 +327,21 @@ public class DB_Tasks extends SQLiteOpenHelper {
     public Boolean Send_Note_To_Trash(long note_id, long current_date, String title, String note, boolean pin, int expire_days){
 
         SQLiteDatabase DB_N = this.getWritableDatabase();
-        ContentValues contentValues = ContentValues_Complete_Setter(current_date,title,note,pin,
-                0,0,0,0,expire_days,1);
+        //!!--Corregir valores de: fechas, completed, has_sub_task
+        ContentValues contentValues = ContentValues_Complete_Setter_Main_Task(current_date,current_date,current_date,current_date,title,note,pin,
+                0,0,0,0,expire_days,false,false,1);
 
         int result = DB_N.update("Notes", contentValues, "_id = ? ", new String[]{String.valueOf(note_id)});
         Result_Log_treatment(result, "Send_Note_To_Trash");
         return result > 0;
     }
     @NonNull
-    private static ContentValues ContentValues_Complete_Setter(long current_date, String title, String note, boolean pin, long reminder, int reminder_type, int reminder_interval, int category_id, int expire_days, int deleted) {
+    private static ContentValues ContentValues_Complete_Setter_Main_Task(long current_date,long date_created,long date_modified,long date_completed, String title, String note, boolean pin, long reminder, int reminder_type, int reminder_interval, int category_id, int expire_days,boolean completed, boolean has_sub_tasks, int deleted) {
         ContentValues contentValues = new ContentValues();
         contentValues.put("date", current_date);
+        contentValues.put("date_created",   date_created);
+        contentValues.put("date_modified",  date_modified);
+        contentValues.put("date_completed", date_completed);
         contentValues.put("title", title);
         contentValues.put("note", note);
         contentValues.put("pin", pin);
@@ -352,6 +352,18 @@ public class DB_Tasks extends SQLiteOpenHelper {
         contentValues.put("category_id",category_id);
         //!!--expire_days no implementada todavia
         contentValues.put("expire_days",expire_days);
+        contentValues.put("completed",completed);
+        contentValues.put("has_sub_tasks",has_sub_tasks);
+        contentValues.put("deleted",deleted);
+        return contentValues;
+    }
+    @NonNull
+    private static ContentValues ContentValues_Complete_Setter_Sub_Task(long parent_id,  String note, boolean completed, int task_sub_position, boolean deleted) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("parent_id", parent_id);
+        contentValues.put("note", note);
+        contentValues.put("completed", completed);
+        contentValues.put("task_sub_position", task_sub_position);
         contentValues.put("deleted",deleted);
         return contentValues;
     }
@@ -378,8 +390,8 @@ public class DB_Tasks extends SQLiteOpenHelper {
             Log.d("Inside DB_Notes", "From: " + from);
         } else {
             //result == 0 no se encontro | -1 hubo un error
-            if (result == 0) Log.d("Inside DB_Notes", from + ": NOT Found");
-            if (result == -1) Log.d("Inside DB_Notes", from + ": Error");
+            if (result == 0) Log.d("Inside DB_Tasks", from + ": NOT Found");
+            if (result == -1) Log.d("Inside DB_Tasks", from + ": Error");
         }
     }
 }
