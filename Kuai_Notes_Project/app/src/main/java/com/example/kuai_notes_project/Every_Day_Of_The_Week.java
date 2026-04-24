@@ -12,8 +12,6 @@ import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 
-import com.example.kuai_notes_project.ruled_out_code.Every_X_Hour_WindowPopUp;
-
 public class Every_Day_Of_The_Week {
     LayoutInflater layoutInflater;
     PopupWindow popupWindow;

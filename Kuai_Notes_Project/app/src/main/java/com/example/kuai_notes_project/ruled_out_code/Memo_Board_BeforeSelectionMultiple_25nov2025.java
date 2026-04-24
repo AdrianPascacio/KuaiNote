@@ -422,7 +422,8 @@ public class Memo_Board_BeforeSelectionMultiple_25nov2025 extends AppCompatActiv
     public void RemoveItem(int position) {
         Note _note = noteList.get(position);
 
-        Reminder_Notification.Cancel_Reminder_Alarm(main,_note.getNote_id());
+        //Reminder_Notification.Cancel_Reminder_Alarm(main,_note.getNote_id());
+        Reminder_Notification.Cancel_Reminder_Alarm(main,_note.getNote_id(),0,_note.getReminder());
 
         if(DB_N.Send_Note_To_Trash(_note.getNote_id(),_note.getDate(),_note.getTitle(),noteOriginal_list.get(position),_note.getPin(),20)){
             //----Remove Note from Recycler View

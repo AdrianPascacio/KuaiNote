@@ -1,24 +1,14 @@
-package com.example.kuai_notes_project.ruled_out_code;
+package com.example.kuai_notes_project;
 
 import android.content.Context;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.PopupWindow;
-import android.widget.Space;
-
-import com.example.kuai_notes_project.DB_Notes;
-import com.example.kuai_notes_project.Date_and_Time_Names;
-import com.example.kuai_notes_project.Note;
-import com.example.kuai_notes_project.R;
-import com.example.kuai_notes_project.Repeater_PopUpWindow;
-
-import java.util.Calendar;
 
 public class Every_X_Hour_WindowPopUp {
     LayoutInflater layoutInflater;

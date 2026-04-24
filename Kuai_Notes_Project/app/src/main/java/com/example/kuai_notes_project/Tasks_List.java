@@ -11,11 +11,13 @@ import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,6 +26,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Objects;
 
 import kotlinx.coroutines.scheduling.Task;
@@ -39,6 +42,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
     ArrayList<Task_Main> taskList;
     ArrayList<Task_Sub> task_subList;
     ArrayList<Task_Element> task_elements;
+    ArrayList<Task_Element> task_elements_aux;
     ArrayList<Integer> selected_positions_list;
 
     DB_Tasks DB_T;
@@ -49,7 +53,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
     ///Button btn_config, btn_check_lists;
     View main;
     View layout_dim;
-    View fl_return, fl_back_ghost;
+    View fl_return, fl_back_ghost, fl_search_ghost;
     Body_Note_Preview BNP;
     Date_of_Note_Item_View_DEPRECATED DoN_IV;
     Date_of_Note DoN;
@@ -148,6 +152,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         taskList = new ArrayList<>();
         task_subList = new ArrayList<>();
         task_elements = new ArrayList<>();
+        task_elements_aux = new ArrayList<>();
         selected_positions_list = new ArrayList<>();
 
         BNP = new Body_Note_Preview();
@@ -159,6 +164,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
 
         fl_return = findViewById(R.id.FrameLayout_Return);
         fl_back_ghost = findViewById(R.id.fl_Back_Ghost);
+        fl_search_ghost = findViewById(R.id.fl_Search_Ghost);
 
         floating_button = findViewById(R.id.floatingActionButton);
 
@@ -176,6 +182,12 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
 
 
 
+        fl_search_ghost.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Go_To_Search_In_Tasks();
+            }
+        });
         fl_back_ghost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -185,8 +197,9 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         floating_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                New_check_list();
-                Update_Recycler_View();
+                Go_To_Add_New_Task(view);
+                //New_check_list();
+                //Update_Recycler_View();
             }
         });
 
@@ -218,6 +231,25 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
                 }
             }
         });
+    }
+
+    private void Save_Sub_Tasks_New_Positions() {
+    }
+
+
+    public void Go_To_Add_New_Task(View view){
+        if(!selection_mode) {
+            Intent goTo = new Intent(this, Task_Visualizer.class);
+            startActivity(goTo);
+            overridePendingTransition(R.anim.slide_left_in, R.anim.slide_left_out);
+        }
+    }
+    private void Go_To_Search_In_Tasks() {
+        if(!selection_mode) {
+            Intent goTo = new Intent(this, Aux_Search_In_Tasks.class);
+            startActivity(goTo);
+            overridePendingTransition(R.anim.slide_left_in, R.anim.slide_left_out);
+        }
     }
 
     private void  getStartOfToday() {
@@ -282,39 +314,73 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
                             cursor_Tasks.getInt(reminder_type_indx),
                             cursor_Tasks.getInt(reminder_interval_indx),
                             cursor_Tasks.getInt(13)==1,
-                            cursor_Tasks.getInt(14)==1);
+                            cursor_Tasks.getInt(14)==1,
+                            cursor_Tasks.getInt(15)==1);
                     dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(task.date,start_of_today));
                     noteOriginal_list.add(cursor_Tasks.getString(note_indx));
                     selected_list.add(false);
                     taskList.add(task);
                     task_elements.add(task);
-                }
-            }
-        }
-        try (Cursor cursor_Tasks_Sub= DB_T.get_All_Tasks_Sub()) {
-            if(cursor_Tasks_Sub.getCount()==0){
-                Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
-            }else{
-                int id_indx = cursor_Tasks_Sub.getColumnIndex("_id");
-                int parent_indx = cursor_Tasks_Sub.getColumnIndex("parent_id");
-                int note_indx = cursor_Tasks_Sub.getColumnIndex("note");
-                int completed_indx = cursor_Tasks_Sub.getColumnIndex("completed");
-                int task_sub_position_indx = cursor_Tasks_Sub.getColumnIndex("task_sub_position");
+                    if(task.has_sub_tasks && task.unfolded){
+                        try (Cursor cursor_Tasks_Sub= DB_T.get_All_Tasks_Sub_For_Specific_Task_Main(task.task_id)) {
+                            if(cursor_Tasks_Sub.getCount()==0){
+                                Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
+                            }else{
+                                int id_indx_sub = cursor_Tasks_Sub.getColumnIndex("_id");
+                                int parent_indx_sub = cursor_Tasks_Sub.getColumnIndex("parent_id");
+                                int note_indx_sub = cursor_Tasks_Sub.getColumnIndex("note");
+                                int completed_indx_sub = cursor_Tasks_Sub.getColumnIndex("completed");
+                                int task_sub_position_indx_sub = cursor_Tasks_Sub.getColumnIndex("task_sub_position");
 
-                while (cursor_Tasks_Sub.moveToNext()){
-                    //!!---debe actualizarse
-                    Log.d("Read cursor_Notes", " Task_id: " + cursor_Tasks_Sub.getLong(id_indx));
-                    Task_Sub task_sub = new Task_Sub(cursor_Tasks_Sub.getLong(id_indx),
-                            cursor_Tasks_Sub.getLong(parent_indx),
-                            cursor_Tasks_Sub.getString(note_indx),
-                            cursor_Tasks_Sub.getInt(completed_indx)==1,
-                            cursor_Tasks_Sub.getInt(task_sub_position_indx));
-                    task_subList.add(task_sub);
-                    task_elements.add(task_sub);
+                                while (cursor_Tasks_Sub.moveToNext()){
+                                    //!!---debe actualizarse
+                                    Log.d("Read cursor_Notes", " Task_id: " + cursor_Tasks_Sub.getLong(id_indx_sub));
+                                    Task_Sub task_sub = new Task_Sub(cursor_Tasks_Sub.getLong(id_indx_sub),
+                                            cursor_Tasks_Sub.getLong(parent_indx_sub),
+                                            cursor_Tasks_Sub.getString(note_indx_sub),
+                                            cursor_Tasks_Sub.getInt(completed_indx_sub)==1,
+                                            cursor_Tasks_Sub.getInt(task_sub_position_indx_sub));
+                                    task_subList.add(task_sub);
+                                    task_elements.add(task_sub);
+                                    selected_list.add(false);
+                                }
+                                Log.d("TasksSubList","   TaskSub size:  "+ task_subList.size());
+                            }
+                        }
+                    }
                 }
-                Log.d("TasksSubList","   TaskSub size:  "+ task_subList.size());
             }
         }
+
+
+
+        ///try (Cursor cursor_Tasks_Sub= DB_T.get_All_Tasks_Sub()) {
+        ///    if(cursor_Tasks_Sub.getCount()==0){
+        ///        Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
+        ///    }else{
+        ///        int id_indx = cursor_Tasks_Sub.getColumnIndex("_id");
+        ///        int parent_indx = cursor_Tasks_Sub.getColumnIndex("parent_id");
+        ///        int note_indx = cursor_Tasks_Sub.getColumnIndex("note");
+        ///        int completed_indx = cursor_Tasks_Sub.getColumnIndex("completed");
+        ///        int task_sub_position_indx = cursor_Tasks_Sub.getColumnIndex("task_sub_position");
+
+        ///        while (cursor_Tasks_Sub.moveToNext()){
+        ///            //!!---debe actualizarse
+        ///            Log.d("Read cursor_Notes", " Task_id: " + cursor_Tasks_Sub.getLong(id_indx));
+        ///            Task_Sub task_sub = new Task_Sub(cursor_Tasks_Sub.getLong(id_indx),
+        ///                    cursor_Tasks_Sub.getLong(parent_indx),
+        ///                    cursor_Tasks_Sub.getString(note_indx),
+        ///                    cursor_Tasks_Sub.getInt(completed_indx)==1,
+        ///                    cursor_Tasks_Sub.getInt(task_sub_position_indx));
+        ///            task_subList.add(task_sub);
+        ///            task_elements.add(task_sub);
+        ///        }
+        ///        Log.d("TasksSubList","   TaskSub size:  "+ task_subList.size());
+        ///    }
+        ///}
+
+
+
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         ///checkViewModel.getAllChecks().observe(this,checkWithSubs -> {
@@ -362,10 +428,19 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
             return;
         }
 
-        Note _note = noteList.get(position);
-        Intent goTo = new Intent(this, MainActivity.class);
-        goTo.putExtra("send_date_of_note",_note.date);
-        goTo.putExtra("send_note_id",_note.note_id);
+        //Note _note = noteList.get(position);
+        //Task _task = task_elements.get(position);
+        long task_id  = 0;
+        if(task_elements.get(position).getViewType() == 0){
+            task_id = task_elements.get(position).getId();
+        }else{
+            Task_Sub task_sub = (Task_Sub) task_elements.get(position);
+            task_id  = task_sub.getParent_id();
+
+        }
+        Intent goTo = new Intent(this, Task_Visualizer.class);
+        goTo.putExtra("send_date_of_task",task_id);
+        goTo.putExtra("send_task_id",task_id);
         startActivity(goTo);
         overridePendingTransition(R.anim.slide_left_in,R.anim.slide_left_out);
     }
@@ -390,11 +465,14 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
 
         if(selection_item_menu_PopUp.popupWindow == null && selection_count >= 2){
             //--Buscar estado del pin de las dos primeras notas seleccionadas:
-            Note _note = noteList.get(selected_positions_list.get(0));
-            Note _note2 = noteList.get(selected_positions_list.get(1));
+            Task_Main _task_main = (Task_Main) task_elements.get(selected_positions_list.get(0));
+            Task_Main _task_main2 = (Task_Main) task_elements.get(selected_positions_list.get(1));
+            ///Note _note = noteList.get(selected_positions_list.get(0));
+            ///Note _note2 = noteList.get(selected_positions_list.get(1));
 
             //pin_initial_state_MS = false;
-            pin_initial_state_MS = _note.getPin() & _note2.getPin() || _note2.getPin(); /// AND Operator !!--Verificar si la opcion de elegir lo primero que escoja el usuario es lo mejor
+            ///pin_initial_state_MS = _note.getPin() & _note2.getPin() || _note2.getPin(); /// AND Operator !!--Verificar si la opcion de elegir lo primero que escoja el usuario es lo mejor
+            pin_initial_state_MS = _task_main.getPin() & _task_main2.getPin() || _task_main2.getPin(); /// AND Operator !!--Verificar si la opcion de elegir lo primero que escoja el usuario es lo mejor
 
 
             selection_item_menu_PopUp.setListener_dismiss(this);
@@ -431,18 +509,107 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         if(selected_positions_list.size()==3) selected_positions_list.remove(2);
         if(!selection_mode) fa_btn.startAnimation(Animation_FloatingButton_Appear);
     }
+    /// Complete Main Task:
+    @Override
+    public void Complete_Main_Task(int position) {
+        if(task_elements.get(position).getViewType() == 0){
+            Task_Main _task = (Task_Main) task_elements.get(position);
+
+
+            ///Change_Complete_Main_Task_Status();
+            _task.setCompleted(!_task.completed);
+            if(DB_T.Modify_Main_Task_Completed_Status(_task.task_id, _task.completed)) {
+                adapter.notifyItemChanged(position);
+            }
+
+            if(_task.has_sub_tasks) {
+                ///!!Change_Sub_task_Completed_Status(duplicated:
+
+                //!!-- aqui solo tiene 2 opciones, unfolded y folded. si se planea utilizar una tercera opcion debe agregarse aqui tambien una funcion para esa tercera posibilidad.
+                if(_task.unfolded){
+                    for(int i = position + 1 ; i <= task_elements.size() - 1 ; i ++){
+                        if(task_elements.get(i).getViewType() == 1){
+                            Task_Sub _task_sub = (Task_Sub) task_elements.get(i);
+                            if(_task_sub.getParent_id() == _task.task_id){
+                                if(_task_sub.completed != _task.completed){
+                                    _task_sub.setCompleted(!_task_sub.completed);
+                                    if(DB_T.Modify_Sub_Task_Completed_Status(_task_sub.task_sub_id, _task_sub.completed)){
+                                        task_elements.set(i,_task_sub);
+                                        adapter.notifyItemChanged(i);
+                                    }
+
+                                }
+                            }
+                        }else{
+                            break;
+                        }
+                    }
+                }else{
+                    DB_T.Modify_All_Sub_Task_Completed_Status(_task.task_id, _task.completed);
+
+                }
+            }
+        }else{
+            Task_Sub _task_sub = (Task_Sub) task_elements.get(position);
+        }
+    }
+
+    /// Complete Sub Task:
+    @Override
+    public void Complete_Sub_Task(int position) {
+        Task_Sub task_sub = (Task_Sub) task_elements.get(position);
+        task_sub.setCompleted(!task_sub.completed);
+        if(DB_T.Modify_Sub_Task_Completed_Status(task_sub.task_sub_id, task_sub.completed)){
+            task_elements.set(position,task_sub);
+            adapter.notifyItemChanged(position);
+        }
+        ///Main_Task_Completed(received_task_id);
+        int result = DB_T.Verify_If_All_Sub_Task_Completed(task_sub.parent_id);
+        Log.d("Task Visualizer", "Verify if all sub task are completed: " + result);
+
+        Task_Main _task_main= new Task_Main();
+        int _task_main_position = 0;
+        for(int i = position -1; i >= 0; i --){
+            if(task_elements.get(i).getViewType() == 0){
+                _task_main = (Task_Main) task_elements.get(i);
+                _task_main_position = i;
+                break;
+            }
+        }
+
+        if(result > 0){
+            if(!_task_main.completed){
+                ///!!Change_Complete_Main_Task_Status(duplicated)
+                _task_main.setCompleted(!_task_main.completed);
+                task_elements.set(_task_main_position,_task_main);
+                if(DB_T.Modify_Main_Task_Completed_Status(_task_main.task_id, _task_main.completed)) {
+                    adapter.notifyItemChanged(_task_main_position);
+                }
+            }
+
+        }else{
+            if(_task_main.completed){
+                ///!!Change_Complete_Main_Task_Status(duplicated)
+                _task_main.setCompleted(!_task_main.completed);
+                task_elements.set(_task_main_position,_task_main);
+                if(DB_T.Modify_Main_Task_Completed_Status(_task_main.task_id, _task_main.completed)) {
+                    adapter.notifyItemChanged(_task_main_position);
+                }
+            }
+        }
+    }
 
     /// Pin Items:
     @Override
     public void PinItem(int position) {
-        Note _note = noteList.get(position);
-        Task_Main _task = taskList.get(position);
+        ///Note _note = noteList.get(position);
+        Task_Main _task = (Task_Main) task_elements.get(position);
         //int _pin = _note.getPin() ^ 1;      //XOR Operator
 
 
         //!!--en modo multiple seleccion, cambiar el pin dependiendo del color del pin
         //!!--no invertir todo
-        if(pin_multi_change && pin_initial_state_MS ^ _note.getPin()){///XOR Operator
+        if(pin_multi_change && pin_initial_state_MS ^ _task.getPin()){///XOR Operator
             selected_list.set(position,!selected_list.get(position));// invert value
             adapter.notifyItemChanged(position);
             return;
@@ -451,45 +618,149 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         Toast.makeText(this, "Repeated pinned", Toast.LENGTH_SHORT).show();
         adapter.Change_is_repeated_value(true);
 
-        boolean _pin = pin_multi_change ? !pin_initial_state_MS : !_note.getPin();///Ternary Operator
+        boolean _pin = pin_multi_change ? !pin_initial_state_MS : !_task.getPin();///Ternary Operator
 
 
-        if(DB_T.Modify_Pin_Status(_note.note_id,_pin)){
+        if(DB_T.Modify_Pin_Status(_task.task_id,_pin)){
             RecyclerView_Pin_Update(position);
         }else{
             Toast.makeText(Tasks_List.this, "Not_Pin_Modified", Toast.LENGTH_SHORT).show();
         }
     }
     public void RecyclerView_Pin_Update(int position){
+        /// List:
+        ///dateEdited_list.clear();
+        ///noteOriginal_list.clear();
+        ///selected_list.clear();
+        ///noteList.clear();
+        ///taskList.clear();
+        ///task_subList.clear();
+        ///task_elements.clear();
 
-        Note _note = noteList.get(position);
-        String _date= dateEdited_list.get(position);
-        String _noteOriginal= noteOriginal_list.get(position);
-        boolean _selected=false;
+        Task_Main _task_main = (Task_Main) task_elements.get(position);
+        ///task_elements_aux.add(task_elements.get(position));
+        boolean _selected = false;
+        boolean was_unfolded = _task_main.unfolded;
         selected_list.set(position,false);
         adapter.notifyItemChanged(position);
 
-        dateEdited_list.remove(position);
-        noteOriginal_list.remove(position);
+        if(was_unfolded){
+            RecyclerView_Pin_Unfold_Update(position,false);
+        }
+
         selected_list.remove(position);
+        task_elements.remove(position);
 
-        noteList.remove(position);
 
-        int current_pinned_notes = DB_T.get_Specific_Note_Sorted_by_Pin_and_Date(_note.note_id);
-        //Log.d("Pin","   current_pin:" + current_pinned_notes+ "    position:" + position);
+        int current_pinned_tasks = DB_T.get_Specific_Task_Sorted_by_Pin_and_Date(_task_main.task_id);
+        Log.d("TasksList","   Task List Pin current pinned tasks:  :"+ current_pinned_tasks);
 
-        dateEdited_list.add(current_pinned_notes,_date);
-        noteOriginal_list.add(current_pinned_notes,_noteOriginal);
-        //--cambio de estado con referencia al anterior de (0 a 1)
-        //_note.setPin(_note.getPin() ^ 1);       //XOR Operator
-        _note.setPin(!_note.getPin());
-        noteList.add(current_pinned_notes,_note);
-        selected_list.add(current_pinned_notes,_selected);
-        adapter.notifyItemMoved(position,current_pinned_notes);
-        adapter.notifyItemChanged(current_pinned_notes);
+
+        if(current_pinned_tasks > 0){
+            int main_task_counter = 0;
+            for(int i = 0; i <= task_elements.size()-1; i++ ){
+                Log.d("TasksList","   Task List Unfold:  current task: "+ task_elements.get(i).getContent() + "  " +main_task_counter+"/"+current_pinned_tasks);
+                if(task_elements.get(i).getViewType()==0){
+                    if( main_task_counter == current_pinned_tasks){
+                        ///Task_Main _task_main_before = (Task_Main) task_elements.get(i-1);
+                        ///Log.d("TasksList","   Task List Unfold:  task before: "+ _task_main_before.getNote());
+                        //if(_task_main_before.unfolded){
+                            //--If the previous main task have sub task count them and add it to the count:
+                            ///for(int j = i; j <= task_elements.size()-1; j++ ){
+                            ///    ///for(int j = i+1; j <= task_elements.size()-1; j++ ){
+                            ///    if(task_elements.get(j).getViewType()==0) {
+                            ///        Log.d("TasksList","   Task List Unfold:  task_element:"+ task_elements.get(j).getViewType() + "  j:" + j);
+                            ///        current_pinned_tasks = j;
+                            ///        break;
+                            ///    }
+                            ///}
+
+                            ///break;
+                        {
+                            //--approved
+                            Log.d("TasksList","   Task List Unfold:  task_element:"+ task_elements.get(i).getContent() + "  i:" + i);
+                            current_pinned_tasks = i ;
+                            break;
+                        }
+                    }
+
+                    main_task_counter ++;
+
+                }else{
+                    current_pinned_tasks ++;
+
+                }
+
+            }
+        }
+
+
+
+
+
+
+        _task_main.setPin(!_task_main.getPin());
+
+        task_elements.add(current_pinned_tasks,_task_main);
+        selected_list.add(current_pinned_tasks,_selected);
+        adapter.notifyItemMoved(position,current_pinned_tasks);
+        adapter.notifyItemChanged(current_pinned_tasks);
+
+
+        if(was_unfolded){
+            RecyclerView_Pin_Unfold_Update(current_pinned_tasks,true);
+        }
+
 
         Restart_Selection();
 
+    }
+
+    private void RecyclerView_Pin_Unfold_Update(int position, boolean unfolded) {
+        Log.d("TasksList","   Task List Unfold:  now unfolded is:"+ unfolded);
+        Task_Main _task = (Task_Main) task_elements.get(position);
+        /// Fold
+        if(!unfolded){
+            //--Delete all sub task from the task_elements list and update
+            for(int i = position + 1; i <= task_elements.size()-1 ; i ++){
+                Log.d("TasksList","   Task List Unfold:  task_element:"+ task_elements.get(i).getViewType());
+                if (task_elements.get(i).getViewType() == 1) {
+                    Task_Sub _task_sub = (Task_Sub) task_elements.get(i);
+                    if (_task_sub.getParent_id() == _task.getTask_id()) {
+                        Log.d("TasksList","   Task List Unfold:  sub task description:"+ task_elements.get(i).getContent());
+                        task_elements_aux.add(task_elements.get(i));
+                        task_elements.remove(i);
+                        selected_list.remove(i);
+                        adapter.notifyItemRemoved(i);
+                        i--;
+                        //!!--Verify if, in the adapter, remove one by one is better than remove a range
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+            adapter.notifyItemChanged(position);
+        }
+        /// Unfold
+        if(unfolded){
+            Log.d("TasksSubList","   Task Elements Aux size:  "+ task_elements_aux.size());
+            for(int i = task_elements_aux.size()-1; i >= 0 ; i --){
+
+
+                task_elements.add(position+1 ,task_elements_aux.get(i));
+                selected_list.add(position+1 ,false);
+
+                //adapter.notifyItemRangeInserted(position+1,position+cursor_Tasks_Sub.getCount());
+                ///adapter.notifyItemRangeInserted(position+1,position+1+task_elements_aux.size()-1);
+                adapter.notifyItemChanged(position+1);
+                ///adapter.notifyItemChanged(position);
+                Log.d("TasksSubList","   Task Elements size:  "+ task_elements.size());
+
+            }
+            task_elements_aux.clear();
+        }
     }
 
     /// Reminder
@@ -544,25 +815,182 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         Toast.makeText(this, "reminder dismiss"+"normal", Toast.LENGTH_SHORT).show();
     }
 
+    /// Unfold
+    @Override
+    public void Unfold(int position, long element_id) {
+        //Task_Main _task = DB_T.getASpecificTask(element_id);
+        Task_Main _task = null;
+        
+        for( int i = taskList.size() - 1; i>=0;i-- ){
+            if(taskList.get(i).getTask_id() == element_id){
+                 _task = taskList.get(i);
+                _task.setUnfolded(!_task.unfolded);
+                taskList.set(i,_task);
+            }
+        }
+        //Task_Main _task = taskList.get(position);
+
+
+
+
+
+        if(DB_T.Modify_Unfold_Status(_task.task_id,_task.unfolded)){
+            RecyclerView_Unfold_Update(position,_task.unfolded);
+        }else{
+            Toast.makeText(Tasks_List.this, "Not_Unfold_Modified", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    private void RecyclerView_Unfold_Update(int position, boolean unfolded) {
+        Log.d("TasksList","   Task List Unfold:  now unfolded is:"+ unfolded);
+        //!!--seems to be adapted to note and not for a task:
+        Task_Main _task = (Task_Main) task_elements.get(position);
+        /// Fold
+        if(!unfolded){
+            //--Delete all sub task from the task_elements list and update
+            for(int i = position + 1; i <= task_elements.size()-1 ; i ++){
+                Log.d("TasksList","   Task List Unfold:  task_element:"+ task_elements.get(i).getViewType());
+                Log.d("TasksList","   Task List Unfold:  task_element:"+ task_elements.get(i).getViewType());
+                if (task_elements.get(i).getViewType() == 1) {
+                    Task_Sub _task_sub = (Task_Sub) task_elements.get(i);
+                    if (_task_sub.getParent_id() == _task.getTask_id()) {
+                        Log.d("TasksList","   Task List Unfold:  sub task description:"+ task_elements.get(i).getContent());
+                        task_elements.remove(i);
+                        selected_list.remove(i);
+                        adapter.notifyItemRemoved(i);
+                        i--;
+                        //!!--Verify if, in the adapter, remove one by one is better than remove a range
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+            adapter.notifyItemChanged(position);
+        }
+        /// Unfold
+        if(unfolded){
+            //--Look for all the subs task that have for parent the present main task (bring a cursor), add them in the position
+
+            try (Cursor cursor_Tasks_Sub= DB_T.get_All_Tasks_Sub_For_Specific_Task_Main(_task.task_id)) {
+                if(cursor_Tasks_Sub.getCount()==0){
+                    Log.d("Read cursor_Tasks", "Cursor_Tasks : readcycleplanrecord: No Entry Exist");
+                }else{
+                    int id_indx_sub = cursor_Tasks_Sub.getColumnIndex("_id");
+                    int parent_indx_sub = cursor_Tasks_Sub.getColumnIndex("parent_id");
+                    int note_indx_sub = cursor_Tasks_Sub.getColumnIndex("note");
+                    int completed_indx_sub = cursor_Tasks_Sub.getColumnIndex("completed");
+                    int task_sub_position_indx_sub = cursor_Tasks_Sub.getColumnIndex("task_sub_position");
+
+                    Log.d("Read cursor_Task", "    TaskMain_id: " + _task.getContent());
+                    while (cursor_Tasks_Sub.moveToNext()){
+                        //!!---debe actualizarse
+                        Log.d("Read cursor_Task", "    Task_id: " + cursor_Tasks_Sub.getLong(id_indx_sub));
+                        Log.d("Read cursor_Task", "    Task_content: " + cursor_Tasks_Sub.getString(note_indx_sub));
+                        Task_Sub task_sub = new Task_Sub(cursor_Tasks_Sub.getLong(id_indx_sub),
+                                cursor_Tasks_Sub.getLong(parent_indx_sub),
+                                cursor_Tasks_Sub.getString(note_indx_sub),
+                                cursor_Tasks_Sub.getInt(completed_indx_sub)==1,
+                                cursor_Tasks_Sub.getInt(task_sub_position_indx_sub));
+                        //task_subList.add(task_sub);
+                        task_elements.add(position+1+ cursor_Tasks_Sub.getPosition(),task_sub);
+                        selected_list.add(position+1+ cursor_Tasks_Sub.getPosition(),false);
+                    }
+                    //adapter.notifyItemRangeInserted(position+1,position+cursor_Tasks_Sub.getCount());
+                    adapter.notifyItemRangeInserted(position+1,cursor_Tasks_Sub.getCount());
+                    adapter.notifyItemChanged(position);
+                    Log.d("TasksSubList","   TaskSub size:  "+ task_elements.size());
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+        //Task_Sub _task_sub =
+        ///Task_Main _task = (Task_Main) task_elements.get(position);
+        ///String _date= dateEdited_list.get(position);
+        ///String _noteOriginal= noteOriginal_list.get(position);
+        ///boolean _selected=false;
+        ///selected_list.set(position,false);
+        ///adapter.notifyItemChanged(position);
+
+        ///dateEdited_list.remove(position);
+        ///noteOriginal_list.remove(position);
+        ///selected_list.remove(position);
+
+        ///noteList.remove(position);
+
+        ///int current_pinned_notes = DB_T.get_Specific_Note_Sorted_by_Pin_and_Date(_note.note_id);
+        /////Log.d("Pin","   current_pin:" + current_pinned_notes+ "    position:" + position);
+
+        ///dateEdited_list.add(current_pinned_notes,_date);
+        ///noteOriginal_list.add(current_pinned_notes,_noteOriginal);
+        /////--cambio de estado con referencia al anterior de (0 a 1)
+        /////_note.setPin(_note.getPin() ^ 1);       //XOR Operator
+        ///_note.setPin(!_note.getPin());
+        ///noteList.add(current_pinned_notes,_note);
+        ///selected_list.add(current_pinned_notes,_selected);
+        ///adapter.notifyItemMoved(position,current_pinned_notes);
+        ///adapter.notifyItemChanged(current_pinned_notes);
+
+        ///Restart_Selection();
+    }
+
     @Override
     public void RemoveItem(int position) {
-        Note _note = noteList.get(position);
-        Task_Main _task = taskList.get(position);
+        Task_Main _task = (Task_Main) task_elements.get(position);
 
-        Reminder_Notification.Cancel_Reminder_Alarm(main,_note.note_id);
+        Reminder_Notification.Cancel_Reminder_Alarm(main,_task.task_id,1,_task.reminder);
 
-        if(DB_T.Send_Note_To_Trash(_note.note_id,_note.date,_note.title,noteOriginal_list.get(position),_note.pin,20)){
-            //----Remove Note from Recycler View
+        //!!--Verificar si es mas viable crear otro metodo en DB_Tasks para mover el Main Tasks sin modificaciones.
+        if(DB_T.Send_Task_To_Trash(_task.task_id,_task.date,_task.note,_task.note,_task.pin,20,_task.completed,_task.has_sub_tasks)){
+            if(_task.has_sub_tasks){
+                DB_T.Send_Previous_Sub_Task_To_Trash_With_Out_Modification(_task.task_id);
+                if(_task.unfolded){
+                    for(int i = position + 1; i <= task_elements.size() - 1 ;i++){
+                        if(task_elements.get(i).getViewType()==0){
+                            break;
+                        }
+                        task_elements.remove(i);
+                        i--;
+                        adapter.notifyItemRemoved(position);
+                    }
+                }
+            }
+
             dateEdited_list.remove(position);
             noteOriginal_list.remove(position);
-            noteList.remove(position);
-            taskList.remove(position);
             selected_list.remove(position);
+            ///noteList.remove(position);
+            taskList.remove(position);
+            ///task_subList.remove(position);
+            task_elements.remove(position);
+
+
             adapter.notifyItemRemoved(position);
 
             Restart_Selection();
         }
     }
+
+
     private void Restart_Selection() {
         selection_count =0;
         selection_mode = false;

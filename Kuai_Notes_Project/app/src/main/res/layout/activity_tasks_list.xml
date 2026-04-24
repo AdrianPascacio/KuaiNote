@@ -69,6 +69,24 @@
         android:background="@color/transparent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+    <FrameLayout
+        android:id="@+id/FrameLayout_Search"
+        android:layout_width="36dp"
+        android:layout_height="26dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginRight="14dp"
+        android:background="@drawable/zoom_plus"
+        android:backgroundTint="@color/Medium_dark_brown"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    <FrameLayout
+        android:id="@+id/fl_Search_Ghost"
+        android:layout_width="63dp"
+        android:layout_height="50dp"
+        android:background="@color/transparent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
 

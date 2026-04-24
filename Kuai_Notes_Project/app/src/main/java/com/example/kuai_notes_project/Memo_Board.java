@@ -428,7 +428,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     public void RemoveItem(int position) {
         Note _note = noteList.get(position);
 
-        Reminder_Notification.Cancel_Reminder_Alarm(main,_note.note_id);
+        Reminder_Notification.Cancel_Reminder_Alarm(main,_note.note_id,0, _note.reminder);
 
         if(DB_N.Send_Note_To_Trash(_note.note_id,_note.date,_note.title,noteOriginal_list.get(position),_note.pin,20)){
             //----Remove Note from Recycler View

@@ -414,7 +414,7 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
             Return_To_Memo_Board(); //is a method with the finish() method inside, but is there to add animations later
 
             if (note.note_id != 0) {      //Delete Reminder if exist
-                Reminder_Notification.Cancel_Reminder_Alarm(layout_body_note, note.note_id);
+                Reminder_Notification.Cancel_Reminder_Alarm(layout_body_note, note.note_id, 0,note.reminder);
             }
 
         }

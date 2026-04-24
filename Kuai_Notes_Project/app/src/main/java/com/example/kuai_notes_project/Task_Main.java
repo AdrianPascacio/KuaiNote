@@ -19,11 +19,12 @@ public class Task_Main implements Task_Element {
 
     boolean completed = false;
     boolean has_sub_tasks = false;
+    boolean unfolded = false;
 
 
     public Task_Main() {
     }
-    public Task_Main(long task_id, long date, long date_created, long date_modified, long date_completed, String title, String note, boolean pin, long reminder, Integer reminder_type, Integer reminder_interval, boolean completed, boolean has_sub_tasks) {
+    public Task_Main(long task_id, long date, long date_created, long date_modified, long date_completed, String title, String note, boolean pin, long reminder, Integer reminder_type, Integer reminder_interval, boolean completed, boolean has_sub_tasks, boolean unfolded) {
         this.task_id = task_id;
         this.date = date;
         this.date_created = date_created;
@@ -41,6 +42,7 @@ public class Task_Main implements Task_Element {
         this.expire_days = 20;
         this.completed = completed;
         this.has_sub_tasks = has_sub_tasks;
+        this.unfolded = unfolded;
     }
     // Getters and Setters
     public long getTask_id() {
@@ -146,7 +148,7 @@ public class Task_Main implements Task_Element {
         this.category = category;
     }
 
-    public boolean geCompleted() {
+    public boolean getCompleted() {
         return completed;
     }
 
@@ -160,6 +162,13 @@ public class Task_Main implements Task_Element {
 
     public void setHas_Sub_Tasks(boolean has_sub_tasks) {
         this.has_sub_tasks = has_sub_tasks;
+    }
+    public boolean getUnfolded() {
+        return unfolded;
+    }
+
+    public void setUnfolded(boolean unfolded) {
+        this.unfolded = unfolded;
     }
 
     @Override

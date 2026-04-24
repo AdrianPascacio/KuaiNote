@@ -12,9 +12,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
@@ -125,9 +127,35 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
         //Log.d("TasksList","   Note id:  "+task.getTask_id());
         if( getItemViewType(position) == TYPE_TASK_MAIN){
 
+
+            Task_Main task = (Task_Main) task_elements.get(position);
+            boolean isSelected = selected_id.get(position);
+            boolean isPinned = task.pin;
+            boolean isReminded = task.reminder > 0;
+            boolean isHas_Sub_Tasks = task.has_sub_tasks;
+
             MyViewHolder_Task_Main taskHolder = (MyViewHolder_Task_Main) holder;
             taskHolder.title_id.setVisibility(View.VISIBLE);
-            taskHolder.title_id.setText(task_elements.get(position).getContent());
+            taskHolder.title_id.setText(task_elements.get(position).getContent() );
+
+            ///taskHolder.fl_pin_icon_activated.setVisibility(isPinned ? View.VISIBLE : View.GONE); ///Ternary Operator
+            taskHolder.fl_reminder.setVisibility(isReminded ? View.VISIBLE : View.GONE); ///Ternary Operator
+
+            taskHolder.fl_complete_mark.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), task.completed ? R.color.ex_green : R.color.gray_light_3 ))); ///Ternary Operator
+
+            if(isHas_Sub_Tasks){
+                taskHolder.fl_unfold.setVisibility(View.VISIBLE);
+                taskHolder.fl_unfold.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), task.unfolded ? R.color.ex_green : R.color.gray_light_3 ))); ///Ternary Operator
+            }else{
+                taskHolder.fl_unfold.setVisibility(View.GONE);
+            }
+
+            taskHolder.fl_pin_icon_activated.setVisibility( !isSelected && isPinned ? View.VISIBLE : View.GONE); ///Ternary Operator
+            taskHolder.fl_delete_ghost.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+            taskHolder.fl_delete.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+            taskHolder.fl_pin.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+            taskHolder.fl_pin_ghost.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+
             ///taskHolder.note_preview_id.setVisibility(View.VISIBLE);
             ///taskHolder.note_preview_id.setText("Task slave example: " +   String.valueOf((int) task.getTask_id() + "    task sub:" + task_sub.getNote()) );
 
@@ -142,6 +170,10 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             MyViewHolder_Task_Sub subTaskHolder = (MyViewHolder_Task_Sub) holder;
             subTaskHolder.title_id.setVisibility(View.VISIBLE);
             subTaskHolder.title_id.setText(task_elements.get(position).getContent());
+
+            Task_Sub task_sub = (Task_Sub) task_elements.get(position);
+
+            subTaskHolder.fl_task_sub_completed.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),task_sub.completed ? R.color.ex_green : R.color.gray_light_3 ))); ///Ternary Operator
         }
 
 
@@ -490,6 +522,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
         TextView date_id, title_id, note_preview_id;
         View layout_btn_options, layout_btn_options_ghost, layout_global_item, layout_reminder, layout_options_reminder_ghost;
         FrameLayout fl_delete, fl_reminder, fl_pin ,fl_delete_ghost, fl_reminder_ghost, fl_pin_ghost ,  fl_pin_icon_activated, fl_reminder_activated;
+        FrameLayout fl_complete_mark, fl_unfold;
         FrameLayout fl_item;
 
 
@@ -512,6 +545,8 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             fl_pin_icon_activated = itemView.findViewById(R.id.FrameLayout_Pin_Icon);
             fl_reminder_activated = itemView.findViewById(R.id.Fl_Reminder_Activated);
             fl_item = itemView.findViewById((R.id.Layout_Item));
+            fl_complete_mark = itemView.findViewById((R.id.Fl_Completed_Mark));
+            fl_unfold = itemView.findViewById((R.id.Fl_Unfold));
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -559,6 +594,28 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
                     }
                 }
             });
+            itemView.findViewById(R.id.Fl_Completed_Mark).setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v){
+                    if (recyclerTasksListInterface != null){
+                        int pos = getAbsoluteAdapterPosition();
+                        if (pos != RecyclerView.NO_POSITION){
+                            recyclerTasksListInterface.Complete_Main_Task(pos);
+                        }
+                    }
+                }
+            });
+            itemView.findViewById(R.id.Fl_Unfold).setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v){
+                    if (recyclerTasksListInterface != null){
+                        int pos = getAbsoluteAdapterPosition();
+                        if (pos != RecyclerView.NO_POSITION){
+                            recyclerTasksListInterface.Unfold(pos,task_elements.get(pos).getId());
+                        }
+                    }
+                }
+            });
             itemView.findViewById(R.id.Fl_Reminder_Ghost).setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v){
@@ -577,12 +634,14 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
         TextView date_id, title_id, note_preview_id;
         View layout_btn_options, layout_btn_options_ghost, layout_global_item, layout_reminder, layout_options_reminder_ghost;
         FrameLayout fl_delete, fl_reminder, fl_pin ,fl_delete_ghost, fl_reminder_ghost, fl_pin_ghost ,  fl_pin_icon_activated, fl_reminder_activated;
+        FrameLayout fl_task_sub_completed;
         FrameLayout fl_item;
 
 
         public MyViewHolder_Task_Sub(@NonNull View itemView, Recycler_Tasks_Sub_List_Interface recyclerTasksSubListInterface){
             super(itemView);
             title_id = itemView.findViewById(R.id.Text_Task_Sub_Title);
+            fl_task_sub_completed = itemView.findViewById(R.id.Fl_Completed_Mark);
 
 
             itemView.setOnClickListener(new View.OnClickListener() {
@@ -607,6 +666,17 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
                     ///    }
                     ///}
                     return false;
+                }
+            });
+            itemView.findViewById(R.id.Fl_Completed_Mark).setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v){
+                    if (recyclerTasksSubListInterface != null){
+                        int pos = getAbsoluteAdapterPosition();
+                        if (pos != RecyclerView.NO_POSITION){
+                            recyclerTasksSubListInterface.Complete_Sub_Task(pos);
+                        }
+                    }
                 }
             });
         }

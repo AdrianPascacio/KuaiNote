@@ -19,11 +19,20 @@ import androidx.core.app.NotificationManagerCompat;
 
 public class Reminder_Notification {
     private static final String CHANNEL_ID = "My_App_Channel";
+    private static final String CHANNEL_ID_TASK = "My_App_Channel_Task";
     public static final int NOTIFICATION_ID = 1;
+    public static final int TYPE_JOURNAL_ELEMENT_NOTE = 0;
+    public static final int TYPE_JOURNAL_ELEMENT_TASK = 1;
     static DB_Notes DB_N;
-    public static void sendNotification(Context context, String title, String content, String bigText, long note_date, int hash_requestCode, long note_id){
+    static DB_Tasks DB_T;
+    public static void sendNotification(Context context, int Element_Type, String title, String content, String bigText, long note_date, int hash_requestCode, long note_id){
         DB_N = new DB_Notes(context);
-        Create_Notification_Channel(context);
+        DB_T = new DB_Tasks(context);
+        if(Element_Type == TYPE_JOURNAL_ELEMENT_NOTE){
+            Create_Notification_Channel(context);
+        }else{
+            Create_Task_Notification_Channel(context);
+        }
 
         Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra("send_note_id",note_id); //Este es el putExtra que necesito
@@ -40,7 +49,7 @@ public class Reminder_Notification {
                 PendingIntent.FLAG_IMMUTABLE
         );
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context,CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context,Element_Type == TYPE_JOURNAL_ELEMENT_NOTE ? CHANNEL_ID: CHANNEL_ID_TASK) /// TERNARY OPERATOR
                 .setSmallIcon(R.drawable.fire_icon_5)
                 .setBadgeIconType(R.drawable.recycler_logo_icon_4)
                 .setContentTitle(title)
@@ -65,7 +74,6 @@ public class Reminder_Notification {
             return;
         }
         notificationManager.notify(hash_requestCode,builder.build());
-
     }
     private static void Create_Notification_Channel(Context context){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
@@ -73,6 +81,18 @@ public class Reminder_Notification {
             String description = "Application notification";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,name,importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+    private static void Create_Task_Notification_Channel(Context context){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            CharSequence name = "General Task Notification";
+            String description = "Application Task notification";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID_TASK,name,importance);
             channel.setDescription(description);
 
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
@@ -101,30 +121,54 @@ public class Reminder_Notification {
         }
     }
 
-    public static void Cancel_Reminder_Modifying_Database(View itemView, long previous_reminder, long note_id  ) {
+    public static void Cancel_Reminder_Modifying_Database(View itemView, long previous_reminder, long element_id  ) {
+
         DB_Notes DB_N = new DB_Notes(itemView.getContext());
         if(previous_reminder > 0){
 
-            boolean mayor = note_id > 0;
+            boolean mayor = element_id > 0;
             Toast.makeText(itemView.getContext(), "Reminder Previo mayor 0"+mayor, Toast.LENGTH_SHORT).show();
-            if(DB_N.Modify_Reminder_Status(note_id,0L,0,0)){
+            if(DB_N.Modify_Reminder_Status(element_id,0L,0,0)){
 
-                Cancel_Reminder_Alarm(itemView, note_id);
+                Cancel_Reminder_Alarm(itemView, element_id,0,previous_reminder);
+            }
+        }
+    }
+    public static void Cancel_Task_Reminder_Modifying_Database(View itemView, long previous_reminder, long element_id  ) {
+
+        DB_Tasks DB_T = new DB_Tasks(itemView.getContext());
+        if(previous_reminder > 0){
+
+            boolean mayor = element_id > 0;
+            Toast.makeText(itemView.getContext(), "Reminder Previo mayor 0"+mayor, Toast.LENGTH_SHORT).show();
+            if(DB_T.Modify_Reminder_Status(element_id,0L,0,0)){
+
+                Cancel_Reminder_Alarm(itemView, element_id,1,previous_reminder);
             }
         }
     }
 
-    public static void Cancel_Reminder_Alarm(View itemView, long note_id ) {
+    public static void Cancel_Reminder_Alarm(View itemView, long element_id , int Type_OF_Element, long reminder) {
+        //!!se esta ejecutando incluso si no tiene un reminder registrado.
         //int _upperReminder_Half = (int) (_note.reminder >>> 32);
         //int _lowerReminder_Half = (int) (_note.reminder);
         //int _hashreminder = upperReminder_Half ^ lowerReminder_Half;
         //int _hashreminder = (int) (( previous_reminder >>> 32 ) ^ previous_reminder ); //hash creado con XOR operator (upper ^ lower)
-        int note_id_As_reminderCode =  (int) (( note_id >>> 32 ) ^ note_id ); //hash creado con XOR operator (upper ^ lower)
+        if(reminder == 0){
+            return;   //Cancel Method because is not needed
+        }
+        int _hashreminder =  0;
+        if(Type_OF_Element == 0){
+            _hashreminder =  Reminder_Hash_Creator.get_Note_Hash(element_id);
+        }else{
+            _hashreminder =  Reminder_Hash_Creator.get_Task_Hash(element_id);
+        }
+        //int note_id_As_reminderCode =  (int) (( note_id >>> 32 ) ^ note_id ); //hash creado con XOR operator (upper ^ lower)
         Intent notificationIntent = new Intent(itemView.getContext(), Notification_Receiver.class);
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
                 itemView.getContext(),
-                note_id_As_reminderCode,
+                _hashreminder,
                 notificationIntent,
                 PendingIntent.FLAG_IMMUTABLE
         );

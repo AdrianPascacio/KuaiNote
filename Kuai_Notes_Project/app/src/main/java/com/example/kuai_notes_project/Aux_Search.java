@@ -68,7 +68,7 @@ public class Aux_Search extends AppCompatActivity implements Recycler_Search_Int
         cursor_id_List = new ArrayList<>();
 
         recyclerView = findViewById(R.id.Recycler_Search);
-        adapter = new Adapter_Recycler_Search(this,Selected_List,Title_List, NoteContent_List,Snipped_Note_List, this);
+        adapter = new Adapter_Recycler_Search(this,0,Selected_List,Title_List, NoteContent_List,Snipped_Note_List, this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -79,6 +79,7 @@ public class Aux_Search extends AppCompatActivity implements Recycler_Search_Int
         //Update_Recycler_View_originalValues();
         ///Update_Recycler_View_ftsValues();
 
+        //!!--this is not a debounce:
         new Handler().postDelayed(new Runnable() {//Se enfoca en cuerpo de la nota y se abre el teclado solo si el texto es nuevo
             @Override
             public void run() {
@@ -89,6 +90,7 @@ public class Aux_Search extends AppCompatActivity implements Recycler_Search_Int
                 }
             }
         }, 300); // Realiza accion luego de 300 milisegundos
+
 
         et_searched_Text.addTextChangedListener(new TextWatcher() {
             @Override
@@ -162,7 +164,7 @@ public class Aux_Search extends AppCompatActivity implements Recycler_Search_Int
                         if(adapter.getItemCount() > 1){
                             adapter.notifyItemRangeChanged(1,adapter.getItemCount()-1);
                         }
-                        Log.d("2Search", "            Adding: Title: "+Title_List.get(Title_List.size()-1)+ "    note: "+ Snipped_Note_List.get(Snipped_Note_List.size()-1));
+                        Log.d("2Search", "            Adding: Title: "+Title_List.get(Title_List.size()-1)+ "    note original: "+ NoteContent_List.get(NoteContent_List.size()-1)+ "    snipped: "+ Snipped_Note_List.get(Snipped_Note_List.size()-1));
 
                         item_count ++;
                     }

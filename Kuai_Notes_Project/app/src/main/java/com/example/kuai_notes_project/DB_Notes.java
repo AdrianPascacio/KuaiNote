@@ -105,7 +105,7 @@ public class DB_Notes extends SQLiteOpenHelper {
     public long Get_Last_RowId(){
         //!!--lo ideal seria usar el nativo .insert para recuperar este variable long
         SQLiteDatabase DB_N = this.getWritableDatabase();
-        SQLiteStatement statement = DB_N.compileStatement("SELECT LAST_INSERT_ROWID();");
+        SQLiteStatement statement = DB_N.compileStatement("SELECT LAST_INSERT_ROWID() FROM Notes;");
         long lastId = statement.simpleQueryForLong();
         statement.close();
         return lastId;

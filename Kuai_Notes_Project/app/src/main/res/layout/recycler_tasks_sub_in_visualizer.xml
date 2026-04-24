@@ -17,6 +17,7 @@
         android:id="@+id/Layout_Global_Item"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="top"
         android:paddingVertical="10dp"
         android:paddingHorizontal="15dp"
         android:requiresFadingEdge="horizontal"
@@ -33,16 +34,20 @@
         android:layout_marginVertical="10dp"
         -->
 
-        <TextView
-            android:id="@+id/Text_Task_Sub_Title"
+        <EditText
+            android:id="@+id/Task_Sub_Description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
             android:layout_marginLeft="60dp"
+            android:hint="Sub Task Description"
+            android:gravity="top"
             android:text=""
-            android:hint="Sub Note Example"
+            android:textColor="@color/note_visualizer_title_text_color"
+            android:textColorHighlight="@color/green_nai_cha"
+            android:textColorHint="@color/note_visualizer_title_hint"
             android:textSize="20sp"
-            android:textColor="@color/item_visualizer_title_text_color"
-            android:textStyle="normal" />
+            android:textStyle="bold"/>
 
     </LinearLayout>
 
@@ -89,6 +94,28 @@
             android:layout_marginLeft="20dp"
             android:background="@drawable/recycler_logo_icon_4"
             android:backgroundTint="@color/item_visualizer_icon_neutral_tint"
+            android:clickable="false"
+            android:focusable="false"
+            android:longClickable="false" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/Layout_Remove_Sub_Task"
+        android:layout_width="40dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end|center_vertical"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+
+        <FrameLayout
+            android:id="@+id/Fl_Remove_Sub_Task"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center"
+            android:background="@drawable/trash_can_icon_1"
+            android:backgroundTint="@color/salmon_light"
             android:clickable="false"
             android:focusable="false"
             android:longClickable="false" />

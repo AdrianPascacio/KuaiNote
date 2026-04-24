@@ -29,22 +29,22 @@ import java.time.Year;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelectedListener_Repeater, Repeater_PopUpWindow.PopupDismissListener_Repeater,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_None,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_X_Hour,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_X_Day,Note_Update_Listener,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_Day_Of_Week,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_Day_Of_Month   {
+public class Reminder_PopUpWindow_Tasks implements Repeater_PopUpWindow.OnValueSelectedListener_Repeater, Repeater_PopUpWindow.PopupDismissListener_Repeater,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_None,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_X_Hour,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_X_Day,Note_Update_Listener,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_Day_Of_Week,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_Day_Of_Month   {
+    public static final int TYPE_JOURNAL_ELEMENT_TASK = 1;
     LayoutInflater layoutInflater;
     PopupWindow popupWindow;
     Calendar calendar = null;
-    DB_Notes DB_N;
-    public static final int TYPE_JOURNAL_ELEMENT_NOTE = 0;
+    DB_Tasks DB_T;
     boolean action_took = false;
-    int note_reminder_type = 0, note_reminder_interval = 0;
-    long reminder_of_note = 0;
+    int task_reminder_type = 0, task_reminder_interval = 0;
+    long reminder_of_task = 0;
     private int position = 0;
     private int original_reminder_type = 0;
     private int original_reminder_interval = 0;
     private boolean repeat_alarm = false;
     Animation Animation_setter_need_update,AnimationLayoutDimAppear, AnimationLayoutDimDisappear_Normal;
     TextView label_in_reminder,name_in_reminder ;
-    private Note note;
+    private Task_Main task;
     ViewGroup container ;
     FrameLayout fl_set_repeat_alarm ;
     FrameLayout btn_set_reminder_alarm, btn_cancel_reminder_alarm;
@@ -55,7 +55,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
     private int days_until_picked_day_of_week = 0;
 
     @Override
-    public void Update_Note_Content(int indent_type, char last_deleted_char, int previous_note_size, int cursor_selection) {
+    public void Update_Note_Content(int indent_type, char last_deleted_char, int previous_task_size, int cursor_selection) {
 
     }
 
@@ -65,12 +65,12 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
 
         Set_Reminder_Type_And_Interval(reminder_repeater_type, reminder_repeater_type);
 
-        Set_Repeater_Alarm_Icon(R.color.repeat_alarm_off, R.drawable.repeat_never_2);
+        Set_Repeater_Aalarm_Icon(R.color.repeat_alarm_off, R.drawable.repeat_never_2);
 
         Repeater_Button_Animation();
     }
 
-    private void Set_Repeater_Alarm_Icon(int repeat_alarm_off, int repeat_never_2) {
+    private void Set_Repeater_Aalarm_Icon(int repeat_alarm_off, int repeat_never_2) {
         fl_set_repeat_alarm.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context, repeat_alarm_off)));
         fl_set_repeat_alarm.setBackgroundResource(repeat_never_2);
     }
@@ -82,7 +82,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
 
         Set_Reminder_Type_And_Interval(reminder_repeater_type, reminder_repeater_interval);
 
-        Set_Repeater_Alarm_Icon(R.color.repeat_alarm_on, R.drawable.repeat_normal_2);
+        Set_Repeater_Aalarm_Icon(R.color.repeat_alarm_on, R.drawable.repeat_normal_2);
 
         Repeater_Button_Animation();
     }
@@ -94,7 +94,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
 
         Set_Reminder_Type_And_Interval(reminder_repeater_type, reminder_repeater_interval);
 
-        Set_Repeater_Alarm_Icon(R.color.repeat_alarm_on, R.drawable.repeat_normal_2);
+        Set_Repeater_Aalarm_Icon(R.color.repeat_alarm_on, R.drawable.repeat_normal_2);
 
         Repeater_Button_Animation();
     }
@@ -104,7 +104,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
 
         Set_Reminder_Type_And_Interval(reminder_repeater_type, reminder_repeater_interval);
 
-        Set_Repeater_Alarm_Icon(R.color.repeat_alarm_on, R.drawable.repeat_normal_2);
+        Set_Repeater_Aalarm_Icon(R.color.repeat_alarm_on, R.drawable.repeat_normal_2);
 
         Repeater_Button_Animation();
     }
@@ -113,10 +113,10 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
         if(reminder_repeater_interval == 0){
             reminder_repeater_type = 0;
 
-            Set_Repeater_Alarm_Icon(R.color.repeat_alarm_off, R.drawable.repeat_never_2);
+            Set_Repeater_Aalarm_Icon(R.color.repeat_alarm_off, R.drawable.repeat_never_2);
 
         }else{
-            Set_Repeater_Alarm_Icon(R.color.repeat_alarm_on, R.drawable.repeat_normal_2);
+            Set_Repeater_Aalarm_Icon(R.color.repeat_alarm_on, R.drawable.repeat_normal_2);
         }
 
         label_in_reminder.setText("Every day of week");
@@ -134,7 +134,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
 
         Set_Reminder_Type_And_Interval(reminder_repeater_type, reminder_repeater_interval);
 
-        Set_Repeater_Alarm_Icon(R.color.repeat_alarm_on, R.drawable.repeat_normal_2);
+        Set_Repeater_Aalarm_Icon(R.color.repeat_alarm_on, R.drawable.repeat_normal_2);
 
         Repeater_Button_Animation();
 
@@ -142,14 +142,14 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
 
 
     private void Set_Reminder_Type_And_Interval(int reminder_repeater_type, int reminder_repeater_interval) {
-        this.note.reminder_type = reminder_repeater_type;
-        this.note_reminder_type = reminder_repeater_type;
-        this.note.reminder_interval = reminder_repeater_interval;
-        this.note_reminder_interval = reminder_repeater_interval;
+        this.task.reminder_type = reminder_repeater_type;
+        this.task_reminder_type = reminder_repeater_type;
+        this.task.reminder_interval = reminder_repeater_interval;
+        this.task_reminder_interval = reminder_repeater_interval;
     }
 
     private void Repeater_Button_Animation() {
-        if(note.reminder_type != original_reminder_type || note.reminder_interval != original_reminder_interval){
+        if(task.reminder_type != original_reminder_type || task.reminder_interval != original_reminder_interval){
             fl_set_repeat_alarm.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context, R.color.matcha_1_trans)));
             btn_set_reminder_alarm.startAnimation(Animation_setter_need_update);
         }else{
@@ -180,7 +180,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
     private final Context context;
     private OnValueSelectedListener listener;
 
-    public Reminder_PopUpWindow(Context context, int position){
+    public Reminder_PopUpWindow_Tasks(Context context, int position){
         this.context = context;
         this.position = position;
     }
@@ -206,16 +206,16 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
             }
         }
     }
-    public void show(View view_brought, Note note){
+    public void show(View view_brought, Task_Main task){
         this.view_brought = view_brought;
 
-        this.note = note;
-        note_reminder_type = note.reminder_type;
-        reminder_of_note = note.reminder;
-        note_reminder_interval = note.reminder_interval;
+        this.task = task;
+        task_reminder_type = task.reminder_type;
+        reminder_of_task = task.reminder;
+        task_reminder_interval = task.reminder_interval;
 
-        DB_N = new DB_Notes(context);
-        String note_title = this.note.title;
+        DB_T = new DB_Tasks(context);
+        String task_title = this.task.title;
         layoutInflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
         container = (ViewGroup) layoutInflater.inflate(R.layout.reminder_setter,null);
         View divider_1, divider_2,divider_3,divider_4 ;
@@ -246,7 +246,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
         popupWindow = new PopupWindow(container, LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT , true);
         //popupWindow.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#FFFFFF")));
         if(position == -1){
-            //---note Visualizer activity
+            //---task Visualizer activity
             popupWindow.setAnimationStyle(R.style.ReminderAnimationInOut_NoteVisualizer);
             popupWindow.showAtLocation(view_brought, Gravity.CENTER,00,-300);
             name_in_reminder.setVisibility(View.GONE);
@@ -317,14 +317,14 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
         Disable_Editing_NumberPicker(numberpicker_minute);
         Disable_Editing_NumberPicker(numberpicker_meridian);
 
-        original_reminder_type = note.reminder_type;
-        original_reminder_interval = note.reminder_interval;
-        if( this.note.reminder > 0){
-            calendar_prev.setTimeInMillis( this.note.reminder);
-            repeat_alarm = this.note.reminder_type > 0;
+        original_reminder_type = task.reminder_type;
+        original_reminder_interval = task.reminder_interval;
+        if( this.task.reminder > 0){
+            calendar_prev.setTimeInMillis( this.task.reminder);
+            repeat_alarm = this.task.reminder_type > 0;
         }
         if(repeat_alarm == true){
-            Set_Repeater_Alarm_Icon(R.color.repeat_alarm_on, R.drawable.repeat_normal_2);
+            Set_Repeater_Aalarm_Icon(R.color.repeat_alarm_on, R.drawable.repeat_normal_2);
         }
 
         numberpicker_day.setValue(calendar_prev.get(Calendar.DAY_OF_MONTH));
@@ -338,16 +338,16 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
         numberpicker_hour.setValue(hour);
         numberpicker_minute.setValue(calendar_prev.get(Calendar.MINUTE));
 
-        name_in_reminder.setText(   position == -1 ? "" :   note_title ); //Ternary Operator
+        name_in_reminder.setText(   position == -1 ? "" :   task_title ); //Ternary Operator
 
         popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener(){ @Override
         public void onDismiss(){
             if(!action_took){
 
-                note_reminder_type = original_reminder_type;
-                note_reminder_interval = original_reminder_interval;
-                ///note.reminder_type = original_reminder_type;
-                Reminder_PopUpWindow.this.listener_dismiss.onPopupClosed(0, position);
+                task_reminder_type = original_reminder_type;
+                task_reminder_interval = original_reminder_interval;
+                ///task.reminder_type = original_reminder_type;
+                Reminder_PopUpWindow_Tasks.this.listener_dismiss.onPopupClosed(0, position);
             }
         }
         });
@@ -377,7 +377,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
                 calendar.set(Calendar.DAY_OF_MONTH, numberpicker_day.getValue());
 
 
-                if(note_reminder_type == 3){
+                if(task_reminder_type == 3){
 
                     int diff_calendar = 0;
 
@@ -395,10 +395,10 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
                     int dow_number = dow.getValue();
                     //Toast.makeText(context, "d ori: " + dow_number_ori + "d new: " + dow_number, Toast.LENGTH_SHORT).show();
 
-                    if((note_reminder_interval & ((int) Math.pow(2 ,dow_number -1 ))) == 0){ /// si el dia de hoy no fue seleccionado se debe agregar la cantidad de dias restantes al reminder
+                    if((task_reminder_interval & ((int) Math.pow(2 ,dow_number -1 ))) == 0){ /// si el dia de hoy no fue seleccionado se debe agregar la cantidad de dias restantes al reminder
                         days_until_picked_day_of_week = 0;
                         for (int i = 1 ; i <= 7 ; i ++){
-                            if( (note_reminder_interval & ((int) Math.pow(2 ,dow_number -1 ))) == 0){
+                            if( (task_reminder_interval & ((int) Math.pow(2 ,dow_number -1 ))) == 0){
                                 if(dow_number == 7){
                                     dow_number = 1;
                                 }else{
@@ -412,7 +412,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
                         //Toast.makeText(context, "days ++" + days_until_picked_day_of_week, Toast.LENGTH_SHORT).show();
                     }
                 }
-                if(note_reminder_type == 4){
+                if(task_reminder_type == 4){
                     Month month_of_year = today.getMonth();
                     Year current_year = Year.of(today.getYear());
 
@@ -420,19 +420,19 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
                     int year = current_year.getValue();
                     //-- Comprobacion de que el dia escogido no es menor al dia actual o correccion:
                         //--adelantar un mes si el dia es menor, el mes es igual y el a:o es igual al actual
-                    if(calendar.get(Calendar.YEAR) == year &&  calendar.get(Calendar.MONTH)+1 == moy && note_reminder_interval < numberpicker_day.getValue()){ //Calendar.month comienza desde 0, por eso la correccion (+1)
+                    if(calendar.get(Calendar.YEAR) == year &&  calendar.get(Calendar.MONTH)+1 == moy && task_reminder_interval < numberpicker_day.getValue()){ //Calendar.month comienza desde 0, por eso la correccion (+1)
                         calendar.set(Calendar.MONTH, numberpicker_month.getValue()+ 1);
                     }
                     //!!--intentar encontrar un intervalo de horas en el que esto se debe ajustar
 
                     //-- Comprobacion de que el dia escogido existe segun el mes o correccion:
                     int max_day_of_month = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-                    if(max_day_of_month < note_reminder_interval){
+                    if(max_day_of_month < task_reminder_interval){
                         calendar.set(Calendar.DAY_OF_MONTH, max_day_of_month);
                         numberpicker_day.setValue(max_day_of_month);
                     }else{
-                        calendar.set(Calendar.DAY_OF_MONTH, note_reminder_interval);
-                        numberpicker_day.setValue(note_reminder_interval);
+                        calendar.set(Calendar.DAY_OF_MONTH, task_reminder_interval);
+                        numberpicker_day.setValue(task_reminder_interval);
                     }
                 }
 
@@ -456,27 +456,27 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
 
                 Intent notificationIntent = new Intent(itemView.getContext(), Notification_Receiver.class);
 
-                note.reminder_type = note_reminder_type;
-                note.reminder_interval = note_reminder_interval;
+                task.reminder_type = task_reminder_type;
+                task.reminder_interval = task_reminder_interval;
 
-                if(note.note_id == 0 ){
-                    note.note_id=DB_N.Insert_Note_L(note.date,note.title,note.note,note.pin,note.reminder,note.reminder_type,note.reminder_interval);
+                if(task.task_id == 0 ){
+                    task.task_id=DB_T.Insert_Task_L(task.date,task.title,task.note,task.pin,task.reminder,task.reminder_type,task.reminder_interval);
                 }
                 notificationIntent.putExtra("NOTE_REMINDER_ALARM_TIME", alarm_Time);
-                notificationIntent.putExtra("NOTE_ID", note.note_id);
-                notificationIntent.putExtra("ELEMENT_TYPE", TYPE_JOURNAL_ELEMENT_NOTE);
+                notificationIntent.putExtra("NOTE_ID", task.task_id);
+                notificationIntent.putExtra("ELEMENT_TYPE", TYPE_JOURNAL_ELEMENT_TASK);
 
                 //!!---reminder_type, reminder_interval llevados a 0
-                if( note.reminder > 0){
-                    Reminder_Notification.Cancel_Reminder_Alarm(itemView,note.note_id,0,note.reminder);
+                if( task.reminder > 0){
+                    Reminder_Notification.Cancel_Reminder_Alarm(itemView,task.task_id,1,task.reminder);
                 }
 
 
-                //int _hashreminder = (int) (( note.note_id >>> 32 ) ^ note.note_id ); //hash creado con XOR operator (upper ^ lower)
-                int _hashreminder = Reminder_Hash_Creator.get_Note_Hash(note.note_id);
+                //int _hashreminder = (int) (( task.task_id >>> 32 ) ^ task.task_id ); //hash creado con XOR operator (upper ^ lower)
+                int _hashreminder = Reminder_Hash_Creator.get_Task_Hash(task.task_id);
 
                 //!!--- cuando tenga type and interval se debe corregir
-                if(DB_N.Modify_Reminder_Status(note.note_id,alarm_Time,note.reminder_type,note.reminder_interval)){
+                if(DB_T.Modify_Reminder_Status(task.task_id,alarm_Time,task.reminder_type,task.reminder_interval)){
 
 
                     PendingIntent pendingIntent = PendingIntent.getBroadcast(
@@ -512,9 +512,9 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
         btn_cancel_reminder_alarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Reminder_Notification.Cancel_Reminder_Modifying_Database(itemView,note.reminder,note.note_id);
-                note.reminder_type = 0;
-                note.reminder_interval = 0;
+                Reminder_Notification.Cancel_Task_Reminder_Modifying_Database(itemView,task.reminder,task.task_id);
+                task.reminder_type = 0;
+                task.reminder_interval = 0;
 
                 action_took = true;
 
@@ -538,6 +538,6 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
         repeater_PopUp.setListener_repeater_every_day_of_month(this);
         repeater_PopUp.setListener_dismiss(this);
 
-        repeater_PopUp.show(view_brought, this.note, note_reminder_type, note_reminder_interval, numberpicker_day.getValue());
+        repeater_PopUp.show(view_brought, this.task, task_reminder_type, task_reminder_interval, numberpicker_day.getValue());
     }
 }

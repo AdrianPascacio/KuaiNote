@@ -385,7 +385,7 @@ public class Wasted_Note_Visualizer extends AppCompatActivity implements Reminde
     private void Delete_Note(){
         if(DB_N.Delete_Hard_Specific_Note(note.note_id)) {
             Toast.makeText(Wasted_Note_Visualizer.this, "Note Burned.", Toast.LENGTH_SHORT).show();
-            Reminder_Notification.Cancel_Reminder_Alarm(layout_body_note, note.note_id);
+            Reminder_Notification.Cancel_Reminder_Alarm(layout_body_note, note.note_id,0, note.reminder);
             Return_To_Memo_Board();
         }
     }

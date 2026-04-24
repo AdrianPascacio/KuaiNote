@@ -113,6 +113,20 @@
                     android:layout_height="5dp">
                 </Space>
                 <TextView
+                    android:id="@+id/Repeater_Label_Every_X_Day"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:inputType="text"
+                    android:text="Every X Day"
+                    android:textAlignment="center"
+                    android:textSize="20dp"
+                    android:textStyle="bold" />
+                <Space
+                    android:layout_width="1dp"
+                    android:layout_height="5dp">
+                </Space>
+                <TextView
                     android:id="@+id/Repeater_Label_Every_Day_Of_Week"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
