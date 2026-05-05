@@ -30,17 +30,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 //488 01apr2026
 public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks_Sub_In_Visualizer_Interface, Reminder_PopUpWindow_Tasks.OnValueSelectedListener, Reminder_PopUpWindow_Tasks.PopupDismissListener,Note_Update_Listener {
+    private int order_type = 0;
     private int new_position_a =  0;
     private int new_position_b =  0;
     private long sub_taskID_a =   0;
     private long sub_taskID_b =   0;
     private DB_Tasks DB_T;
     private DB_Notes DB_N;
-    private TextView tv_Date, tv_Info;
+    private TextView tv_Date, tv_Completion;
     private EditText et_Task_main, et_Note;
     private Note note = new Note();
     private Task_Main task = new Task_Main();
@@ -54,7 +54,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
     private long received_task_id = 0;
     private boolean change_in_task = false, show_task_info = false, now_is_something_written = false;
     private boolean has_sub_tasks_in_database = false;
-    private FrameLayout fl_Change_Pin_Status, fl_Change_Reminder_Status, fl_Back, fl_Delete, fl_Insert_Sub_Task, fl_Copy_To_Clipboard;
+    private FrameLayout fl_Change_Pin_Status, fl_Change_Reminder_Status, fl_Back, fl_Delete, fl_Insert_Sub_Task, fl_Copy_To_Clipboard, fl_Set_Order;
     private FrameLayout fl_Change_Pin_Status_Ghost, fl_Change_Reminder_Status_Ghost, fl_Back_Ghost, fl_Delete_Ghost;
     private FrameLayout fl_Main_Task_Complete;
     private Date_of_Note DoN;
@@ -90,14 +90,21 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         recyclerView.setAdapter(adapter);
 
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,0) {//0 para eliminar los swipe horizontales utilizados para borrar.
+            int lesser_position = 0;
+            int lesser_position_assigned = 0;
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
                 int from_Positoin = viewHolder.getAdapterPosition();
                 int to_Positoin = target.getAdapterPosition();
 
-                Collections.swap(task_subList,from_Positoin,to_Positoin);
+                //Collections.swap(task_subList,from_Positoin,to_Positoin);
+                lesser_position = to_Positoin < from_Positoin ? to_Positoin : from_Positoin;
+                Task_Sub _task_sub = task_subList.get(from_Positoin);
+                task_subList.remove(from_Positoin);
+                task_subList.add(to_Positoin,_task_sub);
                 new_position_a = task_subList.get(from_Positoin).getTask_sub_position();
                 new_position_b = task_subList.get(to_Positoin).getTask_sub_position();
+                lesser_position_assigned = new_position_a < new_position_b ? new_position_a : new_position_b;
                 sub_taskID_a = task_subList.get(from_Positoin).getTask_Sub_id();
                 sub_taskID_b = task_subList.get(to_Positoin).getTask_Sub_id();
                 adapter.notifyItemMoved(from_Positoin,to_Positoin);
@@ -123,7 +130,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                 viewHolder.itemView.setAlpha(1.0f);
 
                 //Save_Sub_Tasks_New_Positions();
-                Save_Sub_Tasks_New_Positions(sub_taskID_a, sub_taskID_b,new_position_a,new_position_b);
+                Save_Sub_Tasks_New_Positions(lesser_position,lesser_position_assigned,sub_taskID_a, sub_taskID_b,new_position_a,new_position_b);
             }
         };
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
@@ -132,9 +139,17 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         Clear_Lists();
         Update_Recycler_View();
     }
-    private void Save_Sub_Tasks_New_Positions(long sub_taskID_a, long sub_taskID_b, int position_a, int position_b) {
+    private void Save_Sub_Tasks_New_Positions(int lesser_position,int lesser_position_assigned,long sub_taskID_a, long sub_taskID_b, int position_a, int position_b) {
         DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, position_b);
-        DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+
+        for(int i = lesser_position; i <= task_subList.size()-1; i++){
+
+            sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, i + 1);
+            Log.d("Moving Position", "task: "+task_subList.get(i).note+ "    new position: "+(i+1));
+        }
+        ///DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, position_b);
+        ///DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
     }
 
     private void Update_Recycler_View(){
@@ -194,8 +209,8 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         DB_N = new DB_Notes(this);
         DB_T = new DB_Tasks(this);
 
-        tv_Date = findViewById(R.id.Note_Time);
-        tv_Info = findViewById(R.id.Note_Info);
+        tv_Completion = findViewById(R.id.Task_Completion);
+        tv_Date = findViewById(R.id.Task_Date);
 
         et_Task_main = findViewById(R.id.Task_Main_Text);
 
@@ -210,6 +225,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         fl_Delete_Ghost = findViewById(R.id.fl_Delete_Ghost);
         fl_Insert_Sub_Task = findViewById(R.id.FrameLayout_Insert_Sub_Task);
         fl_Copy_To_Clipboard = findViewById(R.id.FrameLayout_Copy_To_Clipboard);
+        fl_Set_Order = findViewById(R.id.FrameLayout_Order);
         fl_Main_Task_Complete = findViewById(R.id.FrameLayout_Change_Complete_Task_Main);
 
         DoN = new Date_of_Note();
@@ -249,6 +265,8 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
             Set_Written_Note_Style();
         } else {
             Set_Blank_Note_Style();
+            tv_Completion.setVisibility(View.GONE);
+            tv_Date.setVisibility(View.GONE);
 
             new Handler().postDelayed(new Runnable() {//Se enfoca en cuerpo de la nota y se abre el teclado solo si el texto es nuevo
                 @Override
@@ -303,12 +321,19 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                 if(task.completed) {
                     Change_Complete_Main_Task_Status();
                 }
+                Update_Completion_Ratio();
             }
         });
         fl_Copy_To_Clipboard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Copy_Tasks_To_Clipboard();
+            }
+        });
+        fl_Set_Order.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Set_Tasks_Order();
             }
         });
         fl_Main_Task_Complete.setOnClickListener(new View.OnClickListener() {
@@ -318,6 +343,8 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                 if(task.has_sub_tasks) {
                     Change_Sub_task_Completed_Status();
                 }
+                Update_Completion_Ratio();
+                Update_Date();
             }
         });
         fl_Change_Pin_Status_Ghost.setOnClickListener(new View.OnClickListener() {
@@ -339,7 +366,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                     }
 
                     tv_Date.setAlpha(0.9f);
-                    tv_Info.setAlpha(0.9f);
+                    tv_Completion.setAlpha(0.9f);
                     et_Task_main.setAlpha(0.8f);
                     layout_dim.setVisibility(View.VISIBLE);
                     layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.white_sand_light)));
@@ -388,6 +415,108 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         });
     }
 
+    private void Set_Tasks_Order() {
+        //Order states:
+            //1- default = uncompleted first
+            //2- completed_first
+            //3- custom
+        //--when it begin in default (uncompleted first)
+        int completion_size = 0;
+        int sub_Task_size = task_subList.size();
+        for(int i = 0; i <= task_subList.size() -1 ; i++){
+            if(task_subList.get(i).geCompleted()){
+                completion_size ++;
+            }
+        }
+        //--Cambiar solo si el ratio no es absoluto (todas incompletas o tadas completas)
+        //--Y si la cantidad de sub task es mayor que 1
+        if(completion_size > 0 && completion_size != sub_Task_size && sub_Task_size >=2){
+            if(order_type == 0){ /// --   0→Default (Uncomplete first) to → Complete first
+                ///if((completion_size*2) < sub_Task_size){
+                ///    for(int i = 0; i <= sub_Task_size -1; i++){
+                ///        Log.d("Task Visualizer" , "Order:: " +task_subList.get(i).getContent() +"    tiene la pos::: "+task_subList.get(i).getTask_sub_position() + "   a la posicion: " + (i));
+                ///    }
+                ///    for (int i = sub_Task_size - completion_size ; i <= sub_Task_size - 1; i++){
+                ///        Task_Sub _task_sub = task_subList.get(sub_Task_size-1);
+                ///        Log.d("Task Visualizer" , "New Order:  Change: " +task_subList.get(sub_Task_size-1).getContent() + "   a la posicion: " + (0));
+                ///        //task_subList.remove(sub_Task_size-completion_size);
+                ///        task_subList.remove(sub_Task_size-1);
+                ///        task_subList.add(0,_task_sub);
+
+                ///        adapter.notifyItemMoved(sub_Task_size-1,0);
+                ///    }
+                ///}else{
+                ///    for (int i =  completion_size ; i <= sub_Task_size - 1; i++){
+                ///        Task_Sub _task_sub = task_subList.get(0);
+                ///        Log.d("Task Visualizer" , "New Order:  Change: " +task_subList.get(0).getContent() + "   a la posicion: " + (0));
+                ///        //task_subList.remove(sub_Task_size-completion_size);
+                ///        task_subList.remove(0);
+                ///        task_subList.add(sub_Task_size-1,_task_sub);
+
+                ///        adapter.notifyItemMoved(0,sub_Task_size-1);
+                ///    }
+
+                ///}
+                int changes = 0;
+                for(int i = 0; i <= sub_Task_size - 1 - changes; i++){
+                    if(task_subList.get(i).geCompleted() == false){
+                        Log.d("Task Visualizer" , " Default Uncomplete first: Diferente: " +"   task:" +task_subList.get(i).getContent() );
+
+                        Task_Sub _task_sub = task_subList.get(i);
+                        task_subList.remove(i);
+                        task_subList.add(sub_Task_size-1,_task_sub);
+
+                        adapter.notifyItemMoved(i,sub_Task_size-1);
+                        changes ++;
+                        i--;
+                    }
+                }
+                    order_type = 1;   //-- Complete first
+
+            }else if(order_type == 1){//-- Complete first to →  Custom
+                Log.d("Task Visualizer" , "New Order:  Custom: ");
+                for(int i = 0; i <= sub_Task_size - 1; i++){
+                    if(task_subList.get(i).getTask_sub_position() != (i + 1)){
+                        Log.d("Task Visualizer" , " Custom: Diferente: " +"   task:" +task_subList.get(i).getContent() + "  tiene pos:" + task_subList.get(i).getContent());
+                        for(int j = i+1; j <= sub_Task_size -1 ; j++){
+                            if(task_subList.get(j).getTask_sub_position() == (i + 1)){
+                                Log.d("Task Visualizer" , "   Custom: " +task_subList.get(j).getContent() );
+                                Task_Sub _task_sub = task_subList.get(j);
+                                task_subList.remove(j);
+                                task_subList.add(i,_task_sub);
+
+                                adapter.notifyItemMoved(j,i);
+                                break;
+
+                            }
+                        }
+                    }
+                }
+
+                order_type = 2;   //-- Custom
+            }else if(order_type == 2){//--   Custom to → Default (Uncomplete first)
+                int changes = 0;
+                for(int i = 0; i <= sub_Task_size - 1 - changes; i++){
+                    if(task_subList.get(i).geCompleted() == true){
+                        Log.d("Task Visualizer" , " Default Uncomplete first: Diferente: " +"   task:" +task_subList.get(i).getContent() );
+
+                        Task_Sub _task_sub = task_subList.get(i);
+                        task_subList.remove(i);
+                        task_subList.add(sub_Task_size-1,_task_sub);
+
+                        adapter.notifyItemMoved(i,sub_Task_size-1);
+                        changes ++;
+                        i--;
+                    }
+                }
+
+                order_type = 0;   //-- Default
+            }
+
+        }
+
+    }
+
 
     private void Copy_Tasks_To_Clipboard() {
         StringBuilder clip_text = new StringBuilder("");
@@ -420,6 +549,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                 }
             }
         }
+
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("Pending Tasks Clipped", clip_text.toString());
 
@@ -520,10 +650,49 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
 
         now_is_something_written = true;
         et_Task_main.setText(task.note);
+        Update_Completion_Ratio();
+        Update_Date();
 
         Change_Pin_Status_Style();
         Change_Reminder_Status_Style();
         previous_note_size = task.note.length();
+    }
+
+    private void Update_Date() {
+        if(received_task_id > 0){
+            tv_Date.setVisibility(View.VISIBLE);
+        }else{
+            tv_Date.setVisibility(View.GONE);
+        }
+        if(task.completed){
+            tv_Date.setText("Completed: " +  DoN.Set_Date_of_Note_In_Visualizer(task.date_completed));
+        }else{
+            if(task.date_created == task.date_modified){
+                //Date created
+                tv_Date.setText("Created: " + DoN.Set_Date_of_Note_In_Visualizer(task.date_created));
+
+            }else{
+                //Date modified
+                tv_Date.setText("Modified: "+DoN.Set_Date_of_Note_In_Visualizer(task.date_modified));
+            }
+        }
+    }
+
+    private void Update_Completion_Ratio() {
+        if(task.has_sub_tasks){
+            //!!--La visibilidad se esta activando cada vez que se refresca innecesariamente
+            tv_Completion.setVisibility(View.VISIBLE);
+            int completion_size = 0;
+            int sub_Task_size = task_subList.size();
+            for(int i = 0; i <= task_subList.size() -1 ; i++){
+                if(task_subList.get(i).geCompleted()){
+                    completion_size ++;
+                }
+            }
+            tv_Completion.setText(completion_size + "/" + sub_Task_size);
+        }else{
+            tv_Completion.setVisibility(View.GONE);
+        }
     }
 
     private void Set_Written_Note_Style() {
@@ -642,7 +811,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
     @Override
     public void onPopupClosed(int salida, int position) { //  0 nada/normal, 1 setter, 2 cancelado
         tv_Date.setAlpha(1f);
-        tv_Info.setAlpha(1f);
+        tv_Completion.setAlpha(1f);
         ///et_Note.setAlpha(1f);
         layout_dim.setVisibility(View.VISIBLE);
 
@@ -898,11 +1067,11 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         tv_Date.setText(note_exist ? DoN.Set_Date_of_Note_In_Visualizer(note.date) : ""); ///Ternary Operator
         if (show_task_info) {
             if (note_exist) tv_Date.startAnimation(AnimationDate);
-            tv_Info.setText(DoN.Set_Date_Note_Only_Information(et_Note.getText().toString()));
-            tv_Info.startAnimation(AnimationInfo);
+            tv_Completion.setText(DoN.Set_Date_Note_Only_Information(et_Note.getText().toString()));
+            tv_Completion.startAnimation(AnimationInfo);
         } else {
             if (note_exist) tv_Date.startAnimation(AnimationDateInvert);
-            tv_Info.startAnimation(AnimationInfoInvert);
+            tv_Completion.startAnimation(AnimationInfoInvert);
         }
     }
 
@@ -955,8 +1124,16 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         if(DB_T.Modify_Sub_Task_Completed_Status(task_sub.task_sub_id, task_sub.completed)){
             task_subList.set(position,task_sub);
             adapter.notifyItemChanged(position);
+            long _current_time = System.currentTimeMillis();
+            if(DB_T.Modify_Main_Task_Modified_Date(task.task_id, _current_time)) {
+                //!!--Verificar que tan viable seria incluir Step_Completed_Date en vez de modificar el date_modified
+
+                task.date_modified = _current_time;
+            }
         }
         Main_Task_Completed(received_task_id);
+        Update_Completion_Ratio();
+        Update_Date();
 
     }
 
@@ -983,9 +1160,12 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
     }
     private void Change_Complete_Main_Task_Status() {
         task.setCompleted(!task.completed);
-        if(DB_T.Modify_Main_Task_Completed_Status(task.task_id, task.completed)) {
+        long _current_time = System.currentTimeMillis();
+        if(DB_T.Modify_Main_Task_Completed_Status(task.task_id, task.completed, _current_time)) {
             //!!--Verificar los colores
             fl_Main_Task_Complete.setBackgroundTintList(ColorStateList.valueOf(getColor(task.completed ? R.color.ex_green : R.color.gray_light_3)));///Ternary Operator
+            task.date_completed = _current_time;
+            Update_Date();
         }
     }
 
@@ -1022,5 +1202,6 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         }else{
             Main_Task_Completed(received_task_id);
         }
+        Update_Completion_Ratio();
     }
 }

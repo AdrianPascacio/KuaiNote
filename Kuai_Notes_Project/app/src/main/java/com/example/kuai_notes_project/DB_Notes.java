@@ -362,6 +362,20 @@ public class DB_Notes extends SQLiteOpenHelper {
         Result_Log_treatment(result, "Delete_Hard_Specific_Note");
         return result > 0;
     }
+    public Boolean Delete_Hard_All_Notes(){
+        SQLiteDatabase DB_N = this.getWritableDatabase();
+        //Borrado de la Tabla Notes
+        int result = DB_N.delete("Notes",  null, null);
+        //Borrado del buscador Notes_fts
+        int result_2 = DB_N.delete("Notes_fts",  null, null);
+        Result_Log_treatment(result, "Delete_Hard_All_Note");
+        Result_Log_treatment(result_2, "Delete_Hard_All_Note");
+
+        //Reinicio de los Id autoincrementales:
+        int result_3 = DB_N.delete("sqlite_sequence",  "name=?", new String[]{String.valueOf("Notes")});
+
+        return result > 0;
+    }
     private static void Note_Setter(Note note, Cursor cursor) {
         note.setNote_id(cursor.getLong(cursor.getColumnIndexOrThrow("_id")));
         note.setDate(cursor.getLong(cursor.getColumnIndexOrThrow("date")));

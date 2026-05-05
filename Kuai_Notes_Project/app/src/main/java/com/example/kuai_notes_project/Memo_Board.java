@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -24,6 +25,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Objects;
+import java.util.Random;
 
 ///324 V3, 305 V4, 358 V6, 306 V7, 450 V7.2
 public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board_Interface, Reminder_PopUpWindow.OnValueSelectedListener,Reminder_PopUpWindow.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener {
@@ -39,7 +41,8 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     Adapter_Recycler_Memo_Board adapter;
 
     long start_of_today = 0;
-    Button btn_config, btn_check_lists, btn_search;
+    Button btn_config, btn_check_lists, btn_search, btn_generate_random_content, btn_delete_all_notes_database;
+
     View main;
     View layout_dim;
     Body_Note_Preview BNP;
@@ -122,6 +125,8 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         btn_config = findViewById(R.id.button_Config);
         btn_check_lists = findViewById(R.id.button_Check_Lists);
         btn_search = findViewById(R.id.button_Search);
+        btn_generate_random_content = findViewById(R.id.button_Generate_Random_Content);
+        btn_delete_all_notes_database = findViewById(R.id.button_Delete_All_Notes_DataBase);
         fa_btn.startAnimation(AnimationAddNoteButton);
 
         btn_config.setOnClickListener(new View.OnClickListener() {
@@ -142,6 +147,18 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
                 Go_To_Search();
             }
         });
+        btn_generate_random_content.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Generate_Random_Content_For_Test();
+            }
+        });
+        btn_delete_all_notes_database.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Delete_All_Notes_From_DataBase();
+            }
+        });
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -158,6 +175,40 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
                 }
             }
         });
+    }
+
+
+    private void Delete_All_Notes_From_DataBase() {
+        DB_N.Delete_Hard_All_Notes();
+    }
+
+    private void Generate_Random_Content_For_Test() {
+        //Toast.makeText(this, "Random Content Generator", Toast.LENGTH_SHORT).show();
+
+        //Create Randome Note (Title, note, pin, reminder, reminder_type, reminder_interval)
+
+        String seed_text = "Una mañana, tras un sueño intranquilo, Gregorio Samsa se despertó convertido en un monstruoso insecto. Estaba echado de espaldas sobre un duro caparazón y, al alzar la cabeza, vio su vientre convexo y oscuro, surcado por curvadas callosidades, sobre el que casi no se aguantaba la colcha, que estaba a punto de escurrirse hasta el suelo. Numerosas patas, penosamente delgadas en comparación con el grosor normal de sus piernas, se agitaban sin concierto. —¿Qué me ha ocurrido? No estaba soñando. Su habitación, una habitación normal, aunque muy pequeña, tenía el aspecto habitual. Sobre la mesa había desparramado un muestrario de paños —Samsa era viajante de comercio—, y de la pared colgaba una estampa recientemente recortada de una revista ilustrada y puesta en un marco dorado. La estampa mostraba a una mujer tocada con un gorro de pieles, envuelta en una estola también de pieles, y que, muy erguida, esgrimía un amplio manguito, asimismo de piel, que ocultaba todo su antebrazo. Gregorio miró hacia la ventana; estaba nublado, y sobre el cinc del alféizar repiqueteaban las gotas de lluvia, lo que le hizo sentir una gran melancolía. «Bueno —pensó—; ¿y si siguiese durmiendo un rato y me olvidase de todas estas locuras?» Pero no era posible, pues Gregorio tenía la costumbre de dormir sobre el lado derecho, y su actual estado no le permitía adoptar tal postura. Por más que se esforzara volvía a quedar de espaldas. Intentó en vano esta operación numerosas veces; cerró los ojos para no tener que ver aquella confusa agitación de patas, que no cesó hasta que notó en el costado un dolor leve y punzante, un dolor jamás sentido hasta entonces. —¡Qué cansada es la profesión que he elegido! —se dijo—. Siempre de viaje. Las preocupaciones son mucho mayores cuando se trabaja fuera, por no hablar de las molestias propias de los viajes: estar pendiente de los enlaces de los trenes; la comida mala, irregular; relaciones que cambian constantemente, que nunca llegan a ser verdaderamente cordiales, y en las que no tienen cabida los sentimientos. ¡Al diablo con todo! Sintió en el vientre una ligera picazón. Lentamente, se estiró sobre la espalda en dirección a la cabecera de la cama, para poder alzar mejor la cabeza. Vio que el sitio que le picaba estaba cubierto de extraños puntitos blancos. Intentó rascarse con una pata; pero tuvo que retirarla inmediatamente, pues el roce le producía escalofríos. —Estoy atontado de tanto madrugar —se dijo—. No duermo lo suficiente. Hay viajantes que viven mucho mejor. Cuando a media mañana regreso a la fonda para anotar los pedidos, me los encuentro desayunando cómodamente sentados. Si yo, con el jefe que tengo, hiciese lo mismo, me despedirían en el acto. Lo cual, probablemente sería lo mejor que me podría pasar. Si no fuese por mis padres, ya hace tiempo que me hubiese marchado. Hubiera ido a ver el director y le habría dicho todo lo que pienso. Se caería de la mesa, ésa sobre la que se sienta para, desde aquella altura, hablar a los empleados, que, como es sordo, han de acercársele mucho. Pero todavía no he perdido la esperanza. En cuanto haya reunido la cantidad necesaria para pagarle la deuda de mis padres —unos cinco o seis años todavía—, me va a oír. Bueno; pero, por ahora, lo que tengo que hacer es levantarme, que el tren sale a las cinco. Eran más de las seis y media, y las manecillas seguían avanzando tranquilamente. En realidad, ya eran casi las siete menos cuarto. ¿Es que no había sonado el despertador? Desde la cama se veía que estaba puesto a las cuatro; por tanto, tenía que haber sonado. Pero ¿era posible seguir durmiendo a pesar de aquel sonido que hacía estremecer hasta los muebles? Su sueño no había sido tranquilo. Pero, por eso mismo, debía de haber dormido al final más profundamente. ¿Qué podía hacer ahora? El tren siguiente salía a las siete; para cogerlo tendría que darse muchísima prisa. El muestrario no estaba aún empaquetado, y él mismo no se sentía nada dispuesto. Además, aunque alcanzase el tren, no evitaría reprimenda del amo, pues el mozo del almacén, que había acudido al tren a las cinco,";
+        for(int i = 20 ; i>=0; i--){
+            long _current_time = System.currentTimeMillis();
+            //int random_number = (int) (_current_time & 1023);   /// bitwise & long & 1023 (binary = 1111111111(1 diez veces)) → para tomar los numeros menores de 1023
+            int random_number = (int) (_current_time & 4095);   /// bitwise & long & 4095 (binary = 111111111111 (1 doce veces)) → para tomar los numeros menores de 4095
+            //int random_title = 0;
+            int end_of_title = random_number & 15;  ///Bitwise & → int & 15 (binary = 1111) → para tomar los numeros menores de 15;
+            int random_start_of_note  = (random_number >> 1) ;
+            int random_end_of_note = random_start_of_note & 31;
+            int random_pin = random_end_of_note & 1;
+
+            Log.d("Random", "Random end of note: " + random_end_of_note + "    Random pin: " + random_pin);
+
+            //String _title = et_Title.getText().toString();
+            String _title = seed_text.substring(random_number,random_number + end_of_title);
+            String _note = seed_text.substring(random_start_of_note,random_end_of_note + random_start_of_note);
+
+            long save_Success;
+
+            save_Success = DB_N.Insert_Note_L(_current_time, _title, _note, random_pin == 1, 0L, 0, 0);
+        }
+
     }
 
 

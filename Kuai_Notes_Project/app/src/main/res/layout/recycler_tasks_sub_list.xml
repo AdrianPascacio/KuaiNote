@@ -4,7 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:cardCornerRadius="7dp"
     android:outlineSpotShadowColor="@color/Light_medium_brown"
     android:outlineAmbientShadowColor="@color/transparent"
     android:layout_marginTop="0dp"
@@ -101,6 +100,7 @@
         android:layout_marginTop="0dp"
         android:gravity="center_vertical"
         android:background="@color/white_bamboo"
+        android:visibility="gone"
         android:orientation="vertical">
 
     </LinearLayout>

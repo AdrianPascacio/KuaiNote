@@ -81,6 +81,28 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
     <FrameLayout
+        android:id="@+id/FrameLayout_Generate_Random_Content"
+        android:layout_width="36dp"
+        android:layout_height="26dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginRight="70dp"
+        android:background="@drawable/aux_randome_test_generator"
+        android:backgroundTint="@color/Medium_dark_brown"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    <FrameLayout
+        android:id="@+id/FrameLayout_Delete_All_Tasks_DataBase"
+        android:layout_width="36dp"
+        android:layout_height="26dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginRight="120dp"
+        android:background="@drawable/aux_delete_all_database"
+        android:backgroundTint="@color/Medium_dark_brown"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    <FrameLayout
         android:id="@+id/fl_Search_Ghost"
         android:layout_width="63dp"
         android:layout_height="50dp"

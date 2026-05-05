@@ -2,6 +2,8 @@ package com.example.kuai_notes_project;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,12 +14,14 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
     private Context context;
@@ -34,6 +38,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
 
     private final Recycler_Tasks_List_Interface recycler_tasks_list_interface;
     private final Recycler_Tasks_Sub_List_Interface recycler_tasks_sub_list_interface;
+    private  final Drawable drw_main_single, drw_main_father, drw_sub_middle, drw_sub_end;
     private boolean multi_selection_state = false;
     private boolean is_repeated = false;
     private int multi_first_count = 2;
@@ -59,6 +64,12 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
         this.recycler_tasks_list_interface =recyclerTaskListInterface ;
 
         this.recycler_tasks_sub_list_interface = recyclerTasksSubListInterface;
+
+        drw_main_single = ContextCompat.getDrawable(context, R.drawable.bg_main_task_single);
+        drw_main_father = ContextCompat.getDrawable(context, R.drawable.bg_main_task_father_unfolded);
+        drw_sub_middle = ContextCompat.getDrawable(context, R.drawable.bg_sub_task_middle);
+        //!!--Have to update the final drawable type:
+        drw_sub_end = ContextCompat.getDrawable(context, R.drawable.bg_sub_task_end);
     }
 
     ///public Adapter_Recycler_Check_Lists(Context context, ArrayList date_id, ArrayList<Boolean> selected_id, ArrayList noteList,  Recycler_Check_Lists_Interface recyclerCheckListsInterface){
@@ -125,16 +136,25 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
 
         //------Title Visibility depending on emptiness:
         //Log.d("TasksList","   Note id:  "+task.getTask_id());
+        boolean isSelected = selected_id.get(position);
+        Drawable background;
         if( getItemViewType(position) == TYPE_TASK_MAIN){
 
 
+
+
             Task_Main task = (Task_Main) task_elements.get(position);
-            boolean isSelected = selected_id.get(position);
             boolean isPinned = task.pin;
             boolean isReminded = task.reminder > 0;
             boolean isHas_Sub_Tasks = task.has_sub_tasks;
+            boolean isUnfolded = task.unfolded;
+            Log.d("Adapter Recycler Task List" , "unfold: " +isUnfolded + "    Content: " +task.note);
 
             MyViewHolder_Task_Main taskHolder = (MyViewHolder_Task_Main) holder;
+
+
+
+
             taskHolder.title_id.setVisibility(View.VISIBLE);
             taskHolder.title_id.setText(task_elements.get(position).getContent() );
 
@@ -151,10 +171,42 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             }
 
             taskHolder.fl_pin_icon_activated.setVisibility( !isSelected && isPinned ? View.VISIBLE : View.GONE); ///Ternary Operator
-            taskHolder.fl_delete_ghost.setVisibility(isSelected ? View.VISIBLE : View.GONE);
-            taskHolder.fl_delete.setVisibility(isSelected ? View.VISIBLE : View.GONE);
-            taskHolder.fl_pin.setVisibility(isSelected ? View.VISIBLE : View.GONE);
-            taskHolder.fl_pin_ghost.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+            taskHolder.fl_delete_ghost.setVisibility(isSelected && !multi_selection_state ? View.VISIBLE : View.GONE);
+            taskHolder.fl_delete.setVisibility(isSelected  && !multi_selection_state ? View.VISIBLE : View.GONE);
+            taskHolder.fl_pin.setVisibility(isSelected  && !multi_selection_state ? View.VISIBLE : View.GONE);
+            taskHolder.fl_pin_ghost.setVisibility(isSelected  && !multi_selection_state ? View.VISIBLE : View.GONE);
+
+            //taskHolder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_sand_light )));
+            //taskHolder.fl_item.setBackgroundResource(R.drawable.bg_main_task_single);
+
+            ///Changing background color:
+            //Drawable background = ContextCompat.getDrawable(context,R.drawable.bg_main_task_single);
+            //background = DrawableCompat.wrap(background).mutate();
+            ////DrawableCompat.setTint(background,ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_sand_light ));
+            //DrawableCompat.setTint(background, Color.parseColor("#FF5722"));
+            //taskHolder.fl_item.setBackground(background);
+            taskHolder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_sand_light )));
+            //taskHolder.fl_item.setBackgroundResource(R.drawable.bg_main_task_single);
+            if (isUnfolded) {
+                //taskHolder.fl_item.setBackgroundResource(R.drawable.bg_main_task_father_unfolded);
+                background = drw_main_father.getConstantState().newDrawable().mutate();
+            }else{
+                background = drw_main_single.getConstantState().newDrawable().mutate();
+
+            }
+            //int color = (ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_sand_light ));
+            //DrawableCompat.setTint(background,color);
+            taskHolder.fl_item.setBackground(background);
+
+            if(isSelected){
+                taskHolder.fl_item.setScaleX(1.02f);
+                taskHolder.fl_item.setScaleY(1.02f);
+            }else{
+                taskHolder.fl_item.setScaleX(1.0f);
+                taskHolder.fl_item.setScaleY(1.0f);
+
+            }
+            //taskHolder.layout_global_item.setAlpha(isSelected   ? 0.5f : 1.0f );
 
             ///taskHolder.note_preview_id.setVisibility(View.VISIBLE);
             ///taskHolder.note_preview_id.setText("Task slave example: " +   String.valueOf((int) task.getTask_id() + "    task sub:" + task_sub.getNote()) );
@@ -167,6 +219,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             ///taskHolder.fl_pin_icon_activated.setVisibility( View.GONE);
             ///taskHolder.fl_reminder_activated.setVisibility( View.GONE);
         }else{
+
             MyViewHolder_Task_Sub subTaskHolder = (MyViewHolder_Task_Sub) holder;
             subTaskHolder.title_id.setVisibility(View.VISIBLE);
             subTaskHolder.title_id.setText(task_elements.get(position).getContent());
@@ -174,6 +227,20 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             Task_Sub task_sub = (Task_Sub) task_elements.get(position);
 
             subTaskHolder.fl_task_sub_completed.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),task_sub.completed ? R.color.ex_green : R.color.gray_light_3 ))); ///Ternary Operator
+
+            subTaskHolder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_sand_light )));
+            //background = drw_main_father.getConstantState().newDrawable().mutate();
+            ///subTaskHolder.fl_item.setBackgroundResource(R.drawable.bg_sub_task_middle);
+            if(position + 1 <= task_elements.size()-1){
+                if( getItemViewType(position + 1) == TYPE_TASK_MAIN){
+                    background = Objects.requireNonNull(drw_sub_end.getConstantState()).newDrawable().mutate();
+                }else{
+                    background = Objects.requireNonNull(drw_sub_middle.getConstantState()).newDrawable().mutate();
+                }
+            }else{
+                background = Objects.requireNonNull(drw_sub_end.getConstantState()).newDrawable().mutate();
+            }
+            subTaskHolder.fl_item.setBackground(background);
         }
 
 
@@ -518,6 +585,15 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
         Log.d("CheckList","   RVV  ");
     }
 
+    public void Set_Selection_Mode_On() {
+
+        this.multi_selection_state = true;
+    }
+    public void Set_Selection_Mode_Off() {
+
+        this.multi_selection_state = false;
+    }
+
     public class MyViewHolder_Task_Main extends RecyclerView.ViewHolder {
         TextView date_id, title_id, note_preview_id;
         View layout_btn_options, layout_btn_options_ghost, layout_global_item, layout_reminder, layout_options_reminder_ghost;
@@ -642,6 +718,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             super(itemView);
             title_id = itemView.findViewById(R.id.Text_Task_Sub_Title);
             fl_task_sub_completed = itemView.findViewById(R.id.Fl_Completed_Mark);
+            fl_item = itemView.findViewById((R.id.Layout_Item));
 
 
             itemView.setOnClickListener(new View.OnClickListener() {

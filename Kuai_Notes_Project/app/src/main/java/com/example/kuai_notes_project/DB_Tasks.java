@@ -151,6 +151,18 @@ public class DB_Tasks extends SQLiteOpenHelper {
         Log.d("Inside DB_Tasks","Insert_Task: " + (result == -1 ? "NOT inserted"   :   "Task Inserted Satisfactorily"));  ///Ternary Operator
         return  result;
     }
+    public long Insert_Task_L_for_test_random_generator(long current_date, String title,  String note, boolean pin, long reminder, int reminder_type, int reminder_interval,boolean has_sub_tasks, boolean complete){
+        SQLiteDatabase DB_T = this.getWritableDatabase();
+        //!!--Corregir valores de: fechas, completed, has_sub_task
+        ContentValues contentValues = ContentValues_Complete_Setter_Main_Task(current_date,current_date,current_date,current_date, title, note, pin,
+                reminder, reminder_type, reminder_interval,0,0,complete,has_sub_tasks,false,false);
+
+        long result = DB_T.insert("Tasks", null,contentValues);
+
+        //.insert devuelve el id de la fila insertada y "-1" si se produce algun error
+        Log.d("Inside DB_Tasks","Insert_Task: " + (result == -1 ? "NOT inserted"   :   "Task Inserted Satisfactorily"));  ///Ternary Operator
+        return  result;
+    }
     public long Insert_Task_Sub_L( long parent_id, String note, boolean completed, int task_sub_position){
         SQLiteDatabase DB_T = this.getWritableDatabase();
         ContentValues contentValues = ContentValues_Complete_Setter_Sub_Task(parent_id, note, completed, task_sub_position, false);
@@ -198,9 +210,9 @@ public class DB_Tasks extends SQLiteOpenHelper {
 
         SQLiteDatabase DB_N = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put("date",current_date);
+        //contentValues.put("date",current_date);
         contentValues.put("date_modified",date_modified);
-        contentValues.put("date_completed",date_completed);
+        //contentValues.put("date_completed",date_completed);
         contentValues.put("title",title);
         contentValues.put("note",note);
         contentValues.put("pin",pin);
@@ -227,11 +239,22 @@ public class DB_Tasks extends SQLiteOpenHelper {
         Result_Log_treatment(result, "Modify_Has_Sub_Tasks_Status");
         return result > 0;
     }
-    public Boolean Modify_Main_Task_Completed_Status(long task_id,  boolean completed){
+    public Boolean Modify_Main_Task_Completed_Status(long task_id,  boolean completed, long new_completed_time){
 
         SQLiteDatabase DB_T = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("completed",completed);
+        contentValues.put("date_completed",new_completed_time);
+
+        int result = DB_T.update("Tasks", contentValues, "_id=? ", new String[]{String.valueOf(task_id)});
+        Result_Log_treatment(result, "Modify_Completed_Status");
+        return result > 0;
+    }
+    public Boolean Modify_Main_Task_Modified_Date(long task_id,  long new_modified_time){
+
+        SQLiteDatabase DB_T = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("date_modified",new_modified_time);
 
         int result = DB_T.update("Tasks", contentValues, "_id=? ", new String[]{String.valueOf(task_id)});
         Result_Log_treatment(result, "Modify_Completed_Status");
@@ -374,7 +397,7 @@ public class DB_Tasks extends SQLiteOpenHelper {
     //--updated to Tasks: get_All_Notes:
     public Cursor get_All_Tasks(){
         SQLiteDatabase DB_T = this.getReadableDatabase();
-        Cursor cursor = DB_T.rawQuery("select * from Tasks where deleted = 0 order by pin DESC, date DESC", null);
+        Cursor cursor = DB_T.rawQuery("select * from Tasks where deleted = 0 order by  pin DESC, completed ASC, date DESC", null);
         return cursor;
     }
     public Task_Main getASpecificTask(long task_id){
@@ -398,7 +421,7 @@ public class DB_Tasks extends SQLiteOpenHelper {
     }
     public Cursor get_All_Tasks_Sub_For_Specific_Task_Main(long parent_id){
         SQLiteDatabase DB_T = this.getReadableDatabase();
-        Cursor cursor = DB_T.rawQuery("select * from Tasks_Sub where parent_id = ? AND deleted = 0 order by task_sub_position ASC", new String[] {String.valueOf(parent_id)});
+        Cursor cursor = DB_T.rawQuery("select * from Tasks_Sub where parent_id = ? AND deleted = 0 order by completed ASC ,task_sub_position ASC", new String[] {String.valueOf(parent_id)});
         return cursor;
 
     }
@@ -506,13 +529,25 @@ public class DB_Tasks extends SQLiteOpenHelper {
                 " WHERE " +
                 " T1.deleted = 0" +
                 " AND" +
+                /// Version inicial, solo cuenta pin y date.
+                ///" (" +
+                ///" (T1.pin > (SELECT pin FROM Tasks WHERE _id = ?))" +
+                ///" OR" +
+                ///" (T1.pin = (SELECT pin FROM Tasks WHERE _id = ?) AND T1.date > (SELECT date FROM Tasks WHERE _id = ?))" +
+                ///" )";
+
+                /// Version contiene el parametro para completed:
                 " (" +
                 " (T1.pin > (SELECT pin FROM Tasks WHERE _id = ?))" +
                 " OR" +
-                " (T1.pin = (SELECT pin FROM Tasks WHERE _id = ?) AND T1.date > (SELECT date FROM Tasks WHERE _id = ?))" +
+                " (T1.pin = (SELECT pin FROM Tasks WHERE _id = ?) AND T1.completed < (SELECT completed FROM Tasks WHERE _id = ?))" +
+                " OR" +
+                " (T1.pin = (SELECT pin FROM Tasks WHERE _id = ?) AND T1.completed = (SELECT completed FROM Tasks WHERE _id = ?) AND T1.date > (SELECT date FROM Tasks WHERE _id = ?))" +
                 " )";
 
-        String [] selectionArgs = { String.valueOf(task_id), String.valueOf(task_id), String.valueOf(task_id)};
+
+
+        String [] selectionArgs = { String.valueOf(task_id),String.valueOf(task_id),String.valueOf(task_id),String.valueOf(task_id), String.valueOf(task_id), String.valueOf(task_id)};
 
         try (Cursor cursor = DB_T.rawQuery(query, selectionArgs)){
             if (cursor.moveToFirst()){
@@ -602,6 +637,23 @@ public class DB_Tasks extends SQLiteOpenHelper {
         SQLiteDatabase DB_N = this.getWritableDatabase();
         int result = DB_N.delete("Notes",  "_id=? ", new String[]{String.valueOf(note_id)});
         Result_Log_treatment(result, "Delete_Hard_Specific_Note");
+        return result > 0;
+    }
+    public Boolean Delete_Hard_All_Tasks(){
+        SQLiteDatabase DB_T = this.getWritableDatabase();
+        //Borrado de la Tabla Tasks y Tasks_Sub
+        int result = DB_T.delete("Tasks",  null, null);
+        int result1_2 = DB_T.delete("Tasks_Sub",  null, null);
+        //Borrado del buscador Notes_fts
+        int result_2 = DB_T.delete("Tasks_fts",  null, null);
+
+        Result_Log_treatment(result, "Delete_Hard_All_Tasks");
+        Result_Log_treatment(result_2, "Delete_Hard_All_Tasks");
+
+        //Reinicio de los Id autoincrementales:
+        int result_3 = DB_T.delete("sqlite_sequence",  "name=?", new String[]{String.valueOf("Tasks")});
+        int result_4 = DB_T.delete("sqlite_sequence",  "name=?", new String[]{String.valueOf("Tasks_Sub")});
+
         return result > 0;
     }
     private static void Note_Setter(Note note, Cursor cursor) {

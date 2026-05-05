@@ -53,7 +53,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
     ///Button btn_config, btn_check_lists;
     View main;
     View layout_dim;
-    View fl_return, fl_back_ghost, fl_search_ghost;
+    View fl_return, fl_back_ghost, fl_search_ghost, fl_generate_random_content, fl_delete_all_tasks_database;
     Body_Note_Preview BNP;
     Date_of_Note_Item_View_DEPRECATED DoN_IV;
     Date_of_Note DoN;
@@ -165,6 +165,8 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         fl_return = findViewById(R.id.FrameLayout_Return);
         fl_back_ghost = findViewById(R.id.fl_Back_Ghost);
         fl_search_ghost = findViewById(R.id.fl_Search_Ghost);
+        fl_generate_random_content = findViewById(R.id.FrameLayout_Generate_Random_Content);
+        fl_delete_all_tasks_database = findViewById(R.id.FrameLayout_Delete_All_Tasks_DataBase);
 
         floating_button = findViewById(R.id.floatingActionButton);
 
@@ -186,6 +188,18 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
             @Override
             public void onClick(View view) {
                 Go_To_Search_In_Tasks();
+            }
+        });
+        fl_generate_random_content.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Generate_Random_Content_For_Test();
+            }
+        });
+        fl_delete_all_tasks_database.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Delete_All_Tasks_From_DataBase();
             }
         });
         fl_back_ghost.setOnClickListener(new View.OnClickListener() {
@@ -231,6 +245,44 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
                 }
             }
         });
+    }
+
+    private void Delete_All_Tasks_From_DataBase() {
+        DB_T.Delete_Hard_All_Tasks();
+    }
+
+    private void Generate_Random_Content_For_Test() {
+        String seed_text = "Una mañana, tras un sueño intranquilo, Gregorio Samsa se despertó convertido en un monstruoso insecto. Estaba echado de espaldas sobre un duro caparazón y, al alzar la cabeza, vio su vientre convexo y oscuro, surcado por curvadas callosidades, sobre el que casi no se aguantaba la colcha, que estaba a punto de escurrirse hasta el suelo. Numerosas patas, penosamente delgadas en comparación con el grosor normal de sus piernas, se agitaban sin concierto. —¿Qué me ha ocurrido? No estaba soñando. Su habitación, una habitación normal, aunque muy pequeña, tenía el aspecto habitual. Sobre la mesa había desparramado un muestrario de paños —Samsa era viajante de comercio—, y de la pared colgaba una estampa recientemente recortada de una revista ilustrada y puesta en un marco dorado. La estampa mostraba a una mujer tocada con un gorro de pieles, envuelta en una estola también de pieles, y que, muy erguida, esgrimía un amplio manguito, asimismo de piel, que ocultaba todo su antebrazo. Gregorio miró hacia la ventana; estaba nublado, y sobre el cinc del alféizar repiqueteaban las gotas de lluvia, lo que le hizo sentir una gran melancolía. «Bueno —pensó—; ¿y si siguiese durmiendo un rato y me olvidase de todas estas locuras?» Pero no era posible, pues Gregorio tenía la costumbre de dormir sobre el lado derecho, y su actual estado no le permitía adoptar tal postura. Por más que se esforzara volvía a quedar de espaldas. Intentó en vano esta operación numerosas veces; cerró los ojos para no tener que ver aquella confusa agitación de patas, que no cesó hasta que notó en el costado un dolor leve y punzante, un dolor jamás sentido hasta entonces. —¡Qué cansada es la profesión que he elegido! —se dijo—. Siempre de viaje. Las preocupaciones son mucho mayores cuando se trabaja fuera, por no hablar de las molestias propias de los viajes: estar pendiente de los enlaces de los trenes; la comida mala, irregular; relaciones que cambian constantemente, que nunca llegan a ser verdaderamente cordiales, y en las que no tienen cabida los sentimientos. ¡Al diablo con todo! Sintió en el vientre una ligera picazón. Lentamente, se estiró sobre la espalda en dirección a la cabecera de la cama, para poder alzar mejor la cabeza. Vio que el sitio que le picaba estaba cubierto de extraños puntitos blancos. Intentó rascarse con una pata; pero tuvo que retirarla inmediatamente, pues el roce le producía escalofríos. —Estoy atontado de tanto madrugar —se dijo—. No duermo lo suficiente. Hay viajantes que viven mucho mejor. Cuando a media mañana regreso a la fonda para anotar los pedidos, me los encuentro desayunando cómodamente sentados. Si yo, con el jefe que tengo, hiciese lo mismo, me despedirían en el acto. Lo cual, probablemente sería lo mejor que me podría pasar. Si no fuese por mis padres, ya hace tiempo que me hubiese marchado. Hubiera ido a ver el director y le habría dicho todo lo que pienso. Se caería de la mesa, ésa sobre la que se sienta para, desde aquella altura, hablar a los empleados, que, como es sordo, han de acercársele mucho. Pero todavía no he perdido la esperanza. En cuanto haya reunido la cantidad necesaria para pagarle la deuda de mis padres —unos cinco o seis años todavía—, me va a oír. Bueno; pero, por ahora, lo que tengo que hacer es levantarme, que el tren sale a las cinco. Eran más de las seis y media, y las manecillas seguían avanzando tranquilamente. En realidad, ya eran casi las siete menos cuarto. ¿Es que no había sonado el despertador? Desde la cama se veía que estaba puesto a las cuatro; por tanto, tenía que haber sonado. Pero ¿era posible seguir durmiendo a pesar de aquel sonido que hacía estremecer hasta los muebles? Su sueño no había sido tranquilo. Pero, por eso mismo, debía de haber dormido al final más profundamente. ¿Qué podía hacer ahora? El tren siguiente salía a las siete; para cogerlo tendría que darse muchísima prisa. El muestrario no estaba aún empaquetado, y él mismo no se sentía nada dispuesto. Además, aunque alcanzase el tren, no evitaría reprimenda del amo, pues el mozo del almacén, que había acudido al tren a las cinco,";
+        for(int i = 20 ; i>=0; i--){
+            long _current_time = System.currentTimeMillis();
+            //int random_number = (int) (_current_time & 1023);   /// bitwise & long & 1023 (binary = 1111111111(1 diez veces)) → para tomar los numeros menores de 1023
+            int random_number = (int) (_current_time & 4095);   /// bitwise & long & 4095 (binary = 111111111111 (1 doce veces)) → para tomar los numeros menores de 4095
+            //int random_title = 0;
+            int end_of_title = random_number & 31;  ///Bitwise & → int & 15 (binary = 1111) → para tomar los numeros menores de 15;
+            boolean random_pin = (random_number & 1) == 1;
+            boolean random_has_sub_task  = ((random_number >> 1) & 1)  == 1;
+            boolean random_complete  = ((random_number >> 2) & 1)  == 1;
+
+            Log.d("Random", "Main Task:  Random has sub task: " + random_has_sub_task + "    Random pin: " + random_pin + "    Random complete: " + random_complete);
+
+            //String _title = et_Title.getText().toString();
+            String _title = seed_text.substring(random_number,random_number + end_of_title);
+
+            long save_Success;
+
+            save_Success = DB_T.Insert_Task_L_for_test_random_generator(_current_time, _title, _title, random_pin, 0L, 0, 0,random_has_sub_task,random_complete);
+            if( random_has_sub_task == true){
+               for(int j = 1; j <= 29;j++){
+                   boolean sub_task_random_complete  = random_complete;
+                   if(random_complete == false){
+                       sub_task_random_complete  = ((random_number >> j+2) & 1)  == 1;
+                   }
+                   Log.d("Random", "    Sub Task:  Random complete: " + sub_task_random_complete);
+                   DB_T.Insert_Task_Sub_L(save_Success,j+_title,sub_task_random_complete,j);
+                   if(((random_number >> j+2) & 1)  == 1) break;
+               }
+            }
+        }
     }
 
     private void Save_Sub_Tasks_New_Positions() {
@@ -424,7 +476,16 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
     @Override
     public void onItemClick(int position, View v) {
         if(selection_mode) {
-            Select_Item(position, v);
+            if(task_elements.get(position).getViewType()==0){
+
+                Select_Item(position, v);
+            }else{
+                for(int i = position; i >= 0; i-- ){
+                    if(task_elements.get(i).getViewType()==0){
+                        Select_Item(i, v);
+                    }
+                }
+            }
             return;
         }
 
@@ -454,6 +515,26 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
     private void Select_Item(int position, View v) {
         selected_list.set(position,!selected_list.get(position));// invert value
 
+
+        //Select sub task if the main one have subtasks:
+        boolean has_sub_task = false;
+        int last_subTask_change_position = 0;
+        for(int i = position + 1; i <= task_elements.size() - 1; i++){
+            if(task_elements.get(i).getViewType() == 1){
+                selected_list.set(i,!selected_list.get(i));// invert value
+                has_sub_task = true;
+                last_subTask_change_position = i;
+            }else{
+                break;
+            }
+        }
+        if(has_sub_task == true){
+            adapter.notifyItemRangeChanged(position + 1, last_subTask_change_position);
+        };
+
+
+
+
         selection_count += selected_list.get(position) ? 1 : -1; /// Ternary Operator!
 
         if(!selection_mode) fa_btn.startAnimation(Animation_FloatingButton_Disappear);
@@ -479,8 +560,11 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
             selection_item_menu_PopUp.show(v, pin_initial_state_MS);
 
             adapter.Change_multi_selection_state(selection_mode);
+            adapter.Set_Selection_Mode_On();
+
             adapter.notifyItemChanged(position,this);
             adapter.notifyItemChanged(selected_positions_list.get(1),this);//!!se estan desvaneciendo sin las animaciones
+
 
             //fa_btn.startAnimation(AnimationLayoutDimDisappear_Normal);
         }
@@ -518,7 +602,9 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
 
             ///Change_Complete_Main_Task_Status();
             _task.setCompleted(!_task.completed);
-            if(DB_T.Modify_Main_Task_Completed_Status(_task.task_id, _task.completed)) {
+
+            long _current_time = System.currentTimeMillis();
+            if(DB_T.Modify_Main_Task_Completed_Status(_task.task_id, _task.completed, _current_time)) {
                 adapter.notifyItemChanged(position);
             }
 
@@ -582,17 +668,20 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
                 ///!!Change_Complete_Main_Task_Status(duplicated)
                 _task_main.setCompleted(!_task_main.completed);
                 task_elements.set(_task_main_position,_task_main);
-                if(DB_T.Modify_Main_Task_Completed_Status(_task_main.task_id, _task_main.completed)) {
+                long _current_time = System.currentTimeMillis();
+                if(DB_T.Modify_Main_Task_Completed_Status(_task_main.task_id, _task_main.completed, _current_time)) {
                     adapter.notifyItemChanged(_task_main_position);
                 }
+
             }
 
         }else{
             if(_task_main.completed){
                 ///!!Change_Complete_Main_Task_Status(duplicated)
                 _task_main.setCompleted(!_task_main.completed);
+                long _current_time = System.currentTimeMillis();
                 task_elements.set(_task_main_position,_task_main);
-                if(DB_T.Modify_Main_Task_Completed_Status(_task_main.task_id, _task_main.completed)) {
+                if(DB_T.Modify_Main_Task_Completed_Status(_task_main.task_id, _task_main.completed, _current_time)) {
                     adapter.notifyItemChanged(_task_main_position);
                 }
             }
@@ -641,8 +730,8 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         ///task_elements_aux.add(task_elements.get(position));
         boolean _selected = false;
         boolean was_unfolded = _task_main.unfolded;
-        selected_list.set(position,false);
-        adapter.notifyItemChanged(position);
+        //selected_list.set(position,false);
+        //adapter.notifyItemChanged(position);
 
         if(was_unfolded){
             RecyclerView_Pin_Unfold_Update(position,false);
@@ -650,12 +739,15 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
 
         selected_list.remove(position);
         task_elements.remove(position);
+        adapter.notifyItemChanged(position);
 
 
         int current_pinned_tasks = DB_T.get_Specific_Task_Sorted_by_Pin_and_Date(_task_main.task_id);
         Log.d("TasksList","   Task List Pin current pinned tasks:  :"+ current_pinned_tasks);
 
 
+        //!!--Esta seccion debe optimizarse:
+            //!!--Actualmente funciona correctamente pero puedo optimizarse:
         if(current_pinned_tasks > 0){
             int main_task_counter = 0;
             for(int i = 0; i <= task_elements.size()-1; i++ ){
@@ -679,7 +771,8 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
                         {
                             //--approved
                             Log.d("TasksList","   Task List Unfold:  task_element:"+ task_elements.get(i).getContent() + "  i:" + i);
-                            current_pinned_tasks = i ;
+                            //current_pinned_tasks = i ;
+                            current_pinned_tasks = main_task_counter ;
                             break;
                         }
                     }
@@ -693,10 +786,6 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
 
             }
         }
-
-
-
-
 
 
         _task_main.setPin(!_task_main.getPin());
@@ -717,7 +806,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
     }
 
     private void RecyclerView_Pin_Unfold_Update(int position, boolean unfolded) {
-        Log.d("TasksList","   Task List Unfold:  now unfolded is:"+ unfolded);
+        ///Log.d("TasksList","   Task List Unfold:  now unfolded is:"+ unfolded);
         Task_Main _task = (Task_Main) task_elements.get(position);
         /// Fold
         if(!unfolded){
@@ -727,7 +816,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
                 if (task_elements.get(i).getViewType() == 1) {
                     Task_Sub _task_sub = (Task_Sub) task_elements.get(i);
                     if (_task_sub.getParent_id() == _task.getTask_id()) {
-                        Log.d("TasksList","   Task List Unfold:  sub task description:"+ task_elements.get(i).getContent());
+                        Log.d("TasksList","     Task List Unfold:  sub task description deleted: "+ task_elements.get(i).getContent());
                         task_elements_aux.add(task_elements.get(i));
                         task_elements.remove(i);
                         selected_list.remove(i);
@@ -743,22 +832,27 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
             }
             adapter.notifyItemChanged(position);
         }
-        /// Unfold
+        ///Unfold
         if(unfolded){
-            Log.d("TasksSubList","   Task Elements Aux size:  "+ task_elements_aux.size());
+            Log.d("TasksSubList","--------(Pin Unfolded)--------------Task Elements Aux size:  " + task_elements_aux.size());
+            int sub_task_elements_size = task_elements_aux.size();
+            Log.d("TasksSubList","   Task Base Position:  " + position);
             for(int i = task_elements_aux.size()-1; i >= 0 ; i --){
-
 
                 task_elements.add(position+1 ,task_elements_aux.get(i));
                 selected_list.add(position+1 ,false);
 
+                adapter.notifyItemInserted(position + 1);
+                //Log.d("TasksSubList","      Task first Elements content update:  "+ task_elements.get(position + 1).getContent());
                 //adapter.notifyItemRangeInserted(position+1,position+cursor_Tasks_Sub.getCount());
                 ///adapter.notifyItemRangeInserted(position+1,position+1+task_elements_aux.size()-1);
-                adapter.notifyItemChanged(position+1);
                 ///adapter.notifyItemChanged(position);
-                Log.d("TasksSubList","   Task Elements size:  "+ task_elements.size());
+                //Log.d("TasksSubList","      Task Elements size:  "+ task_elements.size()+"    Task content:  "+ task_elements_aux.get(i).getContent());
 
             }
+            Log.d("TasksSubList","      Task first Elements content update:  "+ task_elements.get(position + 1).getContent());
+            Log.d("TasksSubList","      Task last Elements content update:  "+ task_elements.get(position + 1+ sub_task_elements_size - 1).getContent());
+            ///adapter.notifyItemRangeInserted(position + 1, position + 1 +  sub_task_elements_size - 1 );
             task_elements_aux.clear();
         }
     }
@@ -846,6 +940,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         Log.d("TasksList","   Task List Unfold:  now unfolded is:"+ unfolded);
         //!!--seems to be adapted to note and not for a task:
         Task_Main _task = (Task_Main) task_elements.get(position);
+        boolean Main_IsSelected = selected_list.get(position);
         /// Fold
         if(!unfolded){
             //--Delete all sub task from the task_elements list and update
@@ -896,7 +991,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
                                 cursor_Tasks_Sub.getInt(task_sub_position_indx_sub));
                         //task_subList.add(task_sub);
                         task_elements.add(position+1+ cursor_Tasks_Sub.getPosition(),task_sub);
-                        selected_list.add(position+1+ cursor_Tasks_Sub.getPosition(),false);
+                        selected_list.add(position+1+ cursor_Tasks_Sub.getPosition(), Main_IsSelected ? true :false);///TERNARY Operator;
                     }
                     //adapter.notifyItemRangeInserted(position+1,position+cursor_Tasks_Sub.getCount());
                     adapter.notifyItemRangeInserted(position+1,cursor_Tasks_Sub.getCount());
@@ -969,6 +1064,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
                             break;
                         }
                         task_elements.remove(i);
+                        selected_list.remove(i);
                         i--;
                         adapter.notifyItemRemoved(position);
                     }
@@ -1001,6 +1097,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         }
         if(!selection_mode) fa_btn.startAnimation(Animation_FloatingButton_Appear);
         adapter.Change_multi_selection_state(false);
+        adapter.Set_Selection_Mode_Off();
     }
 
     public void Go_To_Trash_Can(){
@@ -1023,13 +1120,13 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
 
             if(pin_initial_state_MS){
                 for(int i = selected_list.size()-1;i >= 0; i--) {
-                    if (selected_list.get(i)) {
+                    if (task_elements.get(i).getViewType() == 0 && selected_list.get(i)) {
                         PinItem(i);
                     }
                 }
             }else{
                 for(int i = 0;i < selected_list.size(); i++) {
-                    if (selected_list.get(i)) {
+                    if (task_elements.get(i).getViewType() == 0 && selected_list.get(i)) {
                         PinItem(i);
                     }
                 }
