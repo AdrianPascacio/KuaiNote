@@ -27,7 +27,7 @@ import java.util.Calendar;
 import java.util.Objects;
 import java.util.Random;
 
-///324 V3, 305 V4, 358 V6, 306 V7, 450 V7.2
+///324 V3, 305 V4, 358 V6, 306 V7, 450 V7.2, 570 v9.0B
 public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board_Interface, Reminder_PopUpWindow.OnValueSelectedListener,Reminder_PopUpWindow.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener {
     RecyclerView recyclerView;
     ArrayList<String> dateEdited_list;
@@ -37,11 +37,13 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     ArrayList<Integer> selected_positions_list;
 
     DB_Notes DB_N;
+    Random_Content_Generator_For_Test Random_G;
+    Stable_Content_Generator_For_Test Stable_G;
 
     Adapter_Recycler_Memo_Board adapter;
 
     long start_of_today = 0;
-    Button btn_config, btn_check_lists, btn_search, btn_generate_random_content, btn_delete_all_notes_database;
+    Button btn_config, btn_check_lists, btn_search, btn_generate_random_content, btn_generate_stable_content, btn_delete_all_notes_database;
 
     View main;
     View layout_dim;
@@ -100,6 +102,8 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         getWindow().setNavigationBarColor(getResources().getColor(R.color.main_navigation_bar));
 
         DB_N = new DB_Notes(this);
+        Random_G = new Random_Content_Generator_For_Test();
+        Stable_G = new Stable_Content_Generator_For_Test();
 
         dateEdited_list = new ArrayList<>();
         noteOriginal_list = new ArrayList<>();
@@ -126,6 +130,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         btn_check_lists = findViewById(R.id.button_Check_Lists);
         btn_search = findViewById(R.id.button_Search);
         btn_generate_random_content = findViewById(R.id.button_Generate_Random_Content);
+        btn_generate_stable_content = findViewById(R.id.button_Generate_Stable_Content);
         btn_delete_all_notes_database = findViewById(R.id.button_Delete_All_Notes_DataBase);
         fa_btn.startAnimation(AnimationAddNoteButton);
 
@@ -151,6 +156,12 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             @Override
             public void onClick(View view) {
                 Generate_Random_Content_For_Test();
+            }
+        });
+        btn_generate_stable_content.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Generate_Stable_Content_For_Test();
             }
         });
         btn_delete_all_notes_database.setOnClickListener(new View.OnClickListener() {
@@ -183,6 +194,12 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     }
 
     private void Generate_Random_Content_For_Test() {
+        Random_G.Random_Note_Generator(this,40);
+    }
+    private void Generate_Stable_Content_For_Test() {
+        Stable_G.Stable_Note_Generator(this,40,0,100);
+    }
+    private void Generate_Random_Content_For_Test_Old() {
         //Toast.makeText(this, "Random Content Generator", Toast.LENGTH_SHORT).show();
 
         //Create Randome Note (Title, note, pin, reminder, reminder_type, reminder_interval)
@@ -298,9 +315,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
 
     @Override
     public void onItemHold(int position,View v) {
-
         Select_Item(position, v);
-
     }
     private void Select_Item(int position, View v) {
         selected_list.set(position,!selected_list.get(position));// invert value
@@ -414,7 +429,6 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         adapter.notifyItemChanged(current_pinned_notes);
 
         Restart_Selection();
-
     }
 
     /// Reminder

@@ -88,7 +88,18 @@
         android:layout_marginTop="12dp"
         android:layout_marginRight="70dp"
         android:background="@drawable/aux_randome_test_generator"
-        android:backgroundTint="@color/Medium_dark_brown"
+        android:backgroundTint="@color/orange_hard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    <FrameLayout
+        android:id="@+id/FrameLayout_Generate_Stable_Content"
+        android:layout_width="36dp"
+        android:layout_height="26dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginRight="120dp"
+        android:background="@drawable/aux_randome_test_generator"
+        android:backgroundTint="@color/green_dark_cha"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
     <FrameLayout
@@ -97,7 +108,7 @@
         android:layout_height="26dp"
         android:layout_marginLeft="15dp"
         android:layout_marginTop="12dp"
-        android:layout_marginRight="120dp"
+        android:layout_marginRight="170dp"
         android:background="@drawable/aux_delete_all_database"
         android:backgroundTint="@color/Medium_dark_brown"
         app:layout_constraintEnd_toEndOf="parent"

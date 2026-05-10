@@ -59,4 +59,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel:2.10.0")
     implementation("androidx.lifecycle:lifecycle-livedata:2.10.0")
 
+    ///implementation ("androidx.benchmark : benchmark-junit4:2.0")
+    implementation ("androidx.benchmark:benchmark-junit4:1.4.1")
+
 }

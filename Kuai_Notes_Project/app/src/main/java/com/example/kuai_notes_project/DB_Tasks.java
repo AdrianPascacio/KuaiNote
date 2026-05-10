@@ -56,7 +56,7 @@ public class DB_Tasks extends SQLiteOpenHelper {
                 ///"note, " +
                 ///"content='Tasks')"
 
-                        "title, " +
+                "title, " +
                 "note)"
         );
 

@@ -23,10 +23,7 @@ public class Adapter_Recycler_Tasks_Sub_In_Visualizer extends RecyclerView.Adapt
     private Context context;
     private ArrayList date_id;
     private ArrayList<Boolean> selected_id;
-    private ArrayList<Note> noteList;
-    private ArrayList<Task_Main> taskList;
     private ArrayList<Task_Sub> task_subList;
-    private ArrayList<Task_Element> task_elements;
 
     private static final int TYPE_TASK_MAIN = 0;
     private static final int TYPE_TASK_SUB = 0;
@@ -38,8 +35,6 @@ public class Adapter_Recycler_Tasks_Sub_In_Visualizer extends RecyclerView.Adapt
     private int multi_first_count = 2;
     private int selected_in_single_mode = -1;
 
-    private List<Check_With_Subs> checks = new ArrayList<>();
-    private List<DB_Check_Main> mainChecks = new ArrayList<>();
     public void Change_multi_selection_state (boolean multi_selection_state){
         this.multi_selection_state = multi_selection_state;
     }
@@ -94,10 +89,6 @@ public class Adapter_Recycler_Tasks_Sub_In_Visualizer extends RecyclerView.Adapt
     @Override
     public int getItemCount(){
         return task_subList.size();
-    }
-    public void setChecks(List<DB_Check_Main> checks){
-        this.mainChecks = checks;
-        Log.d("CheckList","   RVV  ");
     }
 
     public class MyViewHolder_Task_Sub extends RecyclerView.ViewHolder {
