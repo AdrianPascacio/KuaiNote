@@ -475,13 +475,13 @@ public class DB_Tasks extends SQLiteOpenHelper {
         Cursor cursor = DB_N.rawQuery("select * from Notes where deleted = 1 order by  date DESC", null);
         return cursor;
     }
-    public boolean Note_Exist(long note_id){
-        SQLiteDatabase DB_N = this.getReadableDatabase();
+    public boolean Task_Exist(long task_id){
+        SQLiteDatabase DB_T = this.getReadableDatabase();
         boolean exist = false;
-        String query = "SELECT COUNT(*) FROM Notes WHERE _id = ? AND deleted = 0";
-        String[] selectionArgs = {String.valueOf(note_id)};
+        String query = "SELECT COUNT(*) FROM Tasks WHERE _id = ? ";
+        String[] selectionArgs = {String.valueOf(task_id)};
 
-        try (Cursor cursor = DB_N.rawQuery(query,selectionArgs)){
+        try (Cursor cursor = DB_T.rawQuery(query,selectionArgs)){
             if (cursor.moveToFirst()) {
                 exist = true;
             } else {
@@ -633,10 +633,10 @@ public class DB_Tasks extends SQLiteOpenHelper {
         contentValues.put("deleted",deleted);
         return contentValues;
     }
-    public Boolean Delete_Hard_Specific_Note(long note_id){
-        SQLiteDatabase DB_N = this.getWritableDatabase();
-        int result = DB_N.delete("Notes",  "_id=? ", new String[]{String.valueOf(note_id)});
-        Result_Log_treatment(result, "Delete_Hard_Specific_Note");
+    public Boolean Delete_Hard_Specific_Main_Task(long task_id){
+        SQLiteDatabase DB_T = this.getWritableDatabase();
+        int result = DB_T.delete("Tasks",  "_id=? ", new String[]{String.valueOf(task_id)});
+        Result_Log_treatment(result, "Delete_Hard_Specific_Main_Task");
         return result > 0;
     }
     public Boolean Delete_Hard_All_Tasks(){

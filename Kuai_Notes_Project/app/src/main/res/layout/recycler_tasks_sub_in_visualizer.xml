@@ -5,6 +5,8 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:cardCornerRadius="7dp"
+    android:focusable="true"
+    android:clickable="true"
     android:outlineSpotShadowColor="@color/Light_medium_brown"
     android:outlineAmbientShadowColor="@color/transparent"
     android:layout_marginTop="0dp"
@@ -88,11 +90,11 @@
 
         <FrameLayout
             android:id="@+id/Fl_Completed_Mark"
-            android:layout_width="22dp"
-            android:layout_height="25dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_gravity="center"
-            android:layout_marginLeft="20dp"
-            android:background="@drawable/recycler_logo_icon_4"
+            android:layout_marginLeft="18dp"
+            android:background="@drawable/icon_complete_task_test_4"
             android:backgroundTint="@color/item_visualizer_icon_neutral_tint"
             android:clickable="false"
             android:focusable="false"
@@ -105,6 +107,8 @@
         android:layout_gravity="end|center_vertical"
         android:layout_marginTop="0dp"
         android:layout_marginBottom="0dp"
+        android:background="@color/white_bamboo"
+
         android:gravity="center_vertical"
         android:orientation="vertical">
 

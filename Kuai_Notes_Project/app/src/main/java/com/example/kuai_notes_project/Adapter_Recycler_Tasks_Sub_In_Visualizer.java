@@ -2,10 +2,13 @@ package com.example.kuai_notes_project;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -25,6 +28,7 @@ public class Adapter_Recycler_Tasks_Sub_In_Visualizer extends RecyclerView.Adapt
     private ArrayList<Boolean> selected_id;
     private ArrayList<Task_Sub> task_subList;
 
+    private  final Drawable drw_uncompleted, drw_completed;
     private static final int TYPE_TASK_MAIN = 0;
     private static final int TYPE_TASK_SUB = 0;
 
@@ -48,6 +52,9 @@ public class Adapter_Recycler_Tasks_Sub_In_Visualizer extends RecyclerView.Adapt
         this.task_subList = task_subList;
 
         this.recycler_tasks_sub_in_visualizer_interface =recyclerTasksSubInVisualizerInterface ;
+
+        drw_completed = ContextCompat.getDrawable(context, R.drawable.icon_completed_task_test_11);
+        drw_uncompleted = ContextCompat.getDrawable(context, R.drawable.icon_complete_task_test_4);
     }
 
 
@@ -63,21 +70,32 @@ public class Adapter_Recycler_Tasks_Sub_In_Visualizer extends RecyclerView.Adapt
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder,int position){
 
-            MyViewHolder_Task_Sub taskHolder = (MyViewHolder_Task_Sub) holder;
-            taskHolder.task_sub_description_id.setVisibility(View.VISIBLE);
+        MyViewHolder_Task_Sub taskHolder = (MyViewHolder_Task_Sub) holder;
 
+        taskHolder.task_sub_description_id.setVisibility(View.VISIBLE);
 
-            taskHolder.task_sub_description_id.removeTextChangedListener(taskHolder.activeTextWatcher_Sub_Task_Description);
-            taskHolder.task_sub_description_id.setText(task_subList.get(position).getContent() );
-            taskHolder.task_sub_description_id.addTextChangedListener(taskHolder.activeTextWatcher_Sub_Task_Description);
+        taskHolder.task_sub_description_id.removeTextChangedListener(taskHolder.activeTextWatcher_Sub_Task_Description);
+        taskHolder.task_sub_description_id.setText(task_subList.get(position).getContent() );
+        taskHolder.task_sub_description_id.addTextChangedListener(taskHolder.activeTextWatcher_Sub_Task_Description);
+        boolean is_selected = selected_id.get(position);
 
+        if(is_selected){
+            taskHolder.fl_remove_sub_task.setVisibility(View.VISIBLE);
+        }else{
+            taskHolder.fl_remove_sub_task.setVisibility(View.GONE);
+        }
 
-            if(task_subList.get(position).completed){
-                taskHolder.fl_task_sub_completed.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.ex_green)));
-            }else{
-                taskHolder.fl_task_sub_completed.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.gray_light_3)));
-            }
+        if(task_subList.get(position).completed){
+            Drawable background = ContextCompat.getDrawable(context,R.drawable.icon_completed_task_test_11);
+            taskHolder.fl_task_sub_completed.setBackground(drw_completed);
+            taskHolder.fl_task_sub_completed.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.ex_green)));
+        }else{
+            Drawable background = ContextCompat.getDrawable(context,R.drawable.icon_complete_task_test_4);
+            taskHolder.fl_task_sub_completed.setBackground(drw_uncompleted);
+            taskHolder.fl_task_sub_completed.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.gray_light_3)));
+        }
 
+        taskHolder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),is_selected   ? R.color.item_background_selected : R.color.white_sand_light )));
     }
 
     @Override
@@ -89,6 +107,14 @@ public class Adapter_Recycler_Tasks_Sub_In_Visualizer extends RecyclerView.Adapt
     @Override
     public int getItemCount(){
         return task_subList.size();
+    }
+    public void Set_Selection_Mode_On() {
+
+        this.multi_selection_state = true;
+    }
+    public void Set_Selection_Mode_Off() {
+
+        this.multi_selection_state = false;
     }
 
     public class MyViewHolder_Task_Sub extends RecyclerView.ViewHolder {
@@ -108,6 +134,39 @@ public class Adapter_Recycler_Tasks_Sub_In_Visualizer extends RecyclerView.Adapt
             fl_task_sub_completed = itemView.findViewById(R.id.Fl_Completed_Mark);
             fl_task_sub_completed_ghost = itemView.findViewById(R.id.Fl_Completed_Mark_Ghost);
             fl_remove_sub_task = itemView.findViewById(R.id.Fl_Remove_Sub_Task);
+            fl_item = itemView.findViewById(R.id.Layout_Item);
+
+            GestureDetector gestureDetector = new GestureDetector(itemView.getContext(), new GestureDetector.SimpleOnGestureListener(){
+                @Override
+                public void onLongPress(MotionEvent e){
+                    int pos = getAbsoluteAdapterPosition();
+                    recyclerTasksSubInVisualizerInterface.onLongPress(pos);
+                }
+                @Override
+                public boolean onDoubleTap(MotionEvent e){
+                    int pos = getAbsoluteAdapterPosition();
+                    recyclerTasksSubInVisualizerInterface.onDoubleTap(pos);
+                    return true;
+                }
+
+            });
+            ///GestureDetector gestureDetector2 = new GestureDetector(task_sub_description_id.getContext(), new GestureDetector.SimpleOnGestureListener(){
+            ///    @Override
+            ///    public void onLongPress(MotionEvent e){
+            ///        int pos = getAbsoluteAdapterPosition();
+            ///        recyclerTasksSubInVisualizerInterface.onLongPress(pos);
+            ///    }
+            ///    @Override
+            ///    public boolean onDoubleTap(MotionEvent e){
+            ///        int pos = getAbsoluteAdapterPosition();
+            ///        recyclerTasksSubInVisualizerInterface.onDoubleTap(pos);
+            ///        return true;
+            ///    }
+
+            ///});
+
+            itemView.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
+            ///itemView.setOnTouchListener((v, event) -> gestureDetector2.onTouchEvent(event));
 
             activeTextWatcher_Sub_Task_Description = new TextWatcher() {
                 @Override
@@ -131,6 +190,18 @@ public class Adapter_Recycler_Tasks_Sub_In_Visualizer extends RecyclerView.Adapt
             };
 
 
+            ///itemView.setOnClickListener(new View.OnClickListener() {
+            ///    @Override
+            ///    public void onClick(View v) {
+            ///        if (recyclerTasksSubInVisualizerInterface != null){
+            ///            //int pos = getAdapterPosition();
+            ///            int pos = getAbsoluteAdapterPosition();
+            ///            if (pos != RecyclerView.NO_POSITION){
+            ///                recyclerTasksSubInVisualizerInterface.onItemClick(pos,v);
+            ///            }
+            ///        }
+            ///    }
+            ///});
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -143,18 +214,19 @@ public class Adapter_Recycler_Tasks_Sub_In_Visualizer extends RecyclerView.Adapt
                     }
                 }
             });
-            itemView.setOnLongClickListener(new View.OnLongClickListener(){
-                public boolean onLongClick(View v) {
-                    ///if (recyclerTasksSubListInterface != null){
-                    ///    int pos = getAbsoluteAdapterPosition();
-                    ///    if (pos != RecyclerView.NO_POSITION){
-                    ///        recyclerTasksSubListInterface.onItemHold(pos,v);
-                    ///        return true;
-                    ///    }
-                    ///}
-                    return false;
-                }
-            });
+            ///itemView.setOnLongClickListener(new View.OnLongClickListener(){
+            ///    @Override
+            ///    public boolean onLongClick(View v) {
+            ///        if (recyclerTasksSubInVisualizerInterface != null){
+            ///            int pos = getAbsoluteAdapterPosition();
+            ///            if (pos != RecyclerView.NO_POSITION){
+            ///                recyclerTasksSubInVisualizerInterface.onItemHold(pos,v);
+            ///                return true;
+            ///            }
+            ///        }
+            ///        return false;
+            ///    }
+            ///});
             itemView.findViewById(R.id.Fl_Completed_Mark_Ghost).setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v){

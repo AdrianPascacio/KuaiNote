@@ -25,11 +25,8 @@ import java.util.Objects;
 
 public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
     private Context context;
-    private ArrayList date_id;
     private ArrayList<Boolean> selected_id;
     private ArrayList<Note> noteList;
-    private ArrayList<Task_Main> taskList;
-    private ArrayList<Task_Sub> task_subList;
     private ArrayList<Task_Element> task_elements;
 
     private static final int TYPE_TASK_MAIN = 0;
@@ -39,6 +36,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
     private final Recycler_Tasks_List_Interface recycler_tasks_list_interface;
     private final Recycler_Tasks_Sub_List_Interface recycler_tasks_sub_list_interface;
     private  final Drawable drw_main_single, drw_main_father, drw_sub_middle, drw_sub_end;
+    private  final Drawable drw_completed, drw_uncompleted;
     private boolean multi_selection_state = false;
     private boolean is_repeated = false;
     private int multi_first_count = 2;
@@ -51,23 +49,23 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
         this.is_repeated = is_repeated;
     }
 
-    public Adapter_Recycler_Tasks_List(Context context, ArrayList date_id, ArrayList<Boolean> selected_id, ArrayList taskList, ArrayList task_subList, ArrayList task_elements, Recycler_Tasks_List_Interface recyclerTaskListInterface, Recycler_Tasks_Sub_List_Interface recyclerTasksSubListInterface){
+    public Adapter_Recycler_Tasks_List(Context context, ArrayList<Boolean> selected_id, ArrayList task_elements, Recycler_Tasks_List_Interface recyclerTaskListInterface, Recycler_Tasks_Sub_List_Interface recyclerTasksSubListInterface){
         this.context = context;
-        this.date_id = date_id;
         this.selected_id = selected_id;
-        ///this.noteList = noteList;
-        this.taskList = taskList;
-        this.task_subList = task_subList;
         this.task_elements = task_elements;
         this.recycler_tasks_list_interface =recyclerTaskListInterface ;
 
         this.recycler_tasks_sub_list_interface = recyclerTasksSubListInterface;
 
+        /// Drawable item background:
         drw_main_single = ContextCompat.getDrawable(context, R.drawable.bg_main_task_single);
         drw_main_father = ContextCompat.getDrawable(context, R.drawable.bg_main_task_father_unfolded);
         drw_sub_middle = ContextCompat.getDrawable(context, R.drawable.bg_sub_task_middle);
-        //!!--Have to update the final drawable type:
         drw_sub_end = ContextCompat.getDrawable(context, R.drawable.bg_sub_task_end);
+
+        /// Completed icon:
+        drw_completed = ContextCompat.getDrawable(context, R.drawable.icon_completed_task_test_11);
+        drw_uncompleted = ContextCompat.getDrawable(context, R.drawable.icon_complete_task_test_4);
     }
 
 
@@ -130,6 +128,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             taskHolder.fl_reminder.setVisibility(isReminded ? View.VISIBLE : View.GONE); ///Ternary Operator
 
             taskHolder.fl_complete_mark.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), task.completed ? R.color.ex_green : R.color.gray_light_3 ))); ///Ternary Operator
+            taskHolder.fl_complete_mark.setBackground( task.completed ? drw_completed : drw_uncompleted); ///Ternary Operator
 
             if(isHas_Sub_Tasks){
                 taskHolder.fl_unfold.setVisibility(View.VISIBLE);
@@ -183,6 +182,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             Task_Sub task_sub = (Task_Sub) task_elements.get(position);
 
             subTaskHolder.fl_task_sub_completed.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),task_sub.completed ? R.color.ex_green : R.color.gray_light_3 ))); ///Ternary Operator
+            subTaskHolder.fl_task_sub_completed.setBackground( task_sub.completed ? drw_completed : drw_uncompleted ); ///Ternary Operator
 
             subTaskHolder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_sand_light )));
 
@@ -361,13 +361,13 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             });
             itemView.setOnLongClickListener(new View.OnLongClickListener(){
                 public boolean onLongClick(View v) {
-                    ///if (recyclerTasksSubListInterface != null){
-                    ///    int pos = getAbsoluteAdapterPosition();
-                    ///    if (pos != RecyclerView.NO_POSITION){
-                    ///        recyclerTasksSubListInterface.onItemHold(pos,v);
-                    ///        return true;
-                    ///    }
-                    ///}
+                    if (recyclerTasksSubListInterface != null){
+                        int pos = getAbsoluteAdapterPosition();
+                        if (pos != RecyclerView.NO_POSITION){
+                            recyclerTasksSubListInterface.onItemHold_Sub_Task(pos,v);
+                            return true;
+                        }
+                    }
                     return false;
                 }
             });

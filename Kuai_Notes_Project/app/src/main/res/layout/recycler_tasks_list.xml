@@ -20,7 +20,7 @@
         android:paddingVertical="10dp"
         android:paddingHorizontal="15dp"
         android:requiresFadingEdge="horizontal"
-        android:fadingEdge="horizontal"
+        android:fadingEdge="vertical"
         android:background="@drawable/rounded_layout_7dp"
         android:outlineSpotShadowColor="@color/light_brown_natural"
         android:outlineAmbientShadowColor="@color/transparent"
@@ -43,6 +43,19 @@
             android:textSize="24sp"
             android:textColor="@color/item_visualizer_title_text_color"
             android:textStyle="normal" />
+        <FrameLayout
+            android:id="@+id/Fl_Unfold"
+            android:layout_width="16dp"
+            android:layout_height="10dp"
+            android:layout_gravity="bottom|right"
+            android:layout_marginRight="58dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="0dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:background="@drawable/icon_desplegar_test_5"
+            android:backgroundTint="@color/ex_green"
+            android:longClickable="false" />
 
     </LinearLayout>
     <LinearLayout
@@ -193,11 +206,12 @@
         android:layout_marginRight="74dp"
         android:layout_marginBottom="0dp"
         android:gravity="bottom"
+        android:visibility="gone"
         android:orientation="vertical">
 
 
         <FrameLayout
-            android:id="@+id/Fl_Unfold"
+            android:id="@+id/Fl_Unfold_2"
             android:layout_width="match_parent"
             android:layout_height="42dp"
             android:layout_gravity="bottom"
@@ -236,7 +250,7 @@
     </FrameLayout>
     <LinearLayout
         android:id="@+id/Layout_Completed_Mark_Ghost"
-        android:layout_width="32dp"
+        android:layout_width="36dp"
         android:layout_height="match_parent"
         android:layout_gravity="start|top"
         android:layout_marginTop="0dp"
@@ -258,7 +272,7 @@
     </LinearLayout>
     <LinearLayout
         android:id="@+id/Layout_Completed_Mark"
-        android:layout_width="32dp"
+        android:layout_width="36dp"
         android:layout_height="match_parent"
         android:layout_gravity="start|top"
         android:layout_marginTop="0dp"
@@ -270,12 +284,12 @@
 
         <FrameLayout
             android:id="@+id/Fl_Completed_Mark"
-            android:layout_width="22dp"
-            android:layout_height="25dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_gravity="top"
-            android:layout_marginLeft="2dp"
+            android:layout_marginLeft="10dp"
             android:layout_marginBottom="0dp"
-            android:background="@drawable/recycler_logo_icon_4"
+            android:background="@drawable/icon_complete_task_test_4"
             android:backgroundTint="@color/item_visualizer_icon_neutral_tint"
             android:clickable="false"
             android:focusable="false"

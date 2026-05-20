@@ -32,18 +32,14 @@ import java.util.Calendar;
 import java.util.Objects;
 
 /// 1168 v9.0B, 930 just cleaning
-public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List_Interface, Recycler_Tasks_Sub_List_Interface, Reminder_PopUpWindow.OnValueSelectedListener,Reminder_PopUpWindow.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener {
+public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List_Interface, Recycler_Tasks_Sub_List_Interface, Reminder_PopUpWindow_Tasks.OnValueSelectedListener,Reminder_PopUpWindow_Tasks.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener {
     RecyclerView recyclerView;
     Adapter_Recycler_Tasks_List adapter;
     //private Check_ViewModel checkViewModel;
     private Random_Content_Generator_For_Test Random_G;
     private Stable_Content_Generator_For_Test Stable_G;
-    ArrayList<String> dateEdited_list;
     ArrayList<String> noteOriginal_list;
     ArrayList<Boolean> selected_list;
-    ArrayList<Note> noteList;
-    ArrayList<Task_Main> taskList;
-    ArrayList<Task_Sub> task_subList;
     ArrayList<Task_Element> task_elements;
     ArrayList<Task_Element> task_elements_aux;
     ArrayList<Integer> selected_positions_list;
@@ -86,7 +82,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         getStartOfToday();
 
         recyclerView = findViewById(R.id.Recycler_Tasks_List);
-        adapter = new Adapter_Recycler_Tasks_List(this, dateEdited_list,selected_list,taskList,task_subList,task_elements,this,this);
+        adapter = new Adapter_Recycler_Tasks_List(this,selected_list,task_elements,this,this);
         recyclerView.setAdapter(adapter);
 
         //checkViewModel = new ViewModelProvider(this).get(Check_ViewModel.class);
@@ -118,12 +114,8 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
 
         DB_T = new DB_Tasks(this);
 
-        dateEdited_list = new ArrayList<>();
         noteOriginal_list = new ArrayList<>();
         selected_list = new ArrayList<>();
-        noteList = new ArrayList<>();
-        taskList = new ArrayList<>();
-        task_subList = new ArrayList<>();
         task_elements = new ArrayList<>();
         task_elements_aux = new ArrayList<>();
         selected_positions_list = new ArrayList<>();
@@ -310,10 +302,8 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
                             cursor_Tasks.getInt(completed_indx)==1,
                             cursor_Tasks.getInt(has_sub_tasks_indx)==1,
                             cursor_Tasks.getInt(unfolded_indx)==1);
-                    dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(task.date,start_of_today));
                     noteOriginal_list.add(cursor_Tasks.getString(note_indx));
                     selected_list.add(false);
-                    taskList.add(task);
                     task_elements.add(task);
                     if(task.has_sub_tasks && task.unfolded){//!!--has sub task condition is unnecessary
                         try (Cursor cursor_Tasks_Sub= DB_T.get_All_Tasks_Sub_For_Specific_Task_Main(task.task_id)) {
@@ -333,11 +323,9 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
                                             cursor_Tasks_Sub.getString(note_indx_sub),
                                             cursor_Tasks_Sub.getInt(completed_indx_sub)==1,
                                             cursor_Tasks_Sub.getInt(task_sub_position_indx_sub));
-                                    task_subList.add(task_sub);
                                     task_elements.add(task_sub);
                                     selected_list.add(false);
                                 }
-                                Log.d("TasksSubList","   TaskSub size:  "+ task_subList.size());
                             }
                         }
                     }
@@ -353,12 +341,8 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         if(noteOriginal_list.isEmpty()&&selected_list.isEmpty()){
             return;
         }
-        dateEdited_list.clear();
         noteOriginal_list.clear();
         selected_list.clear();
-        noteList.clear();
-        taskList.clear();
-        task_subList.clear();
         task_elements.clear();
     }
 
@@ -399,24 +383,30 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         Select_Item(position, v);
 
     }
+    @Override
+    public void onItemHold_Sub_Task(int position,View v) {
+
+        for(int i = position -1 ; i >= 0; i--){
+            if(task_elements.get(i).getViewType()==0) {
+                Select_Item(i, v);
+                break;
+            }
+        }
+
+    }
     private void Select_Item(int position, View v) {
         selected_list.set(position,!selected_list.get(position));// invert value
 
 
-        //--Select sub task if the main one have subtasks:
-        boolean has_sub_task = false;
-        int last_subTask_change_position = 0;
+        ///--Select sub task if the main one have subtasks:
+        int sub_task_selected_count = 0;
         for(int i = position + 1; i <= task_elements.size() - 1; i++){
-            if(task_elements.get(i).getViewType() == 1){
-                selected_list.set(i,!selected_list.get(i));// invert value
-                has_sub_task = true;
-                last_subTask_change_position = i;
-            }else{
-                break;
-            }
+            if (task_elements.get(i).getViewType() != 1) break;
+            selected_list.set(i,!selected_list.get(i));// invert value
+            sub_task_selected_count ++;
         }
-        if(has_sub_task == true){
-            adapter.notifyItemRangeChanged(position + 1, last_subTask_change_position);
+        if(sub_task_selected_count > 0){
+            adapter.notifyItemRangeChanged(position + 1, sub_task_selected_count);
         };
 
         selection_count += selected_list.get(position) ? 1 : -1; /// Ternary Operator!
@@ -432,6 +422,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         if(selection_item_menu_PopUp.popupWindow == null && selection_count >= 2){
             //--Buscar estado del pin de las dos primeras notas seleccionadas:
             Task_Main _task_main = (Task_Main) task_elements.get(selected_positions_list.get(0));
+            //!!---Error al unfold y luego seleccionar, creo que el orden cambia y se choca con otro task que no era el original
             Task_Main _task_main2 = (Task_Main) task_elements.get(selected_positions_list.get(1));
 
             //pin_initial_state_MS = false;
@@ -543,10 +534,6 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
     @Override
     public void PinItem(int position) {
 
-
-
-
-
         long start_nano_time = System.nanoTime();
         Task_Main _task = (Task_Main) task_elements.get(position);
 
@@ -630,6 +617,13 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         if(!unfolded){   //--Delete all sub task from the task_elements list and update
 
             int sub_tasks_count = 0;
+            while( position + 1 <= task_elements.size()-1){
+                if (task_elements.get(position+1).getViewType() == 0) break;
+                task_elements_aux.add(task_elements.get(position +1));
+                task_elements.remove(position +1);
+                selected_list.remove(position +1);
+                sub_tasks_count ++;
+            }
             //int i = position + 1;
             //while (i <= task_elements.size()-1){
             //    if (task_elements.get(i).getViewType() == 0) break;
@@ -642,17 +636,17 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
             //    selected_list.remove(i);
             //    i--;
             //}
-            for(int i = position + 1; i <= task_elements.size()-1 ; i ++){
-                //Log.d("TasksList","   Task List Unfold:  task_element:"+ task_elements.get(i).getViewType());
-                if (task_elements.get(i).getViewType() == 0) break;
-                //Log.d("TasksList","     Task List Unfold:  sub task description deleted: "+ task_elements.get(i).getContent());
-                task_elements_aux.add(task_elements.get(i));
-                task_elements.remove(i);
-                selected_list.remove(i);
-                sub_tasks_count ++;
-                i--;
-            }
-            adapter.notifyItemRangeRemoved(position+1,position+1+sub_tasks_count);
+            ///for(int i = position + 1; i <= task_elements.size()-1 ; i ++){
+            ///    //Log.d("TasksList","   Task List Unfold:  task_element:"+ task_elements.get(i).getViewType());
+            ///    if (task_elements.get(i).getViewType() == 0) break;
+            ///    //Log.d("TasksList","     Task List Unfold:  sub task description deleted: "+ task_elements.get(i).getContent());
+            ///    task_elements_aux.add(task_elements.get(i));
+            ///    task_elements.remove(i);
+            ///    selected_list.remove(i);
+            ///    sub_tasks_count ++;
+            ///    i--;
+            ///}
+            adapter.notifyItemRangeRemoved(position+1,sub_tasks_count);
             adapter.notifyItemChanged(position);
 
         }
@@ -665,7 +659,8 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
                 task_elements.add(position+1 ,task_elements_aux.get(i));
                 selected_list.add(position+1 ,false);
             }
-            adapter.notifyItemRangeInserted(position + 1,position + 1+task_elements_aux.size()-1);
+            //adapter.notifyItemRangeInserted(position + 1,position + 1+task_elements_aux.size()-1);
+            adapter.notifyItemRangeInserted(position + 1,task_elements_aux.size());
             //Log.d("TasksSubList","      Task first Elements content update:  "+ task_elements.get(position + 1).getContent());
             //Log.d("TasksSubList","      Task last Elements content update:  "+ task_elements.get(position + 1+ sub_task_elements_size - 1).getContent());
             task_elements_aux.clear();
@@ -681,12 +676,12 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         layout_dim.startAnimation(AnimationLayoutDimAppear);
 
         adapter.Change_is_repeated_value(true);
-        Reminder_PopUpWindow reminder_PopUp = new Reminder_PopUpWindow(this, position);
+        Reminder_PopUpWindow_Tasks reminder_PopUp = new Reminder_PopUpWindow_Tasks(this, position);
         reminder_PopUp.setListener(this);
         reminder_PopUp.setListener_dismiss(this);
 
-        Note _note = noteList.get(position);
-        reminder_PopUp.show(main, _note);
+        Task_Main _task_main = (Task_Main) task_elements.get(position);
+        reminder_PopUp.show(main, _task_main);
     }
     @Override
     public void OnValueSelected(int position, long alarm_time) {
@@ -753,6 +748,63 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         /// Fold
         if(!unfolded){
             //--Delete all sub task from the task_elements list and update
+            int sub_tasks_count = 0;
+            while(position+1 <= task_elements.size()-1){
+                if (task_elements.get(position+1).getViewType() == 0) break;
+                task_elements.remove(position+1);
+                selected_list.remove(position +1);
+                sub_tasks_count ++;
+            }
+            adapter.notifyItemRangeRemoved(position+1,sub_tasks_count);
+            /// Correction when the user fold/unfold before choose the second multiselection item:
+            if(selected_positions_list.size()==1){
+                if(position < selected_positions_list.get(0)){
+                    selected_positions_list.set(0,selected_positions_list.get(0)-sub_tasks_count);
+                }
+            }
+        }
+        /// Unfold
+        if(unfolded){
+            //--Look for all the subs task that have for parent the present main task (bring a cursor), add them in the position
+
+            try (Cursor cursor_Tasks_Sub= DB_T.get_All_Tasks_Sub_For_Specific_Task_Main(task_id)) {
+                if(cursor_Tasks_Sub.getCount()==0) return;
+
+                int id_indx_sub = cursor_Tasks_Sub.getColumnIndex("_id");
+                int parent_indx_sub = cursor_Tasks_Sub.getColumnIndex("parent_id");
+                int note_indx_sub = cursor_Tasks_Sub.getColumnIndex("note");
+                int completed_indx_sub = cursor_Tasks_Sub.getColumnIndex("completed");
+                int task_sub_position_indx_sub = cursor_Tasks_Sub.getColumnIndex("task_sub_position");
+
+                //Log.d("Read cursor_Task", "    TaskMain_id: " + task_elements.get(position).getContent());
+                while (cursor_Tasks_Sub.moveToNext()){
+                    Task_Sub task_sub = new Task_Sub(cursor_Tasks_Sub.getLong(id_indx_sub),
+                            cursor_Tasks_Sub.getLong(parent_indx_sub),
+                            cursor_Tasks_Sub.getString(note_indx_sub),
+                            cursor_Tasks_Sub.getInt(completed_indx_sub)==1,
+                            cursor_Tasks_Sub.getInt(task_sub_position_indx_sub));
+                    task_elements.add(position+1+ cursor_Tasks_Sub.getPosition(),task_sub);
+                    selected_list.add(position+1+ cursor_Tasks_Sub.getPosition(), Main_IsSelected ? true :false);///TERNARY Operator;
+                    //adapter.notifyItemInserted(position+1+cursor_Tasks_Sub.getPosition());
+                }
+                Log.d("TasksSubList","   SubTask Count:  "+ cursor_Tasks_Sub.getCount() );
+                adapter.notifyItemRangeInserted(position+1,cursor_Tasks_Sub.getCount());
+                /// Correction when the user fold/unfold before choose the second multiselection item:
+                if(selected_positions_list.size()==1){
+                    if(position < selected_positions_list.get(0)){
+                        selected_positions_list.set(0,selected_positions_list.get(0)+cursor_Tasks_Sub.getCount());
+                    }
+                }
+                Log.d("TasksSubList","   NotifyItemRangeInserted:  "+ task_elements.get(position+1).getContent()+ "    to:"+task_elements.get(position+1+cursor_Tasks_Sub.getCount()-1).getContent() );
+            }
+        }
+        adapter.notifyItemChanged(position);
+    }
+    private void RecyclerView_Unfold_Update_Err(int position, boolean unfolded, long task_id) {
+        //Log.d("TasksList","   Task List Unfold:  now unfolded is:"+ unfolded);
+        boolean Main_IsSelected = selected_list.get(position);
+        /// Fold
+        if(!unfolded){
 
             int sub_tasks_count = 0;
             for(int i = position + 1; i <= task_elements.size()-1 ; i ++){
@@ -815,21 +867,25 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
                 DB_T.Send_Previous_Sub_Task_To_Trash_With_Out_Modification(_task.task_id);
                 if(_task.unfolded){
                     int sub_tasks_count = 0;
-                    for(int i = position + 1; i <= task_elements.size() - 1 ;i++){
-                        if(task_elements.get(i).getViewType()==0) break;
-                        task_elements.remove(i);
-                        selected_list.remove(i);
+                    while(position+1 <= task_elements.size()-1){
+                        if(task_elements.get(position+1).getViewType()==0) break;
+                        task_elements.remove(position+1);
+                        selected_list.remove(position+1);
                         sub_tasks_count ++;
-                        i--;
                     }
-                    adapter.notifyItemRangeRemoved(position + 1, position + 1 + sub_tasks_count);
+                    //for(int i = position + 1; i <= task_elements.size() - 1 ;i++){
+                    //    if(task_elements.get(i).getViewType()==0) break;
+                    //    task_elements.remove(i);
+                    //    selected_list.remove(i);
+                    //    sub_tasks_count ++;
+                    //    i--;
+                    //}
+                    adapter.notifyItemRangeRemoved(position + 1, sub_tasks_count);
                 }
             }
 
-            dateEdited_list.remove(position);
             noteOriginal_list.remove(position);
             selected_list.remove(position);
-            taskList.remove(position);
             task_elements.remove(position);
 
             adapter.notifyItemRemoved(position);

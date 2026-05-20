@@ -82,11 +82,11 @@
 
         <FrameLayout
             android:id="@+id/Fl_Completed_Mark"
-            android:layout_width="22dp"
-            android:layout_height="25dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_gravity="center"
-            android:layout_marginLeft="20dp"
-            android:background="@drawable/recycler_logo_icon_4"
+            android:layout_marginLeft="18dp"
+            android:background="@drawable/icon_complete_task_test_4"
             android:backgroundTint="@color/item_visualizer_icon_neutral_tint"
             android:clickable="false"
             android:focusable="false"

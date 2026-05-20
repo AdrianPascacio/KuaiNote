@@ -24,11 +24,11 @@
         >
         <FrameLayout
             android:id="@+id/FrameLayout_Change_Complete_Task_Main"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_marginTop="7dp"
-            android:layout_marginLeft="10dp"
-            android:background="@drawable/recycler_logo_icon_4"
+            android:layout_marginLeft="12dp"
+            android:background="@drawable/icon_completed_task_test_11"
             android:backgroundTint="@color/Neutral_gray_icon_note"
             android:clickable="true"
             android:focusable="true"
@@ -46,7 +46,7 @@
             android:background="@android:color/transparent"
             android:gravity="top"
             android:hint="Enter Task..."
-            android:paddingHorizontal="20dp"
+            android:paddingHorizontal="12dp"
             android:text=""
             android:textAlignment="textStart"
             android:textColor="@color/note_visualizer_title_text_color"
@@ -148,7 +148,37 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/Title" />
 
+
     </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/FrameLayout_Insert_Sub_Task_Initial"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginRight="33dp"
+        android:layout_marginTop="3dp"
+        android:background="@drawable/icon_insert_sub_task_test_4"
+        android:backgroundTint="@color/green_dark_cha"
+        android:clickable="true"
+        android:focusable="true"
+
+        android:paddingVertical="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Layout_Task_Main" />
+    <FrameLayout
+        android:id="@+id/FrameLayout_Order"
+        android:layout_width="24dp"
+        android:layout_height="23dp"
+        android:layout_marginRight="33dp"
+        android:layout_marginTop="36dp"
+        android:background="@drawable/sort_icon_uncomplete_first_2"
+        android:backgroundTint="@color/green_dark_cha"
+        android:clickable="true"
+        android:focusable="true"
+
+        android:paddingVertical="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Layout_Task_Main" />
 
 
     <LinearLayout
@@ -156,6 +186,10 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="83dp"
+        android:layout_weight="0"
+        android:gravity="top"
+        android:paddingBottom="0dp"
+        app:layout_constraintVertical_bias="0"
         app:layout_constraintTop_toBottomOf="@+id/Layout_Task_Main"
         app:layout_constraintBottom_toBottomOf="parent"
         android:orientation="vertical">
@@ -163,7 +197,8 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/Recycler_Task_Sub_in_Visualizer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
             android:paddingBottom="50dp"
             android:clipToPadding="false"
             />
@@ -172,6 +207,45 @@
 
 
     </LinearLayout>
+    <LinearLayout
+        android:id="@+id/Layout_Button_Space"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:gravity="top|end"
+        android:layout_weight="0"
+        android:background="@color/transparent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <FrameLayout
+            android:id="@+id/FrameLayout_Insert_Sub_Task"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginRight="33dp"
+            android:background="@drawable/icon_insert_sub_task_test_4"
+            android:backgroundTint="@color/green_dark_cha"
+            android:paddingVertical="5dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+
+
+    </LinearLayout>
+    <FrameLayout
+        android:id="@+id/FrameLayout_Insert_Sub_Task_2"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginRight="33dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/add_task"
+        android:backgroundTint="@color/green_dark_cha"
+        android:paddingVertical="5dp"
+        android:clickable="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone"
+        android:focusable="true" />
+
 
 
     <FrameLayout
@@ -186,6 +260,21 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintHorizontal_bias="0.656"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <FrameLayout
+        android:id="@+id/FrameLayout_Test_SVG"
+        android:layout_width="24dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="13dp"
+        android:background="@drawable/sort_icon_1_test"
+        android:backgroundTint="@color/Neutral_gray_icon_note"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.8769"
+        android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent" />
 
     <FrameLayout
@@ -208,7 +297,7 @@
         android:layout_height="30dp"
         android:layout_marginTop="13dp"
         android:layout_marginRight="16dp"
-        android:background="@drawable/trash_can_icon_1"
+        android:background="@drawable/trash_can_icon_3"
         android:backgroundTint="@color/Neutral_gray_icon_note"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -219,51 +308,24 @@
         android:layout_height="26dp"
         android:layout_marginLeft="14dp"
         android:layout_marginTop="16dp"
-        android:background="@drawable/arrow_left_4"
+        android:background="@drawable/arrow_left_7"
         android:backgroundTint="@color/Neutral_gray_icon_note"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <FrameLayout
-        android:id="@+id/FrameLayout_Order"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="53dp"
-        android:background="@drawable/filter_aux"
-        android:backgroundTint="@color/Neutral_gray_icon_note"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintHorizontal_bias="0.2"
-        app:layout_constraintTop_toTopOf="parent" />
-    <FrameLayout
-        android:id="@+id/FrameLayout_Insert_Sub_Task"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="53dp"
-        android:background="@drawable/add_task"
-        android:backgroundTint="@color/Neutral_gray_icon_note"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintTop_toTopOf="parent" />
 
     <FrameLayout
         android:id="@+id/FrameLayout_Copy_To_Clipboard"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="53dp"
-        android:background="@drawable/copy_aux"
+        android:layout_width="24dp"
+        android:layout_height="23dp"
+        android:layout_marginTop="36dp"
+        android:background="@drawable/copy_icon_test_3"
         android:backgroundTint="@color/Neutral_gray_icon_note"
         android:clickable="true"
         android:focusable="true"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintHorizontal_bias="0.80"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Layout_Task_Main" />
 
     <FrameLayout
         android:id="@+id/FrameLayout_Change_Pin_Status_Ghost"

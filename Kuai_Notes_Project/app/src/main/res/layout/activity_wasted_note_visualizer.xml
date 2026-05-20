@@ -179,7 +179,7 @@
         android:layout_height="26dp"
         android:layout_marginLeft="14dp"
         android:layout_marginTop="14dp"
-        android:background="@drawable/arrow_left_4"
+        android:background="@drawable/arrow_left_7"
         android:backgroundTint="@color/Medium_dark_brown"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

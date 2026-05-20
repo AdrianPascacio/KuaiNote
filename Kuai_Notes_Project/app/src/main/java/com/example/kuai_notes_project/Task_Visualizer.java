@@ -5,6 +5,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -30,9 +32,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 //488 01apr2026, 1207 v9.0B
-public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks_Sub_In_Visualizer_Interface, Reminder_PopUpWindow_Tasks.OnValueSelectedListener, Reminder_PopUpWindow_Tasks.PopupDismissListener,Note_Update_Listener {
+public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks_Sub_In_Visualizer_Interface, Reminder_PopUpWindow_Tasks.OnValueSelectedListener, Reminder_PopUpWindow_Tasks.PopupDismissListener,Note_Update_Listener{
     private int order_type = 0;
     private int new_position_a =  0;
     private int new_position_b =  0;
@@ -49,23 +52,30 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
     Adapter_Recycler_Tasks_Sub_In_Visualizer adapter;
     private ArrayList<Task_Sub> task_subList;
     private ArrayList<Boolean> selected_list;
+    ArrayList<Integer> selected_positions_list;
 
     private long received_task_id = 0;
     private boolean change_in_task = false, show_task_info = false, now_is_something_written = false;
     private boolean has_sub_tasks_in_database = false;
-    private FrameLayout fl_Change_Pin_Status, fl_Change_Reminder_Status, fl_Back, fl_Delete, fl_Insert_Sub_Task, fl_Copy_To_Clipboard, fl_Set_Order;
+    private FrameLayout fl_Change_Pin_Status, fl_Change_Reminder_Status, fl_Back, fl_Delete, fl_Insert_Sub_Task, fl_Insert_Sub_Task_Initial, fl_Copy_To_Clipboard, fl_Set_Order;
     private FrameLayout fl_Change_Pin_Status_Ghost, fl_Change_Reminder_Status_Ghost, fl_Back_Ghost, fl_Delete_Ghost;
     private FrameLayout fl_Main_Task_Complete;
     private Date_of_Note DoN;
     private View layout_date_and_info, layout_body_task, layout_dim;
     private Animation AnimationPin, AnimationReminder, AnimationDate, AnimationDateInvert, AnimationInfo, AnimationInfoInvert, AnimationPinAppear, AnimationPinFade;
-    private Animation AnimationNoteAppear, AnimationTitleAppear, AnimationNoteHintFading;
+    private Animation AnimationNoteAppear, AnimationTitleAppear, AnimationNoteHintFading, Animation_FloatingButton_Appear, Animation_FloatingButton_Disappear;
     private Animation AnimationLayoutDimAppear, AnimationLayoutDimDisappear_Normal,AnimationLayoutDimDisappear_Setter,AnimationLayoutDimDisappear_Cancel;
     private int previous_note_size = -1;
     private char last_deleted_char = '0';
     Indent_Replicator indentReplicator;
     ///private Space space_below_note;
+    private int selection_count = 0;
+    private boolean pin_initial_state_MS= false;
+    private boolean selection_mode = false;
+    private boolean pin_multi_change = false;
+    private boolean aux_selection_state = false;
 
+    Selection_Item_Menu_MemoBoard_PopUpWindow selection_item_menu_PopUp = new Selection_Item_Menu_MemoBoard_PopUpWindow(this,-1);
 
     @Override
     protected void onPause() {
@@ -88,13 +98,15 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         adapter = new Adapter_Recycler_Tasks_Sub_In_Visualizer(this, selected_list,task_subList,this);
         recyclerView.setAdapter(adapter);
 
-        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,0) {//0 para eliminar los swipe horizontales utilizados para borrar.
+        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,ItemTouchHelper.RIGHT) {//0 para eliminar los swipe horizontales utilizados para borrar.
             int lesser_position = 0;
             int lesser_position_assigned = 0;
+            int from_aux_onMove = 0;
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
                 int from_Positoin = viewHolder.getAdapterPosition();
                 int to_Positoin = target.getAdapterPosition();
+                from_aux_onMove = from_Positoin;
 
                 //Collections.swap(task_subList,from_Positoin,to_Positoin);
                 lesser_position = to_Positoin < from_Positoin ? to_Positoin : from_Positoin;
@@ -112,11 +124,38 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAbsoluteAdapterPosition();
+                super.onSelectedChanged(viewHolder, direction);
+                if(direction == ItemTouchHelper.RIGHT){
+                    viewHolder.itemView.setAlpha(0.5f);
+                    Remove_Item(position);
+                }
 
+            }
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive){
+                if(actionState == ItemTouchHelper.ACTION_STATE_SWIPE){
+                    float width = (float) viewHolder.itemView.getWidth();
+                    float alpha = 1.0f - Math.abs (dX) / width;
+
+                    viewHolder.itemView.setAlpha(alpha);
+
+                    viewHolder.itemView.setTranslationX(dX );
+
+                }else{
+                    super.onChildDraw(c,recyclerView,viewHolder,dX,dY,actionState,isCurrentlyActive);
+                }
             }
             @Override
             public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState){
                 //!!--modificacion miestra se agarra el item
+                ///
+                ///int from_Positoin = viewHolder.getAdapterPosition();
+                //selected_list.set(position,!selected_list.get(position));
+                //adapter.notifyItemChanged(position);
+                //Select_Item(from_aux_onMove);
+                /// //
+
                 super.onSelectedChanged(viewHolder, actionState);
                 if(actionState == ItemTouchHelper.ACTION_STATE_DRAG){
                     viewHolder.itemView.setAlpha(0.5f);
@@ -203,6 +242,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
 
         task_subList = new ArrayList<>();
         selected_list = new ArrayList<>();
+        selected_positions_list = new ArrayList<>();
         DB_T = new DB_Tasks(this);
 
         tv_Completion = findViewById(R.id.Task_Completion);
@@ -219,6 +259,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         fl_Change_Reminder_Status_Ghost = findViewById(R.id.FrameLayout_Change_Reminder_Status_Ghost);
         fl_Back_Ghost = findViewById(R.id.fl_Back_Ghost);
         fl_Delete_Ghost = findViewById(R.id.fl_Delete_Ghost);
+        fl_Insert_Sub_Task_Initial = findViewById(R.id.FrameLayout_Insert_Sub_Task_Initial);
         fl_Insert_Sub_Task = findViewById(R.id.FrameLayout_Insert_Sub_Task);
         fl_Copy_To_Clipboard = findViewById(R.id.FrameLayout_Copy_To_Clipboard);
         fl_Set_Order = findViewById(R.id.FrameLayout_Order);
@@ -246,6 +287,9 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         AnimationLayoutDimDisappear_Setter = AnimationUtils.loadAnimation(this, R.anim.layout_dim_disappear_setter);
         AnimationLayoutDimDisappear_Cancel = AnimationUtils.loadAnimation(this, R.anim.layout_dim_disappear_setter);
 
+        Animation_FloatingButton_Appear = AnimationUtils.loadAnimation(this, R.anim.floating_button_appear);
+        Animation_FloatingButton_Disappear = AnimationUtils.loadAnimation(this, R.anim.floating_buttton_disappear);
+
         received_task_id = getIntent().getLongExtra("send_task_id", 0);
 
         layout_dim = findViewById(R.id.layout_dim_noteVisualizer);
@@ -256,10 +300,16 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         if (received_task_id != 0) {
             Initialize_Received_Note(received_task_id);
             Set_Written_Note_Style();
+            fl_Insert_Sub_Task_Initial.setVisibility(View.GONE);
+            fl_Insert_Sub_Task.setVisibility(View.VISIBLE);
+            fl_Set_Order.setVisibility(Is_Valid_To_Sort_Completed_Sub_Tasks()? View.VISIBLE : View.GONE);
         } else {
             Set_Blank_Note_Style();
+            fl_Insert_Sub_Task_Initial.setVisibility(View.VISIBLE);
+            fl_Insert_Sub_Task.setVisibility(View.GONE);
             tv_Completion.setVisibility(View.GONE);
             tv_Date.setVisibility(View.GONE);
+            fl_Set_Order.setVisibility(View.GONE);
 
             new Handler().postDelayed(new Runnable() {//Se enfoca en titulo del tasky abre el teclado solo si el task es nuevo
                 @Override
@@ -295,6 +345,24 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                     Change_Complete_Main_Task_Status();
                 }
                 Update_Completion_Ratio();
+                //!!--Need to update this (visibility update) to → (appear and disappear function):
+                fl_Set_Order.setVisibility(Is_Valid_To_Sort_Completed_Sub_Tasks()? View.VISIBLE : View.GONE);
+            }
+        });
+        fl_Insert_Sub_Task_Initial.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                fl_Insert_Sub_Task_Initial.setVisibility(View.GONE);
+                fl_Insert_Sub_Task.setVisibility(View.VISIBLE);
+                Insert_Sub_Task();
+                change_in_task = true;
+
+                if(task.completed) {
+                    Change_Complete_Main_Task_Status();
+                }
+                Update_Completion_Ratio();
+                fl_Insert_Sub_Task_Initial.setVisibility(View.GONE);
+                fl_Insert_Sub_Task_Initial.setAlpha(0f);
             }
         });
         fl_Copy_To_Clipboard.setOnClickListener(new View.OnClickListener() {
@@ -307,17 +375,33 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
             @Override
             public void onClick(View view) {
                 Set_Tasks_Order();
+                if(order_type == 0){
+                    fl_Set_Order.setBackground(ContextCompat.getDrawable(fl_Set_Order.getContext(),R.drawable.sort_icon_uncomplete_first_2));
+
+                }else if(order_type == 1){
+                    fl_Set_Order.setBackground(ContextCompat.getDrawable(fl_Set_Order.getContext(),R.drawable.sort_icon_test_12));
+
+                }else if(order_type == 2){
+                    fl_Set_Order.setBackground(ContextCompat.getDrawable(fl_Set_Order.getContext(),R.drawable.sort_icon_original_sort_2));
+
+                }
             }
         });
         fl_Main_Task_Complete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(received_task_id == 0 && (!et_Task_main.getText().toString().isEmpty() || !All_Current_Sub_Task_Are_Empty_2())){
+                    Save_Task();
+                    received_task_id = task.task_id;
+                }
                 Change_Complete_Main_Task_Status();
                 if(task.has_sub_tasks) {
                     Change_Sub_task_Completed_Status();
                 }
                 Update_Completion_Ratio();
                 Update_Date();
+                fl_Set_Order.setVisibility(Is_Valid_To_Sort_Completed_Sub_Tasks()? View.VISIBLE : View.GONE);
+                Sort_Sub_Task_According_Original_Order();
             }
         });
         fl_Change_Pin_Status_Ghost.setOnClickListener(new View.OnClickListener() {
@@ -377,92 +461,231 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         fl_Back_Ghost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Out_Of_Activity();
+                if(selection_item_menu_PopUp.popupWindow != null){
+                    for( int i = 0; i < selected_list.size() ; i++){
+                        if(selected_list.get(i)== true){
+                            selected_list.set(i,false);
+                            adapter.notifyItemChanged(i);
+                        }
+                    }
+                    Restart_Selection();
+                }else{
+                    Out_Of_Activity();
+                }
             }
         });
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                Out_Of_Activity();
+                if(selection_item_menu_PopUp.popupWindow != null){
+                    for( int i = 0; i < selected_list.size() ; i++){
+                        if(selected_list.get(i)== true){
+                            selected_list.set(i,false);
+                            adapter.notifyItemChanged(i);
+                        }
+                    }
+                    Restart_Selection();
+                }else{
+                    Out_Of_Activity();
+                }
             }
         });
     }
 
-    private void Set_Tasks_Order() {
-        //--Order states:
-            //1- default = uncompleted first
-            //2- completed_first
-            //3- custom
-        //--when it begin in default (uncompleted first)
-        int completion_size = 0;
-        int sub_Task_size = task_subList.size();
-        for(int i = 0; i <= task_subList.size() -1 ; i++){
-            if(task_subList.get(i).geCompleted()){
-                completion_size ++;
+
+    private void Select_Item(int position) {
+        selected_list.set(position,!selected_list.get(position));// invert value
+
+        selection_count += selected_list.get(position) ? 1 : -1; /// Ternary Operator!
+
+        if(!selection_mode) fl_Insert_Sub_Task.startAnimation(Animation_FloatingButton_Disappear);
+
+        selection_mode = selection_count > 0;
+
+        selected_positions_list.add(0,position);
+
+
+        if(aux_selection_state == false && selection_count >= 2){
+            //--Buscar estado del pin de las dos primeras notas seleccionadas:
+            Task_Sub _task_sub1 = (Task_Sub) task_subList.get(selected_positions_list.get(0));
+            Task_Sub _task_sub2 = (Task_Sub) task_subList.get(selected_positions_list.get(1));
+
+
+
+            //View v = new View(this);
+            //selection_item_menu_PopUp.setListener_dismiss(this);
+            //selection_item_menu_PopUp.show(v, pin_initial_state_MS);
+            aux_selection_state = true;
+            adapter.Change_multi_selection_state(selection_mode);
+            adapter.Set_Selection_Mode_On();
+
+            adapter.notifyItemChanged(position,this);
+            adapter.notifyItemChanged(selected_positions_list.get(1),this);//!!se estan desvaneciendo sin las animaciones
+
+        }
+        if(aux_selection_state == true && !selection_mode){
+            //selection_item_menu_PopUp.popupWindow.dismiss();
+            //selection_item_menu_PopUp.popupWindow = null;
+            //adapter.Change_multi_selection_state(selection_mode);
+
+            //selected_positions_list.clear();
+            //fa_btn.startAnimation(AnimationLayoutDimAppear);
+            Restart_Selection();
+        }
+        if(aux_selection_state == true && selection_mode){
+            //selection_item_menu_PopUp.popupWindow.update(v,60,-150,140,360);
+        }
+        adapter.notifyItemChanged(position);//!! se esta duplicando con la instruccion de arriba
+
+        //---Set unselecting_view to repeated unselect
+        if(selected_positions_list.size()==2) {
+            if(Objects.equals(position, selected_positions_list.get(1))){
+                adapter.Change_is_repeated_value(true);
+                selected_positions_list.clear();
             }
         }
-        //--Cambiar solo si el ratio no es absoluto (todas incompletas o tadas completas)
-        //--Y si la cantidad de sub task es mayor que 1
-        if(completion_size > 0 && completion_size != sub_Task_size && sub_Task_size >=2){
-            if(order_type == 0){ /// --   0→Default (Uncomplete first) to → Complete first
-                int changes = 0;
-                for(int i = 0; i <= sub_Task_size - 1 - changes; i++){
-                    if(task_subList.get(i).geCompleted() == false){
-                        Log.d("Task Visualizer" , " Default Uncomplete first: Diferente: " +"   task:" +task_subList.get(i).getContent() );
 
-                        Task_Sub _task_sub = task_subList.get(i);
-                        task_subList.remove(i);
-                        task_subList.add(sub_Task_size-1,_task_sub);
+        if(selected_positions_list.size()==3) selected_positions_list.remove(2);
+        if(!selection_mode) fl_Insert_Sub_Task.startAnimation(Animation_FloatingButton_Appear);
+    }
+    private void Restart_Selection() {
+        selection_count =0;
+        selection_mode = false;
+        selected_positions_list.clear();
+        if(selection_item_menu_PopUp.popupWindow != null){
+            selection_item_menu_PopUp.popupWindow.dismiss();
+            selection_item_menu_PopUp.popupWindow = null;
+        }
+        if(!selection_mode) fl_Insert_Sub_Task.startAnimation(Animation_FloatingButton_Appear);
+        adapter.Change_multi_selection_state(false);
+        adapter.Set_Selection_Mode_Off();
+    }
 
-                        adapter.notifyItemMoved(i,sub_Task_size-1);
-                        changes ++;
-                        i--;
-                    }
+    private void Set_Tasks_Order() {
+        //--Order states:
+        //0- default = uncompleted first
+        //1- completed_first
+        //2- custom
+        //--when it begin in default (uncompleted first)
+        if (!Is_Valid_To_Sort_Completed_Sub_Tasks()) return;
+        int sub_Task_size = task_subList.size();
+        if (order_type == 0) { /// --   0→Default (Uncomplete first) to → Complete first
+            int changes = 0;
+            for (int i = 0; i <= sub_Task_size - 1 - changes; i++) {
+                if (task_subList.get(i).getCompleted() == false) {
+                    Log.d("Task Visualizer", " Default Uncomplete first: Diferente: " + "   task:" + task_subList.get(i).getContent());
+
+                    Task_Sub _task_sub = task_subList.get(i);
+                    task_subList.remove(i);
+                    task_subList.add(sub_Task_size - 1, _task_sub);
+
+                    adapter.notifyItemMoved(i, sub_Task_size - 1);
+                    changes++;
+                    i--;
                 }
-                    order_type = 1;   //-- Complete first
+            }
+            order_type = 1;   //-- Complete first
 
-            }else if(order_type == 1){//-- Complete first to →  Custom
-                Log.d("Task Visualizer" , "New Order:  Custom: ");
-                for(int i = 0; i <= sub_Task_size - 1; i++){
-                    if(task_subList.get(i).getTask_sub_position() != (i + 1)){
-                        Log.d("Task Visualizer" , " Custom: Diferente: " +"   task:" +task_subList.get(i).getContent() + "  tiene pos:" + task_subList.get(i).getContent());
-                        for(int j = i+1; j <= sub_Task_size -1 ; j++){
-                            if(task_subList.get(j).getTask_sub_position() == (i + 1)){
-                                Log.d("Task Visualizer" , "   Custom: " +task_subList.get(j).getContent() );
-                                Task_Sub _task_sub = task_subList.get(j);
-                                task_subList.remove(j);
-                                task_subList.add(i,_task_sub);
+        } else if (order_type == 1) {//-- Complete first to →  Custom
+            Log.d("Task Visualizer", "New Order:  Custom: ");
+            for (int i = 0; i <= sub_Task_size - 1; i++) {
+                if (task_subList.get(i).getTask_sub_position() != (i + 1)) {
+                    Log.d("Task Visualizer", " Custom: Diferente: " + "   task:" + task_subList.get(i).getContent() + "  tiene pos:" + task_subList.get(i).getContent());
+                    for (int j = i + 1; j <= sub_Task_size - 1; j++) {
+                        if (task_subList.get(j).getTask_sub_position() == (i + 1)) {
+                            Log.d("Task Visualizer", "   Custom: " + task_subList.get(j).getContent());
+                            Task_Sub _task_sub = task_subList.get(j);
+                            task_subList.remove(j);
+                            task_subList.add(i, _task_sub);
 
-                                adapter.notifyItemMoved(j,i);
-                                break;
+                            adapter.notifyItemMoved(j, i);
+                            break;
 
-                            }
                         }
                     }
                 }
-
-                order_type = 2;   //-- Custom
-            }else if(order_type == 2){//--   Custom to → Default (Uncomplete first)
-                int changes = 0;
-                for(int i = 0; i <= sub_Task_size - 1 - changes; i++){
-                    if(task_subList.get(i).geCompleted() == true){
-                        Log.d("Task Visualizer" , " Default Uncomplete first: Diferente: " +"   task:" +task_subList.get(i).getContent() );
-
-                        Task_Sub _task_sub = task_subList.get(i);
-                        task_subList.remove(i);
-                        task_subList.add(sub_Task_size-1,_task_sub);
-
-                        adapter.notifyItemMoved(i,sub_Task_size-1);
-                        changes ++;
-                        i--;
-                    }
-                }
-
-                order_type = 0;   //-- Default
             }
 
+            order_type = 2;   //-- Custom
+        } else if (order_type == 2) {//--   Custom to → Default (Uncomplete first)
+            int changes = 0;
+            for (int i = 0; i <= sub_Task_size - 1 - changes; i++) {
+                if (task_subList.get(i).getCompleted() == true) {
+                    Log.d("Task Visualizer", " Default Uncomplete first: Diferente: " + "   task:" + task_subList.get(i).getContent());
+
+                    Task_Sub _task_sub = task_subList.get(i);
+                    task_subList.remove(i);
+                    task_subList.add(sub_Task_size - 1, _task_sub);
+
+                    adapter.notifyItemMoved(i, sub_Task_size - 1);
+                    changes++;
+                    i--;
+                }
+            }
+
+            order_type = 0;   //-- Default
         }
 
+    }
+    private void Sort_Sub_Task_According_Original_Order() {
+        //if (!Find_Completion_Ratio()) return;
+        if(order_type == 2) return;
+        int sub_Task_size = task_subList.size();
+        if (sub_Task_size < 2) return;
+        for (int i = 0; i <= sub_Task_size - 1; i++) {
+            if (task_subList.get(i).getTask_sub_position() != (i + 1)) {
+                Log.d("Task Visualizer", " Custom: Diferente: " + "   task:" + task_subList.get(i).getContent() + "  tiene pos:" + task_subList.get(i).getContent());
+                for (int j = i + 1; j <= sub_Task_size - 1; j++) {
+                    if (task_subList.get(j).getTask_sub_position() == (i + 1)) {
+                        Log.d("Task Visualizer", "   Custom: " + task_subList.get(j).getContent());
+                        Task_Sub _task_sub = task_subList.get(j);
+                        task_subList.remove(j);
+                        task_subList.add(i, _task_sub);
+                        adapter.notifyItemMoved(j, i);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    private void Set_Sub_Tasks_Order_When_Complete(int position) {
+        Task_Sub _task_sub = task_subList.get(position);
+        int sub_Task_size = task_subList.size();
+        if (sub_Task_size < 2) return;
+        if (order_type == 1) { //--   Complete first
+            if(_task_sub.completed == true) {
+                Move_To_Superior_Opposite_Group(position, sub_Task_size, _task_sub);
+            }else if(_task_sub.completed == false){
+                Move_To_Inferior_Opposite_Group(position,sub_Task_size,_task_sub);
+            }
+        } else if (order_type == 0) {//--   Default (Uncomplete first)
+            if(_task_sub.completed == true) {
+                Move_To_Inferior_Opposite_Group(position,sub_Task_size,_task_sub);
+            }else if(_task_sub.completed == false){
+                Move_To_Superior_Opposite_Group(position, sub_Task_size, _task_sub);
+            }
+        }
+    }
+    private void Move_To_Inferior_Opposite_Group(int position, int sub_Task_size, Task_Sub _task_sub) {
+        for (int i = sub_Task_size -1; i >= 0; i--) {/// Move to the inferior group that is the opposite (completed / uncompleted)
+            if (task_subList.get(i).getCompleted() != _task_sub.completed || task_subList.get(i).getTask_sub_position() <= _task_sub.getTask_sub_position()) {/// if complete value is different let it pass, else , verify if the current task have a LesserOrEqual positon
+                Update_Sub_Tasks_Order_When_Complete(position, i, _task_sub);
+                break;
+            }
+        }
+    }
+    private void Move_To_Superior_Opposite_Group(int position, int sub_Task_size, Task_Sub _task_sub) {
+        for (int i = 0; i <= sub_Task_size - 1; i++) { /// Move to the superior group that is the opposite (completed / uncompleted)
+            if (task_subList.get(i).getCompleted() != _task_sub.completed || task_subList.get(i).getTask_sub_position() >= _task_sub.getTask_sub_position()) {/// if complete value is different let it pass, else , verify if the current task have a GreaterOrEqual positon
+                Update_Sub_Tasks_Order_When_Complete(position, i, _task_sub);
+                break;
+            }
+        }
+    }
+    private void Update_Sub_Tasks_Order_When_Complete(int from_position, int to_position, Task_Sub _task_sub){
+        task_subList.remove(from_position);
+        task_subList.add(to_position, _task_sub);
+        adapter.notifyItemMoved(from_position, to_position);
     }
 
 
@@ -525,6 +748,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                     false,
                     task_subList.size());
 
+            selected_list.add(false);
             task_subList.add(task_sub);
             adapter.notifyItemInserted(task_subList.size());
             recyclerView.post(new Runnable() {
@@ -560,9 +784,11 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         //!!--Duplicated:
         if (task.completed) {
             //!!--Verificar los colores correctos:
+            fl_Main_Task_Complete.setBackground(ContextCompat.getDrawable(this,R.drawable.icon_completed_task_test_11));
             fl_Main_Task_Complete.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.ex_green)));
         } else {
             //!!--Verificar los colores correctos:
+            fl_Main_Task_Complete.setBackground(ContextCompat.getDrawable(this,R.drawable.icon_complete_task_test_4));
             fl_Main_Task_Complete.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.gray_light_3)));
         }
 
@@ -629,17 +855,32 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         if(task.has_sub_tasks){
             //!!--La visibilidad se esta activando cada vez que se refresca innecesariamente
             tv_Completion.setVisibility(View.VISIBLE);
-            int completion_size = 0;
             int sub_Task_size = task_subList.size();
-            for(int i = 0; i <= task_subList.size() -1 ; i++){
-                if(task_subList.get(i).geCompleted()){
-                    completion_size ++;
-                }
-            }
+            int completion_size = getCompletionSize();
             tv_Completion.setText(completion_size + "/" + sub_Task_size);
         }else{
             tv_Completion.setVisibility(View.GONE);
         }
+    }
+    private boolean Is_Valid_To_Sort_Completed_Sub_Tasks(){
+        //!!---Falta animacion para aparecer y desaparecer.
+        //!!---Tambien haria falta una animacion para indicar el tipo de orden para que no paresca que no hace nada en algunas ocasiones en donde el orden no se mueva(En caso en el que el orden coincida con las posiciones asignadas previamente)
+
+        ///---Is_Valid_To_Sort_Completed_Sub_Tasks (Verifica si amerita reordenar los sub task basado en su estado de completado)
+        ///--Cambiar solo si el ratio no es absoluto (todas incompletas o tadas completas)
+        ///--Y si la cantidad de sub task es mayor que 1
+        int sub_Task_size = task_subList.size();
+        int completion_size = getCompletionSize();
+        return completion_size > 0 && completion_size != sub_Task_size && sub_Task_size >= 2;
+    }
+    private int getCompletionSize() {
+        int completion_size = 0;
+        for(int i = 0; i <= task_subList.size() -1 ; i++){
+            if(task_subList.get(i).getCompleted()){
+                completion_size ++;
+            }
+        }
+        return completion_size;
     }
 
     private void Set_Written_Note_Style() {
@@ -653,10 +894,18 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         fl_Change_Pin_Status.setScaleY(0.9f);
         fl_Delete.setScaleX(0.9f);
         fl_Delete.setScaleY(0.9f);
+        //fl_Insert_Sub_Task.setScaleX(0.9f);
+        //fl_Insert_Sub_Task.setScaleY(0.9f);
+        fl_Insert_Sub_Task_Initial.setScaleX(0.9f);
+        fl_Insert_Sub_Task_Initial.setScaleY(0.9f);
         fl_Delete.setScaleY(0.9f);
         fl_Change_Reminder_Status.setAlpha(0.4f);
         fl_Change_Pin_Status.setAlpha(0.4f);
         fl_Delete.setAlpha(0.4f);
+        //fl_Insert_Sub_Task.setAlpha(0.4f);
+        fl_Insert_Sub_Task_Initial.setAlpha(0.4f);
+
+        fl_Main_Task_Complete.setBackground(ContextCompat.getDrawable(this,R.drawable.icon_complete_task_test_4));
 
     }
 
@@ -676,16 +925,31 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         return !_Main_Task_Description.isEmpty();
     }
 
+
     private void Update_Task_Status(boolean current_status) {
+        //!!--Se estan activando las animaciones e intrucciones para ambos botones de insertar sub task, pero solo se usa uno a la vez
         if(current_status) {
             fl_Change_Pin_Status.setAlpha(1f);
             fl_Change_Reminder_Status.setAlpha(1f);
             fl_Delete.setAlpha(1f);
+            if(fl_Insert_Sub_Task.getVisibility()== View.VISIBLE){
+                fl_Insert_Sub_Task.setAlpha(1f);
+                fl_Insert_Sub_Task.startAnimation(AnimationPinAppear);
+            }else{
+                fl_Insert_Sub_Task_Initial.setAlpha(1f);
+                fl_Insert_Sub_Task_Initial.startAnimation(AnimationPinAppear);
+            }
+
 
             fl_Change_Pin_Status.startAnimation(AnimationPinAppear);
             fl_Change_Reminder_Status.startAnimation(AnimationPinAppear);
             fl_Delete.startAnimation(AnimationPinAppear);
         }else{
+            if(fl_Insert_Sub_Task.getVisibility()== View.VISIBLE){
+                fl_Insert_Sub_Task.startAnimation(AnimationPinFade);
+            }else{
+                fl_Insert_Sub_Task_Initial.startAnimation(AnimationPinFade);
+            }
             fl_Change_Pin_Status.startAnimation(AnimationPinFade);
             fl_Change_Reminder_Status.startAnimation(AnimationPinFade);
 
@@ -769,6 +1033,126 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
 
         layout_dim.startAnimation(AnimationLayoutDimDisappear_Normal);
     }
+
+
+
+
+    @Override
+    public void onItemClick(int position, View v) {
+        if (!selection_mode) return;
+        if(task_subList.get(position).getViewType()==0){
+            Select_Item(position);
+            return;
+        }
+
+        for(int i = position; i >= 0; i-- ){
+            if(task_subList.get(i).getViewType()==0){
+                Select_Item(i);
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void onItemHold(int position, View v) {
+        //selected_list.set(position,!selected_list.get(position));
+        //adapter.notifyItemChanged(position);
+    }
+    @Override
+    public void onLongPress(int position) {
+        //selected_list.set(position,!selected_list.get(position));
+        //adapter.notifyItemChanged(position);
+    }
+    @Override
+    public void onDoubleTap(int position) {
+
+        View v = new View(this);
+        //selected_list.set(position,!selected_list.get(position));
+        //adapter.notifyItemChanged(position);
+        Select_Item(position);
+
+    }
+
+    @Override
+    public void Change_Sub_Task_Description(int position, String description) {
+        Log.d("Task Visualizer", "Change description pos: " + position + "   description: "+description);
+
+        Task_Sub task_sub = task_subList.get(position);
+        task_sub.setNote(description);
+        task_subList.set(position,task_sub);
+        change_in_task = true;
+    }
+
+    @Override
+    public void Mark_Sub_Task_As_Completed(int position) {
+        //!!--Esto est'a funcionando como un auxiliar, se debe primero captar la modificacion y si es valida entonces se debe guardar en la base de datos, no al revez.
+        Task_Sub task_sub = task_subList.get(position);
+        task_sub.setCompleted(!task_sub.completed);
+        if(DB_T.Modify_Sub_Task_Completed_Status(task_sub.task_sub_id, task_sub.completed)){
+            task_subList.set(position,task_sub);
+            adapter.notifyItemChanged(position);
+            long _current_time = System.currentTimeMillis();
+            if(DB_T.Modify_Main_Task_Modified_Date(task.task_id, _current_time)) {
+                //!!--Verificar que tan viable seria incluir Step_Completed_Date en vez de modificar el date_modified
+
+                task.date_modified = _current_time;
+            }
+        }
+        Main_Task_Completed(received_task_id);
+        Update_Completion_Ratio();
+        Update_Date();
+        fl_Set_Order.setVisibility(Is_Valid_To_Sort_Completed_Sub_Tasks()? View.VISIBLE : View.GONE);
+
+        ///
+        Set_Sub_Tasks_Order_When_Complete(position);
+        change_in_task = true;
+
+    }
+
+
+    private void Main_Task_Completed(long parent_id) {
+        int result = DB_T.Verify_If_All_Sub_Task_Completed(parent_id);
+        Log.d("Task Visualizer", "Verify if all sub task are completed: " + result);
+
+        if(result > 0){
+            if(!task.completed) Change_Complete_Main_Task_Status();
+        }else{
+            if(task.completed) Change_Complete_Main_Task_Status();
+        }
+
+    }
+    private void Change_Complete_Main_Task_Status() {
+        task.setCompleted(!task.completed);
+        long _current_time = System.currentTimeMillis();
+        if(DB_T.Modify_Main_Task_Completed_Status(task.task_id, task.completed, _current_time)) {
+            //!!--Verificar los colores correctos
+            fl_Main_Task_Complete.setBackground(ContextCompat.getDrawable(this, task.completed ?R.drawable.icon_completed_task_test_11 : R.drawable.icon_complete_task_test_4));///Ternary Operator
+            fl_Main_Task_Complete.setBackgroundTintList(ColorStateList.valueOf(getColor(task.completed ? R.color.ex_green : R.color.gray_light_3)));///Ternary Operator
+            task.date_completed = _current_time;
+            Update_Date();
+        }
+    }
+
+    private void Change_Sub_task_Completed_Status() {
+
+        //!!--Seria bueno agregar una animacion a forma de notificacion para que el usuario sepa que los subtask estan siendo cambiados de estado si no coinciden con el nuevo estado de main
+
+        for(int i = task_subList.size() - 1; i >= 0; i --){
+            if(task_subList.get(i).completed!= task.completed){
+                Task_Sub task_sub = task_subList.get(i);
+                task_sub.setCompleted(!task_sub.completed);
+                if(DB_T.Modify_Sub_Task_Completed_Status(task_sub.task_sub_id, task_sub.completed)){
+                    task_subList.set(i,task_sub);
+                    adapter.notifyItemChanged(i);
+                }
+            }
+        }
+    }
+
+
+
+
+
 
     private void Save_Task() {
         boolean save_Success;
@@ -854,7 +1238,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
     }
 
     private void Hard_Delete_All_Empty_Sub_Tasks() {
-        Log.d("Task Visualizer", "Delete all empty sub tasks: ");
+        Log.d("Task Visualizer", "Hard_Delete_All_Empty_Sub_Tasks: ");
         for(int i = task_subList.size() - 1; i >= 0; i --){
             if(task_subList.get(i).note.isEmpty()){
                 Task_Sub task_sub = task_subList.get(i);
@@ -911,12 +1295,16 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
 
     private Boolean Save_Task_in_TrashCan() {
         //!!--Save in trashcan what was saved in data base before all tasks were cleared:
-        if (!now_is_something_written) { //if there_is_nothing__wrote > Send to trashcan what was in the database before save
+        if (et_Task_main.getText().toString().isEmpty()) { //if there_is_nothing__wrote > Send to trashcan what was in the database before save
             if (task.note != null || has_sub_tasks_in_database ) {//!!--aqui se debe corregir para que se verifiquen los sub task originales
-                Log.d("Delete","1-");
+                Log.d("Delete","    Delete: 1-");
                 return  getTaskInTrashCan(task.date,task.title,task.note,20,"1-Insertado datos previous");
             } else {
-                Log.d("Delete","2-");
+                Log.d("Delete","    Delete: 2-");
+                if(DB_T.Task_Exist(task.task_id)){
+                    Log.d("Delete","    Delete: 2.2- Main task hard delete by non Useful");
+                    DB_T.Delete_Hard_Specific_Main_Task(task.task_id);
+                }
                 Toast.makeText(Task_Visualizer.this, "2- No hay nada que guardar ", Toast.LENGTH_SHORT).show();//si se utiliza reminder y luego se borra
                 return true;
             }
@@ -925,16 +1313,16 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         String _description = et_Task_main.getText().toString();
         long _current_time = System.currentTimeMillis();
         if (!change_in_task) {   //if there_is_something save in database > Send to trashcan what was in the database before save
-            Log.d("Delete","3-");
+            Log.d("Delete","    Delete: 3-");
             return getTaskInTrashCan(task.date, _description, _description, 20,"3- Sin cambios, save proyectado en edit.T ");
         } else {
-            Log.d("Delete","4-");
+            Log.d("Delete","    Delete: 4-");
             return getTaskInTrashCan(_current_time, _description, _description, 20,"4- Cambios realizados, moving to trash ");
         }
     }
     private Boolean getTaskInTrashCan(long date, String title, String _note, int expire_days, String Delete_Case) {
         if ( task.task_id == 0 ) {
-            Log.d("Delete","5-");
+            Log.d("Delete","    Delete: 5-");
             Toast.makeText(Task_Visualizer.this, "5- Cambios realizados, directo a TrashCan ", Toast.LENGTH_SHORT).show();//salvado previo con cambios sin guardar
             change_in_task = false;
             task.task_id =  DB_T.Insert_Task_Directly_in_Trash(date,title,_note,task.pin,20,task.completed,task.has_sub_tasks); //!!--Check cual es la mejor opcion para este valor de expire days
@@ -947,7 +1335,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         DB_T.Send_Task_To_Trash(task.task_id, date, title, _note, task.pin,  expire_days,task.completed,task.has_sub_tasks);
         Log.d("Task Visualizer", "Main Task sent to trash: " + task.getTask_id());
         if(!task_subList.isEmpty()){
-            Send_Sub_Task_To_Trash();
+            Send_Sub_Task_To_Trash_Modifying_Their_Values();
             return true;
         }else if(has_sub_tasks_in_database){
             Send_Sub_Task_To_Trash_With_Out_Modification();
@@ -961,15 +1349,15 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         for(int i = task_subList.size() - 1; i >= 0; i --){
             Task_Sub task_sub = task_subList.get(i);
             long _sub_task_id = DB_T.Insert_Sub_Task_Directly_in_Trash(task_sub.parent_id,task_sub.note,task_sub.completed,task_sub.task_sub_position);
-            Log.d("Task Visualizer", "Sub Task sent to trash: " + _sub_task_id);
+            Log.d("Task Visualizer", "Insert_Sub_Task_Directly_in_Trash: " + _sub_task_id);
         }
     }
-    private void Send_Sub_Task_To_Trash() {
+    private void Send_Sub_Task_To_Trash_Modifying_Their_Values() {
         Log.d("Task Visualizer", "Insert sub tasks directly");
         for(int i = task_subList.size() - 1; i >= 0; i --){
             Task_Sub task_sub = task_subList.get(i);
             DB_T.Send_Sub_Task_To_Trash(task_sub.task_sub_id,task_sub.parent_id,task_sub.note, task_sub.completed, task_sub.task_sub_position);
-            Log.d("Task Visualizer", "Sub Task sent to trash: " + task_sub.getTask_Sub_id());
+            Log.d("Task Visualizer", "Send_Sub_Task_To_Trash: " + task_sub.getTask_Sub_id());
         }
     }
     private void Send_Sub_Task_To_Trash_With_Out_Modification() {
@@ -985,7 +1373,9 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
             Delete_All_Blank_Sub_Tasks_The_Main_Will_not_be_Deleted();
         }
         Log.d("Task Visualizer", "Out_Of_Activity: now is something written" + now_is_something_written);
-        if (!now_is_something_written) {
+
+        //if (!now_is_something_written) {
+        if (et_Task_main.getText().toString().isEmpty() ) {
             Delete_Task();
         } else {
             if (tv_Date.getText().toString().isEmpty()) {
@@ -1005,84 +1395,6 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         overridePendingTransition(R.anim.return_activity_slide_right_in, R.anim.return_activity_slide_right_out);
     }
 
-    @Override
-    public void onItemClick(int position, View v) {
-
-    }
-
-    @Override
-    public void onItemHold(int position, View v) {
-
-    }
-
-    @Override
-    public void Mark_Sub_Task_As_Completed(int position) {
-        //!!--Esto est'a funcionando como un auxiliar, se debe primero captar la modificacion y si es valida entonces se debe guardar en la base de datos, no al revez.
-        Task_Sub task_sub = task_subList.get(position);
-        task_sub.setCompleted(!task_sub.completed);
-        if(DB_T.Modify_Sub_Task_Completed_Status(task_sub.task_sub_id, task_sub.completed)){
-            task_subList.set(position,task_sub);
-            adapter.notifyItemChanged(position);
-            long _current_time = System.currentTimeMillis();
-            if(DB_T.Modify_Main_Task_Modified_Date(task.task_id, _current_time)) {
-                //!!--Verificar que tan viable seria incluir Step_Completed_Date en vez de modificar el date_modified
-
-                task.date_modified = _current_time;
-            }
-        }
-        Main_Task_Completed(received_task_id);
-        Update_Completion_Ratio();
-        Update_Date();
-
-    }
-
-    @Override
-    public void Change_Sub_Task_Description(int position, String description) {
-        Log.d("Task Visualizer", "Change description pos: " + position + "   description: "+description);
-
-        Task_Sub task_sub = task_subList.get(position);
-        task_sub.setNote(description);
-        task_subList.set(position,task_sub);
-        change_in_task = true;
-    }
-
-    private void Main_Task_Completed(long parent_id) {
-        int result = DB_T.Verify_If_All_Sub_Task_Completed(parent_id);
-        Log.d("Task Visualizer", "Verify if all sub task are completed: " + result);
-
-        if(result > 0){
-            if(!task.completed) Change_Complete_Main_Task_Status();
-        }else{
-            if(task.completed) Change_Complete_Main_Task_Status();
-        }
-
-    }
-    private void Change_Complete_Main_Task_Status() {
-        task.setCompleted(!task.completed);
-        long _current_time = System.currentTimeMillis();
-        if(DB_T.Modify_Main_Task_Completed_Status(task.task_id, task.completed, _current_time)) {
-            //!!--Verificar los colores correctos
-            fl_Main_Task_Complete.setBackgroundTintList(ColorStateList.valueOf(getColor(task.completed ? R.color.ex_green : R.color.gray_light_3)));///Ternary Operator
-            task.date_completed = _current_time;
-            Update_Date();
-        }
-    }
-
-    private void Change_Sub_task_Completed_Status() {
-
-        //!!--Seria bueno agregar una animacion a forma de notificacion para que el usuario sepa que los subtask estan siendo cambiados de estado si no coinciden con el nuevo estado de main
-
-        for(int i = task_subList.size() - 1; i >= 0; i --){
-            if(task_subList.get(i).completed!= task.completed){
-                Task_Sub task_sub = task_subList.get(i);
-                task_sub.setCompleted(!task_sub.completed);
-                if(DB_T.Modify_Sub_Task_Completed_Status(task_sub.task_sub_id, task_sub.completed)){
-                    task_subList.set(i,task_sub);
-                    adapter.notifyItemChanged(i);
-                }
-            }
-        }
-    }
 
 
     @Override
@@ -1092,6 +1404,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         task_sub.setCompleted(!task_sub.completed);
         if(DB_T.Delete_Hard_Specific_Task_Sub(task_sub.task_sub_id)){
             task_subList.remove(position);
+            selected_list.remove(position);
             adapter.notifyItemRemoved(position);
         }
         if(task_subList.isEmpty()){
@@ -1102,5 +1415,13 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
             Main_Task_Completed(received_task_id);
         }
         Update_Completion_Ratio();
+        //!!--Need to update this (visibility update) to → (appear and disappear function):
+        fl_Set_Order.setVisibility(Is_Valid_To_Sort_Completed_Sub_Tasks()? View.VISIBLE : View.GONE);
+    }
+
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+        super.onPointerCaptureChanged(hasCapture);
     }
 }

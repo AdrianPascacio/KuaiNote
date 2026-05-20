@@ -195,7 +195,7 @@
         android:layout_height="30dp"
         android:layout_marginTop="13dp"
         android:layout_marginRight="16dp"
-        android:background="@drawable/trash_can_icon_1"
+        android:background="@drawable/trash_can_icon_3"
         android:backgroundTint="@color/Neutral_gray_icon_note"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -206,7 +206,7 @@
         android:layout_height="26dp"
         android:layout_marginLeft="14dp"
         android:layout_marginTop="16dp"
-        android:background="@drawable/arrow_left_4"
+        android:background="@drawable/arrow_left_7"
         android:backgroundTint="@color/Neutral_gray_icon_note"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

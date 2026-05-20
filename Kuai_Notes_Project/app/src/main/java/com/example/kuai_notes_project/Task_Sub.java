@@ -42,7 +42,7 @@ public class Task_Sub implements Task_Element{
         this.note = note;
     }
 
-    public boolean geCompleted() {
+    public boolean getCompleted() {
         return completed;
     }
 
