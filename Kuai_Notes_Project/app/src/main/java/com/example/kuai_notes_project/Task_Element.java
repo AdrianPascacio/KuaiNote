@@ -8,4 +8,5 @@ public interface Task_Element {
     int getViewType();
     long getId();
     String getContent();
+    boolean getCompletion();
 }

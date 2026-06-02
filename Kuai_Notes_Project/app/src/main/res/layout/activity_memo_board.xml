@@ -12,14 +12,25 @@
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="91dp"
+        android:layout_marginTop="29dp"
         android:orientation="vertical">
+        <EditText
+            android:id="@+id/Searched_Text"
+            android:layout_width="383dp"
+            android:layout_height="62dp"
+            android:ems="10"
+            android:inputType="text"
+            android:text=""
+            android:hint="Search:"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/Recycler_MemoBoard"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingBottom="50dp"
+                android:paddingBottom="155dp"
                 android:clipToPadding="false"
                 />
 
@@ -34,7 +45,6 @@
         android:layout_height="wrap_content"
         android:clickable="true"
         android:focusable="true"
-        android:onClick="Go_To_Add_New_Note"
         app:backgroundTint="@color/memoboard_add_button_background"
         app:fabCustomSize="100dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -55,7 +65,7 @@
         android:id="@+id/button_Config"
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:layout_marginRight="14dp"
+        android:layout_marginRight="120dp"
         android:layout_marginTop="14dp"
         android:background="@drawable/recycler_logo_icon_4"
         android:backgroundTintMode="multiply"
@@ -77,7 +87,7 @@
         android:id="@+id/button_Search"
         android:layout_width="24dp"
         android:layout_height="30dp"
-        android:layout_marginRight="120dp"
+        android:layout_marginRight="23dp"
         android:layout_marginTop="14dp"
         android:background="@drawable/search_icon_4"
         android:backgroundTintMode="multiply"
@@ -130,6 +140,68 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         >
+
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/floatingMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:background="@color/transparent"
+        android:translationX="55dp"
+        app:layout_constraintVertical_bias="0.96"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:id="@+id/menuTab"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+
+            >
+
+            <Space
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                >
+
+            </Space>
+            <FrameLayout
+                android:layout_width="35dp"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_floating_recycler_view">
+
+                <TextView
+                    android:id="@+id/tabArrow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="&lt;"
+                    android:textColor="@color/Trashcan_Floating_Entrance_Icons"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:paddingLeft="8dp"
+                    android:layout_gravity="start|center_vertical" />
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/Trashcan_Floating_Entrance"
+            android:padding="8dp">
+
+            <FrameLayout
+                android:id="@+id/btnNavigate"
+                android:layout_width="24dp"
+                android:layout_height="26dp"
+                android:layout_gravity="start|center_vertical"
+                android:background="@drawable/recycler_logo_icon_4"
+                android:backgroundTint="@color/Trashcan_Floating_Entrance_Icons"
+                >
+            </FrameLayout>
+        </FrameLayout>
 
     </LinearLayout>
 

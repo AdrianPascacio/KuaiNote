@@ -72,4 +72,8 @@ public class Task_Sub implements Task_Element{
     public String getContent() {
         return getNote();
     }
+    @Override
+    public boolean getCompletion() {
+        return getCompleted();
+    }
 }

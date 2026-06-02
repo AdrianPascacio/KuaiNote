@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.icu.text.Transliterator;
+import android.opengl.Visibility;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,12 +29,16 @@ public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Re
     private ArrayList date_id;
     private ArrayList<Boolean> selected_id;
     private ArrayList<Note> noteList;
+    private ArrayList<String> searched_note_list;
+    private ArrayList<String> searched_title_list;
+    private ArrayList<String> searched_snipped_note_list;
 
     private final Recycler_Memo_Board_Interface recycler_memo_board_interface;
     private boolean multi_selection_state = false;
     private boolean is_repeated = false;
     private int multi_first_count = 2;
     private int selected_in_single_mode = -1;
+
     public void Change_multi_selection_state (boolean multi_selection_state){
         this.multi_selection_state = multi_selection_state;
     }
@@ -41,11 +46,14 @@ public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Re
         this.is_repeated = is_repeated;
     }
 
-    public Adapter_Recycler_Memo_Board(Context context, ArrayList date_id, ArrayList<Boolean> selected_id, ArrayList noteList,  Recycler_Memo_Board_Interface recyclerMemoBoardInterface){
+    public Adapter_Recycler_Memo_Board(Context context, ArrayList date_id, ArrayList<Boolean> selected_id, ArrayList noteList,ArrayList searched_title_list,ArrayList searched_note_list,ArrayList searched_snipped_note_list,  Recycler_Memo_Board_Interface recyclerMemoBoardInterface){
         this.context = context;
         this.date_id = date_id;
         this.selected_id = selected_id;
         this.noteList = noteList;
+        this.searched_title_list = searched_title_list;
+        this.searched_note_list = searched_note_list;
+        this.searched_snipped_note_list = searched_snipped_note_list;
         this.recycler_memo_board_interface =recyclerMemoBoardInterface ;
 
     }
@@ -124,6 +132,8 @@ public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Re
                     Selecting_View_With_No_Animations(holder, isPinned, isReminded);
                     //Log.d("Adapter","    --Add_Item_Without_animations_In_Multiple_Selections_Mode: " +position);
                 }
+                ///Aux most have a better order...but it works
+                holder.fl_reminder.setVisibility(View.GONE);
             }else{
                 //Log.d("Adapter","   Selecting_View_Single_Mode: " +position + "    selected_in_single_mode: "+selected_in_single_mode+"\n" +
                   //      "       Is_Reminded:"+isReminded);
@@ -222,6 +232,7 @@ public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Re
         holder.layout_btn_options.setVisibility(View.GONE);
         holder.layout_btn_options_ghost.setVisibility(View.GONE);
         ///Este es el culpable!!!!: holder.layout_reminder.setVisibility(View.GONE);
+        //holder.layout_reminder.setVisibility(View.GONE);
         holder.layout_options_reminder_ghost.setVisibility(View.GONE);
         holder.fl_delete.clearAnimation();
 
@@ -274,9 +285,14 @@ public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Re
             holder.fl_reminder_activated.setVisibility(View.VISIBLE);
             holder.fl_reminder_activated.startAnimation(Animation_Is_Reminded);
 
+            holder.fl_reminder.clearAnimation();
+            holder.fl_reminder.setVisibility(View.GONE);
+
         }else{
             holder.fl_reminder_activated.setVisibility(View.GONE);
             holder.fl_reminder_activated.clearAnimation();
+
+
 
             holder.fl_reminder.setVisibility(View.VISIBLE);
             holder.fl_reminder.startAnimation(Animation_Is_NOT_Pinned);
@@ -325,8 +341,8 @@ public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Re
             holder.fl_reminder_activated.setVisibility(View.VISIBLE);
             holder.fl_reminder_activated.startAnimation(Animation_Is_Reminded);
 
-            holder.fl_reminder.setVisibility(View.GONE);
             holder.fl_reminder.clearAnimation();
+            holder.fl_reminder.setVisibility(View.GONE);
         }else{
             holder.fl_reminder_activated.setVisibility(View.GONE);
             holder.fl_reminder_activated.clearAnimation();

@@ -186,4 +186,8 @@ public class Task_Main implements Task_Element {
     public String getContent() {
         return getTitle();
     }
+    @Override
+    public boolean getCompletion() {
+        return getCompleted();
+    }
 }

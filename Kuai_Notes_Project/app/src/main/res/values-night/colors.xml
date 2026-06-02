@@ -5,6 +5,7 @@
     <color name="color_primary">#616161</color>
 
 
+    <color name="real_white">#FFFFFFFF</color>
     <color name="white">#FF000000</color>
     <color name="white_softy_1">#FF080D08</color>
     <color name="purple_200">#FF447903</color>
@@ -114,6 +115,12 @@
     <color name="note_visualizer_wasted_title_text_color">#DEF1FA</color>
     <color name="note_visualizer_wasted_information_text_color">#546378</color>
 
+    <!--     Task Color Type::-->
+    <color name="task_uncompleted_color">#979797</color>
+    <color name="task_completed_color">#FF8AC698</color>
+
+
+    <!--     Reminder Color Type::-->
     <color name="repeat_alarm_on">#2AD991</color>
     <color name="repeat_alarm_off">#4F525B</color>
 
@@ -166,6 +173,8 @@
     <color name="Trashcan_navigation_bar">#321C18</color>
     <color name="Trashcan_status_bar">#412936</color>
 
+    <color name="Trashcan_Floating_Entrance">#FFF49883</color>
+    <color name="Trashcan_Floating_Entrance_Icons">#6A3030</color>
 
     <color name="lavender_grey">#797DA3</color>
     <color name="space_indigo">#24304A</color>

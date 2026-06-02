@@ -1,14 +1,20 @@
 package com.example.kuai_notes_project;
 
+import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -25,7 +31,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Objects;
-import java.util.Random;
 
 ///324 V3, 305 V4, 358 V6, 306 V7, 450 V7.2, 570 v9.0B
 public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board_Interface, Reminder_PopUpWindow.OnValueSelectedListener,Reminder_PopUpWindow.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener {
@@ -34,6 +39,12 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     ArrayList<String> noteOriginal_list;
     ArrayList<Boolean> selected_list;
     ArrayList<Note> noteList;
+
+    ArrayList<String> searched_note_list;
+    ArrayList<String> searched_snipped_note_list;
+    ArrayList<String> searched_title_list;
+    EditText et_searched_Text;
+
     ArrayList<Integer> selected_positions_list;
 
     DB_Notes DB_N;
@@ -55,6 +66,24 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     private Animation AnimationLayoutDimAppear, AnimationLayoutDimDisappear_Normal,AnimationLayoutDimDisappear_Setter,AnimationLayoutDimDisappear_Cancel, Animation_FloatingButton_Appear, Animation_FloatingButton_Disappear;
     private FloatingActionButton fa_btn;
 
+
+
+    private LinearLayout floating_TrashCan_Access;
+    private TextView tabArrow;
+    private View menu_show_recycler_trashcan;
+    private View btn_go_trash_can;
+    private View menuTab;
+
+    private boolean isExpanded = false;
+    private float initialX;
+    //!!-- have to fix this:
+    // private final float HIDDEN_OFFSET = dpToPx(170); // Ajusta según el XML
+    private float HIDDEN_OFFSET = 40; // Ajusta según el XML
+    private float HIDDEN_OFFSET_ARROW = 6; // Ajusta según el XML
+
+
+
+
     private static final String CHANNEL_ID = "My_App_Channel";
 
     Selection_Item_Menu_MemoBoard_PopUpWindow selection_item_menu_PopUp = new Selection_Item_Menu_MemoBoard_PopUpWindow(this,-1);
@@ -74,11 +103,23 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         getStartOfToday();
 
         recyclerView = findViewById(R.id.Recycler_MemoBoard);
-        adapter = new Adapter_Recycler_Memo_Board(this, dateEdited_list,selected_list,noteList,this);
+        adapter = new Adapter_Recycler_Memo_Board(this, dateEdited_list,selected_list,noteList,searched_title_list,searched_note_list,searched_snipped_note_list,this);
         recyclerView.setAdapter(adapter);
 
         Clear_Lists();
         Update_Recycler_View();
+
+        fa_btn.setVisibility(View.VISIBLE);
+        fa_btn.setFocusable(true);
+        fa_btn.setClickable(true);
+        fa_btn.animate().alpha(1f).scaleY(1f).scaleX(1f).setDuration(700);
+
+        if(isExpanded){
+            floating_TrashCan_Access.setTranslationX(HIDDEN_OFFSET);
+            tabArrow.setTranslationX(0);
+            tabArrow.setText("<");
+            isExpanded = false;
+        }
     }
 
     @Override
@@ -111,6 +152,12 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         noteList = new ArrayList<>();
         selected_positions_list = new ArrayList<>();
 
+        searched_title_list = new ArrayList<>();
+        searched_note_list = new ArrayList<>();
+        searched_snipped_note_list = new ArrayList<>();
+
+        et_searched_Text = findViewById(R.id.Searched_Text);
+
         BNP = new Body_Note_Preview();
         DoN_IV = new Date_of_Note_Item_View_DEPRECATED();
         DoN = new Date_of_Note();
@@ -134,6 +181,68 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         btn_delete_all_notes_database = findViewById(R.id.button_Delete_All_Notes_DataBase);
         fa_btn.startAnimation(AnimationAddNoteButton);
 
+
+        floating_TrashCan_Access = findViewById(R.id.floatingMenu);
+        //menuTab = findViewById(R.id.menuTab);
+        menuTab = findViewById(R.id.menuTab);
+        tabArrow = findViewById(R.id.tabArrow);
+        btn_go_trash_can = findViewById(R.id.btnNavigate);
+        HIDDEN_OFFSET = dpToPx(55);
+        HIDDEN_OFFSET_ARROW = dpToPx(6);
+        floating_TrashCan_Access.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    toggleMenu(false);
+                }
+
+            }
+        });
+        menuTab.setOnTouchListener(new View.OnTouchListener() {
+
+            private static final int MAX_CLICK_DURATION = 150;
+            private long startClickTime;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        initialX = event.getRawX();
+                        startClickTime = Calendar.getInstance().getTimeInMillis();
+                        return true;
+
+                    case MotionEvent.ACTION_MOVE:
+                        float currentX = event.getRawX();
+                        float deltaX = currentX - initialX;
+
+                        if (deltaX < -2 && !isExpanded) {//Arrastre a la izquierda
+                            toggleMenu(true);
+                        }
+                        else if (deltaX > 2 && isExpanded) {//Arrastre a la derecha
+                            toggleMenu(false);
+                        }
+                        return true;
+
+                    case MotionEvent.ACTION_UP:
+                        long clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
+
+                        if (clickDuration < MAX_CLICK_DURATION) {
+                            toggleMenu(!isExpanded);
+                        }
+                        return true;
+                }
+                return false;
+            }
+        });
+
+
+        fa_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Go_To_Add_New_Note();
+            }
+        });
+
         btn_config.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -150,6 +259,13 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             @Override
             public void onClick(View view) {
                 Go_To_Search();
+            }
+        });
+        btn_go_trash_can.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Go_To_Trash_Can();
+                //toggleMenu(!isExpanded);
             }
         });
         btn_generate_random_content.setOnClickListener(new View.OnClickListener() {
@@ -187,7 +303,70 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             }
         });
     }
+    private void toggleMenu(boolean expand) {
+        if (isExpanded == expand) return; // Evita repetir la animación si ya está en ese estado
+        isExpanded = expand;
 
+        float targetX = expand ? 0f : HIDDEN_OFFSET;
+        float targetX_arrow = expand ? HIDDEN_OFFSET_ARROW : 0f  ;
+        if(expand){
+            //if(!selection_mode) fa_btn.startAnimation(Animation_FloatingButton_Disappear);
+            fa_btn.animate().alpha(0f).scaleY(0.7f).scaleX(0.7f).setDuration(325).withEndAction(new Runnable() {
+                @Override
+                public void run() {
+                    fa_btn.setFocusable(false);
+                    fa_btn.setClickable(false);
+                    fa_btn.setVisibility(View.GONE);
+                }
+            });
+        }else{
+            fa_btn.setVisibility(View.VISIBLE);
+            fa_btn.setFocusable(true);
+            fa_btn.setClickable(true);
+            //if(!selection_mode) fa_btn.startAnimation(Animation_FloatingButton_Appear);
+            fa_btn.animate().alpha(1f).scaleY(1).scaleX(1).setDuration(600);
+        }
+
+        // Animación suave del atributo translationX
+        ObjectAnimator animator = ObjectAnimator.ofFloat(floating_TrashCan_Access, "translationX", targetX);
+        //ObjectAnimator animator_arrow = ObjectAnimator.ofFloat(menuTab, "translationX", targetX_arrow);
+        ObjectAnimator animator_arrow = ObjectAnimator.ofFloat(tabArrow, "translationX", targetX_arrow);
+        animator.setDuration(300); // Duración en milisegundos
+        animator_arrow.setDuration(350); // Duración en milisegundos
+        animator.start();
+        animator_arrow.start();
+
+        // Cambiar la flecha indicadora
+        tabArrow.setText(expand ? ">" : "<");
+    }
+    private float dpToPx(int dp) {
+        return dp * getResources().getDisplayMetrics().density;
+    }
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        // Solo nos interesa evaluar cuando el usuario recién apoya el dedo
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+
+            // Si el menú está expandido, verificamos dónde se hizo el toque
+            if (isExpanded && floating_TrashCan_Access != null) {
+
+                // Obtenemos los límites reales del menú flotante en la pantalla
+                Rect outRect = new Rect();
+                floating_TrashCan_Access.getGlobalVisibleRect(outRect);
+
+                // Si el toque NO ocurrió dentro de los límites del menú
+                if (!outRect.contains((int) ev.getRawX(), (int) ev.getRawY())) {
+                    toggleMenu(false); // Cerramos el menú
+
+                    // Opcional: Si quieres que ese toque "fuera" además de cerrar el menú
+                    // no haga nada más (ej. que no presione un botón que estaba atrás por accidente),
+                    // puedes retornar 'true' aquí para consumir el evento.
+                    // return true;
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev);
+    }
 
     private void Delete_All_Notes_From_DataBase() {
         DB_N.Delete_Hard_All_Notes();
@@ -199,35 +378,6 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     private void Generate_Stable_Content_For_Test() {
         Stable_G.Stable_Note_Generator(this,40,0,100);
     }
-    private void Generate_Random_Content_For_Test_Old() {
-        //Toast.makeText(this, "Random Content Generator", Toast.LENGTH_SHORT).show();
-
-        //Create Randome Note (Title, note, pin, reminder, reminder_type, reminder_interval)
-
-        String seed_text = "Una mañana, tras un sueño intranquilo, Gregorio Samsa se despertó convertido en un monstruoso insecto. Estaba echado de espaldas sobre un duro caparazón y, al alzar la cabeza, vio su vientre convexo y oscuro, surcado por curvadas callosidades, sobre el que casi no se aguantaba la colcha, que estaba a punto de escurrirse hasta el suelo. Numerosas patas, penosamente delgadas en comparación con el grosor normal de sus piernas, se agitaban sin concierto. —¿Qué me ha ocurrido? No estaba soñando. Su habitación, una habitación normal, aunque muy pequeña, tenía el aspecto habitual. Sobre la mesa había desparramado un muestrario de paños —Samsa era viajante de comercio—, y de la pared colgaba una estampa recientemente recortada de una revista ilustrada y puesta en un marco dorado. La estampa mostraba a una mujer tocada con un gorro de pieles, envuelta en una estola también de pieles, y que, muy erguida, esgrimía un amplio manguito, asimismo de piel, que ocultaba todo su antebrazo. Gregorio miró hacia la ventana; estaba nublado, y sobre el cinc del alféizar repiqueteaban las gotas de lluvia, lo que le hizo sentir una gran melancolía. «Bueno —pensó—; ¿y si siguiese durmiendo un rato y me olvidase de todas estas locuras?» Pero no era posible, pues Gregorio tenía la costumbre de dormir sobre el lado derecho, y su actual estado no le permitía adoptar tal postura. Por más que se esforzara volvía a quedar de espaldas. Intentó en vano esta operación numerosas veces; cerró los ojos para no tener que ver aquella confusa agitación de patas, que no cesó hasta que notó en el costado un dolor leve y punzante, un dolor jamás sentido hasta entonces. —¡Qué cansada es la profesión que he elegido! —se dijo—. Siempre de viaje. Las preocupaciones son mucho mayores cuando se trabaja fuera, por no hablar de las molestias propias de los viajes: estar pendiente de los enlaces de los trenes; la comida mala, irregular; relaciones que cambian constantemente, que nunca llegan a ser verdaderamente cordiales, y en las que no tienen cabida los sentimientos. ¡Al diablo con todo! Sintió en el vientre una ligera picazón. Lentamente, se estiró sobre la espalda en dirección a la cabecera de la cama, para poder alzar mejor la cabeza. Vio que el sitio que le picaba estaba cubierto de extraños puntitos blancos. Intentó rascarse con una pata; pero tuvo que retirarla inmediatamente, pues el roce le producía escalofríos. —Estoy atontado de tanto madrugar —se dijo—. No duermo lo suficiente. Hay viajantes que viven mucho mejor. Cuando a media mañana regreso a la fonda para anotar los pedidos, me los encuentro desayunando cómodamente sentados. Si yo, con el jefe que tengo, hiciese lo mismo, me despedirían en el acto. Lo cual, probablemente sería lo mejor que me podría pasar. Si no fuese por mis padres, ya hace tiempo que me hubiese marchado. Hubiera ido a ver el director y le habría dicho todo lo que pienso. Se caería de la mesa, ésa sobre la que se sienta para, desde aquella altura, hablar a los empleados, que, como es sordo, han de acercársele mucho. Pero todavía no he perdido la esperanza. En cuanto haya reunido la cantidad necesaria para pagarle la deuda de mis padres —unos cinco o seis años todavía—, me va a oír. Bueno; pero, por ahora, lo que tengo que hacer es levantarme, que el tren sale a las cinco. Eran más de las seis y media, y las manecillas seguían avanzando tranquilamente. En realidad, ya eran casi las siete menos cuarto. ¿Es que no había sonado el despertador? Desde la cama se veía que estaba puesto a las cuatro; por tanto, tenía que haber sonado. Pero ¿era posible seguir durmiendo a pesar de aquel sonido que hacía estremecer hasta los muebles? Su sueño no había sido tranquilo. Pero, por eso mismo, debía de haber dormido al final más profundamente. ¿Qué podía hacer ahora? El tren siguiente salía a las siete; para cogerlo tendría que darse muchísima prisa. El muestrario no estaba aún empaquetado, y él mismo no se sentía nada dispuesto. Además, aunque alcanzase el tren, no evitaría reprimenda del amo, pues el mozo del almacén, que había acudido al tren a las cinco,";
-        for(int i = 20 ; i>=0; i--){
-            long _current_time = System.currentTimeMillis();
-            //int random_number = (int) (_current_time & 1023);   /// bitwise & long & 1023 (binary = 1111111111(1 diez veces)) → para tomar los numeros menores de 1023
-            int random_number = (int) (_current_time & 4095);   /// bitwise & long & 4095 (binary = 111111111111 (1 doce veces)) → para tomar los numeros menores de 4095
-            //int random_title = 0;
-            int end_of_title = random_number & 15;  ///Bitwise & → int & 15 (binary = 1111) → para tomar los numeros menores de 15;
-            int random_start_of_note  = (random_number >> 1) ;
-            int random_end_of_note = random_start_of_note & 31;
-            int random_pin = random_end_of_note & 1;
-
-            Log.d("Random", "Random end of note: " + random_end_of_note + "    Random pin: " + random_pin);
-
-            //String _title = et_Title.getText().toString();
-            String _title = seed_text.substring(random_number,random_number + end_of_title);
-            String _note = seed_text.substring(random_start_of_note,random_end_of_note + random_start_of_note);
-
-            long save_Success;
-
-            save_Success = DB_N.Insert_Note_L(_current_time, _title, _note, random_pin == 1, 0L, 0, 0);
-        }
-
-    }
-
 
     private void  getStartOfToday() {
         Calendar today = Calendar.getInstance();
@@ -290,7 +440,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         noteList.clear();
     }
 
-    public void Go_To_Add_New_Note(View view){
+    public void Go_To_Add_New_Note(){
         if(!selection_mode) {
             Intent goTo = new Intent(this, MainActivity.class);
             startActivity(goTo);

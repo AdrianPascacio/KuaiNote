@@ -275,6 +275,7 @@ public class Wasted_Note_Visualizer extends AppCompatActivity implements Reminde
         et_Title.setTextColor(ContextCompat.getColor(this, R.color.note_visualizer_wasted_note));
         tv_Info.setTextColor(ContextCompat.getColor(this, R.color.note_visualizer_information_text_color));
         tv_Date.setTextColor(ContextCompat.getColor(this, R.color.note_visualizer_information_text_color));
+        fl_back.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this,R.color.Neutral_gray_icon_note))); ///Ternary Operator
     }
     @Override
     public void Update_Note_Content( int indent_type, char last_deleted_char, int previous_note_size, int cursor_selection) {

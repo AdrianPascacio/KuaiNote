@@ -37,7 +37,9 @@ import java.util.Objects;
 //488 01apr2026, 1207 v9.0B
 public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks_Sub_In_Visualizer_Interface, Reminder_PopUpWindow_Tasks.OnValueSelectedListener, Reminder_PopUpWindow_Tasks.PopupDismissListener,Note_Update_Listener{
     private int order_type = 0;
+    private int old_true_position_assigned = -1;
     private int new_position_a =  0;
+    private int new_position_a_false =  -1;
     private int new_position_b =  0;
     private long sub_taskID_a =   0;
     private long sub_taskID_b =   0;
@@ -74,6 +76,8 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
     private boolean selection_mode = false;
     private boolean pin_multi_change = false;
     private boolean aux_selection_state = false;
+    private int true_from_position = -1;
+    private int true_to_position = -1;
 
     Selection_Item_Menu_MemoBoard_PopUpWindow selection_item_menu_PopUp = new Selection_Item_Menu_MemoBoard_PopUpWindow(this,-1);
 
@@ -100,25 +104,49 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
 
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,ItemTouchHelper.RIGHT) {//0 para eliminar los swipe horizontales utilizados para borrar.
             int lesser_position = 0;
+            int greater_position = 0;
             int lesser_position_assigned = 0;
+            int greater_position_assigned = 0;
             int from_aux_onMove = 0;
+            int original_from_position = 0;
+            int original_to_position = 0;
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                int from_Positoin = viewHolder.getAdapterPosition();
-                int to_Positoin = target.getAdapterPosition();
-                from_aux_onMove = from_Positoin;
+                int from_Position = viewHolder.getAdapterPosition();
+                int to_Position = target.getAdapterPosition();
+                if(true_from_position == -1) true_from_position = from_Position;
+                if(true_to_position == -1) true_to_position = to_Position;
+                from_aux_onMove = from_Position;
 
-                //Collections.swap(task_subList,from_Positoin,to_Positoin);
-                lesser_position = to_Positoin < from_Positoin ? to_Positoin : from_Positoin;
-                Task_Sub _task_sub = task_subList.get(from_Positoin);
-                task_subList.remove(from_Positoin);
-                task_subList.add(to_Positoin,_task_sub);
-                new_position_a = task_subList.get(from_Positoin).getTask_sub_position();
-                new_position_b = task_subList.get(to_Positoin).getTask_sub_position();
+                original_from_position = from_Position;
+                original_to_position = to_Position;
+                //lesser_position = to_Position < from_Position ? to_Position : from_Position;
+                lesser_position = to_Position < true_from_position ? to_Position : true_from_position;
+                //greater_position = to_Position > from_Position ? to_Position : from_Position;
+                greater_position = to_Position > true_from_position ? to_Position : true_from_position;
+                Task_Sub _task_sub = task_subList.get(from_Position);
+                //if(task_subList.get(from_Position).completed != task_subList.get(to_Positoin).getCompleted() && order_type == 1){
+                //    return true;
+                //}
+
+                Log.d("Moving Position", "      Grabbed task: " + task_subList.get(from_Position).note +" ]pos:"+ task_subList.get(from_Position).task_sub_position+"    to position: " + task_subList.get(to_Position).note);
+
+                task_subList.remove(from_Position);
+                task_subList.add(to_Position,_task_sub);
+                //Debug_sub_task_list_position();
+                //new_position_a = task_subList.get(from_Position).getTask_sub_position();
+                //new_position_a = task_subList.get(true_from_position).getTask_sub_position();
+                new_position_a = task_subList.get(from_Position).getTask_sub_position();
+                new_position_a_false = task_subList.get(original_from_position).getTask_sub_position();
+                new_position_b = task_subList.get(to_Position).getTask_sub_position();
+                Log.d("Moving Position", "      new_position_a: " + new_position_a + "    new_false_position_a: " + new_position_a_false+ "    new_position_b: " + new_position_b);
                 lesser_position_assigned = new_position_a < new_position_b ? new_position_a : new_position_b;
-                sub_taskID_a = task_subList.get(from_Positoin).getTask_Sub_id();
-                sub_taskID_b = task_subList.get(to_Positoin).getTask_Sub_id();
-                adapter.notifyItemMoved(from_Positoin,to_Positoin);
+                greater_position_assigned = new_position_a > new_position_b ? new_position_a : new_position_b;
+                //sub_taskID_a = task_subList.get(from_Position).getTask_Sub_id();
+                //sub_taskID_a = task_subList.get().getTask_Sub_id();
+                sub_taskID_a = task_subList.get(from_Position).getTask_Sub_id();
+                sub_taskID_b = task_subList.get(to_Position).getTask_Sub_id();
+                adapter.notifyItemMoved(from_Position,to_Position);
                 return true;
             }
 
@@ -168,7 +196,24 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                 viewHolder.itemView.setAlpha(1.0f);
 
                 //Save_Sub_Tasks_New_Positions();
-                Save_Sub_Tasks_New_Positions(lesser_position,lesser_position_assigned,sub_taskID_a, sub_taskID_b,new_position_a,new_position_b);
+                //Log.d("Task_Visualizer", "from: " +original_from_position + "    to: " + original_to_position);
+                Log.d("Moving Position", "      ORIGINAL_FROM VS TRUE_FROM:    original: " + original_from_position + "    true_from: " + true_from_position);
+                if(original_from_position == original_to_position) return;
+                if(true_from_position == original_to_position) return;
+
+
+
+
+                long start_nano_time = System.nanoTime();
+
+
+                Save_Sub_Tasks_New_Positions_6(lesser_position,greater_position,original_from_position,original_to_position,lesser_position_assigned,greater_position_assigned,sub_taskID_a, sub_taskID_b,new_position_a,new_position_b);
+                //Save_Sub_Tasks_New_Positions_4(lesser_position,greater_position,original_from_position,original_to_position,lesser_position_assigned,sub_taskID_a, sub_taskID_b,new_position_a,new_position_b);
+                //Save_Sub_Tasks_New_Positions(lesser_position,greater_position,original_from_position,original_to_position,lesser_position_assigned,sub_taskID_a, sub_taskID_b,new_position_a,new_position_b);
+
+                long end_nano_time = System.nanoTime();
+                long bench_time = end_nano_time - start_nano_time;
+                Log.d("TasksList","   Time Consumed in pin:  "+ bench_time/1000);
             }
         };
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
@@ -177,14 +222,806 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         Clear_Lists();
         Update_Recycler_View();
     }
-    private void Save_Sub_Tasks_New_Positions(int lesser_position,int lesser_position_assigned,long sub_taskID_a, long sub_taskID_b, int position_a, int position_b) {
-        DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, position_b);
+    private void Save_Sub_Tasks_New_Positions_6(int lesser_position,int greater_position, int original_from_position, int original_to_position,int lesser_position_assigned,int greater_position_assigned,long sub_taskID_a, long sub_taskID_b, int position_a, int position_b) {
 
-        for(int i = lesser_position; i <= task_subList.size()-1; i++){
+        true_from_position = -1;
 
-            sub_taskID_a = task_subList.get(i).getTask_Sub_id();
-            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, i + 1);
-            Log.d("Moving Position", "task: "+task_subList.get(i).note+ "    new position: "+(i+1));
+        if(order_type == 2 || !Is_Valid_To_Sort_Completed_Sub_Tasks()){
+            /// IF ALL ELEMENTS are completed or uncompleted:
+            for(int i = lesser_position; i <= task_subList.size()-1; i++){
+                sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, i + 1);
+                task_subList.get(i).setTask_sub_position(i+1);
+                Log.d("Moving Position", "  →task: "+task_subList.get(i).note+ "    new position: "+(i+1));
+                if(task_subList.get(i).task_sub_position == greater_position + 1) break;
+            }
+
+        }else if(order_type < 2){ /// Include Order_Type 1 and Order_Type 2:
+            int max_changes = greater_position_assigned - lesser_position_assigned;
+            int lower_start = lesser_position < lesser_position_assigned -1 ? lesser_position:lesser_position_assigned -1;
+            int higher_end = greater_position < greater_position_assigned -1 ? greater_position:greater_position_assigned -1;
+            int search_start = order_type == 1 ? 0:lower_start ;
+            int search_end = order_type == 0 ? task_subList.size() - 1: higher_end ;
+            int increaser = 1;
+
+            if(order_type == 1){
+                search_start = search_start ^ search_end;
+                search_end = search_start ^ search_end;
+                search_start = search_start ^ search_end;
+                increaser = -1;
+            }
+
+            /// Este metodo no tiene stop y se puede usar cuando cruza de un grupo a otro:
+            //Log.d("Moving Position", "      -------------------------------------Order Type 1:  ");
+            Log.d("Moving Position", "      -------------------------------------Order Type == 1 o Order Type == 2:  ");
+            Log.d("Moving Position", "      -------------------------------------Lower_strat: "+ lower_start + "    Higher_end: " + higher_end);
+
+            if(original_from_position < original_to_position) {/// Movimiento de Arriba hacia abajo
+                Log.d("Moving Position", "      User Arriba hacia abajo:  ");
+
+                if(position_a > position_b){/// Movimiento de Arriba hacia abajo
+                    Log.d("Moving Position", "      Posicion Real --  Arriba hacia abajo ↓:  ");
+                        for (int i = search_start;(order_type == 0) ? (i <= search_end) : (i >= search_end); i+= increaser) {
+                            Task_Sub task_sub = task_subList.get(i);
+
+                            sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                            Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                            if (task_sub.getTask_sub_position() <= position_a && task_sub.getTask_sub_position() > position_b) {
+                                task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                                DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                                Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                                Log.d("Moving Position", "          ↓: max_changes: " + max_changes );
+                                max_changes --;
+                                if(max_changes == 0) break;
+                            }
+                        }
+                    task_subList.get(original_to_position).setTask_sub_position(position_a);
+                    DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                    Log.d("Moving Position", "          ↓↓: task: " + task_subList.get(original_to_position).note + "    new position: " + task_subList.get(original_to_position).task_sub_position);
+                }else {
+                    /// Movimiento de Abajo hacia arriba
+                    Log.d("Moving Position", "      ***Posicion Real --  Abajo hacia arriba ↑:  ");
+                        for (int i = search_start;(order_type == 0) ? (i <= search_end) : (i >= search_end); i+= increaser) {
+
+                            Task_Sub task_sub = task_subList.get(i);
+                            sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                            Log.d("Moving Position", "      ↑: task_pos: "+task_subList.get(i).getTask_sub_position()+ "    •[ " + task_subList.get(i).note+ " ]•    lesser_pos: " + lesser_position);
+                            if(task_sub.getTask_sub_position() > position_a && task_sub.getTask_sub_position() < position_b ){
+                                task_sub.setTask_sub_position(task_sub.task_sub_position + 1) ;
+                                DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position );
+                                Log.d("Moving Position", "          ↑: task: "+task_subList.get(i).note+ "    new position: "+(task_sub.task_sub_position));
+                                max_changes --;
+                                if(max_changes == 0) break;
+                            }
+                        }
+                    task_subList.get(original_to_position).setTask_sub_position(position_a + 1);
+                    DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a + 1);
+                    Log.d("Moving Position", "          ↑↑↑: task: " + task_subList.get(original_to_position).note + "    new position: " + task_subList.get(original_to_position).task_sub_position);
+                }
+            }else{
+                Log.d("Moving Position", "      User Abajo hacia arriba:  ");
+                /// Movimiento de Abajo hacia arriba ↑
+                if(position_a < position_b){
+                    Log.d("Moving Position", "      Posicion Real --  Abajo hacia arriba ↑:  ");
+                        for(int i = search_start;(order_type == 0) ? (i <= search_end) : (i >= search_end); i+= increaser){
+
+                            Task_Sub task_sub = task_subList.get(i);
+                            sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                            Log.d("Moving Position", "      ↑: task_pos: "+task_subList.get(i).getTask_sub_position()+ "    •[ " + task_subList.get(i).note+ " ]•    lesser_pos: " + lesser_position);
+                            if(task_sub.getTask_sub_position() >= position_a && task_sub.getTask_sub_position() < position_b ){
+                                task_sub.setTask_sub_position(task_sub.task_sub_position + 1) ;
+                                DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position );
+                                Log.d("Moving Position", "          ↑: task: "+task_subList.get(i).note+ "    new position: "+(task_sub.task_sub_position));
+                                max_changes --;
+                                if(max_changes == 0) break;
+                            }
+                        }
+                    task_subList.get(original_to_position).setTask_sub_position(position_a);
+                    DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                    Log.d("Moving Position", "          ↑↑: task: " + task_subList.get(original_to_position).note + "    new position: " + task_subList.get(original_to_position).task_sub_position);
+
+                }else{
+                    Log.d("Moving Position", "      [↑*↓]***Posicion Real --  Arriba hacia abajo ↓:  ");
+                        for (int i = search_start;(order_type == 0) ? (i <= search_end)  : (i >= search_end); i+= increaser) {
+                            Task_Sub task_sub = task_subList.get(i);
+                            sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                            Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                            if (task_sub.getTask_sub_position() < position_a && task_sub.getTask_sub_position() > position_b) {
+                                task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                                DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                                Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                                max_changes --;
+                                if(max_changes == 0) break;
+                            }
+                        }
+                    task_subList.get(original_to_position).setTask_sub_position(position_a - 1);
+                    DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a - 1);
+                    Log.d("Moving Position", "          ↓↓↓: task: " + task_subList.get(original_to_position).note + "    new position: " + task_subList.get(original_to_position).task_sub_position);
+                }
+            }
+        }
+    }
+    private void Save_Sub_Tasks_New_Positions_5(int lesser_position,int greater_position, int original_from_position, int original_to_position,int lesser_position_assigned,int greater_position_assigned,long sub_taskID_a, long sub_taskID_b, int position_a, int position_b) {
+
+        true_from_position = -1;
+
+        if(order_type == 2 || !Is_Valid_To_Sort_Completed_Sub_Tasks()){
+            /// IF ALL ELEMENTS are completed or uncompleted:
+            for(int i = lesser_position; i <= task_subList.size()-1; i++){
+                sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, i + 1);
+                task_subList.get(i).setTask_sub_position(i+1);
+                Log.d("Moving Position", "  →task: "+task_subList.get(i).note+ "    new position: "+(i+1));
+                if(task_subList.get(i).task_sub_position == greater_position + 1) break;
+            }
+
+        }else if(order_type < 2){ /// Include Order_Type 1 and Order_Type 2:
+            int max_changes = greater_position_assigned - lesser_position_assigned;
+            /// Este metodo no tiene stop y se puede usar cuando cruza de un grupo a otro:
+            //Log.d("Moving Position", "      -------------------------------------Order Type 1:  ");
+            Log.d("Moving Position", "      -------------------------------------Order Type == 1 o Order Type == 2:  ");
+
+            if(original_from_position < original_to_position) {/// Movimiento de Arriba hacia abajo
+                Log.d("Moving Position", "      User Arriba hacia abajo:  ");
+
+                if(position_a > position_b){/// Movimiento de Arriba hacia abajo
+                    Log.d("Moving Position", "      Posicion Real --  Arriba hacia abajo ↓:  ");
+                    for (int i = 0; i <= task_subList.size() - 1 && max_changes > 0; i++) {
+                        Task_Sub task_sub = task_subList.get(i);
+
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() <= position_a && task_sub.getTask_sub_position() > position_b) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                            Log.d("Moving Position", "          ↓: max_changes: " + max_changes );
+                            max_changes --;
+                        }
+                    }
+                    task_subList.get(original_to_position).setTask_sub_position(position_a);
+                    DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                    Log.d("Moving Position", "          ↓↓: task: " + task_subList.get(original_to_position).note + "    new position: " + task_subList.get(original_to_position).task_sub_position);
+                }else {
+                    /// Movimiento de Abajo hacia arriba
+                    Log.d("Moving Position", "      ***Posicion Real --  Abajo hacia arriba ↑:  ");
+                    for(int i = 0; i <= task_subList.size()-1 && (max_changes - 1) > 0; i++){
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↑: task_pos: "+task_subList.get(i).getTask_sub_position()+ "    •[ " + task_subList.get(i).note+ " ]•    lesser_pos: " + lesser_position);
+                        if(task_sub.getTask_sub_position() > position_a && task_sub.getTask_sub_position() < position_b ){
+                            task_sub.setTask_sub_position(task_sub.task_sub_position + 1) ;
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position );
+                            Log.d("Moving Position", "          ↑: task: "+task_subList.get(i).note+ "    new position: "+(task_sub.task_sub_position));
+                            max_changes --;
+                        }
+                    }
+                    task_subList.get(original_to_position).setTask_sub_position(position_a + 1);
+                    DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a + 1);
+                    Log.d("Moving Position", "          ↑↑↑: task: " + task_subList.get(original_to_position).note + "    new position: " + task_subList.get(original_to_position).task_sub_position);
+                }
+            }else{
+                Log.d("Moving Position", "      User Abajo hacia arriba:  ");
+                /// Movimiento de Abajo hacia arriba ↑
+                if(position_a < position_b){
+                    Log.d("Moving Position", "      Posicion Real --  Abajo hacia arriba ↑:  ");
+                    for(int i = 0; i <= task_subList.size()-1 && max_changes > 0; i++){
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↑: task_pos: "+task_subList.get(i).getTask_sub_position()+ "    •[ " + task_subList.get(i).note+ " ]•    lesser_pos: " + lesser_position);
+                        if(task_sub.getTask_sub_position() >= position_a && task_sub.getTask_sub_position() < position_b ){
+                            task_sub.setTask_sub_position(task_sub.task_sub_position + 1) ;
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position );
+                            Log.d("Moving Position", "          ↑: task: "+task_subList.get(i).note+ "    new position: "+(task_sub.task_sub_position));
+                            max_changes --;
+                        }
+                    }
+                    task_subList.get(original_to_position).setTask_sub_position(position_a);
+                    DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                    Log.d("Moving Position", "          ↑↑: task: " + task_subList.get(original_to_position).note + "    new position: " + task_subList.get(original_to_position).task_sub_position);
+
+                }else{
+                    Log.d("Moving Position", "      [↑*↓]***Posicion Real --  Arriba hacia abajo ↓:  ");
+                    for (int i = 0; i <= task_subList.size() - 1 && (max_changes - 1) > 0; i++) {
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() < position_a && task_sub.getTask_sub_position() > position_b) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                            max_changes --;
+                        }
+                    }
+                    task_subList.get(original_to_position).setTask_sub_position(position_a - 1);
+                    DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a - 1);
+                    Log.d("Moving Position", "          ↓↓↓: task: " + task_subList.get(original_to_position).note + "    new position: " + task_subList.get(original_to_position).task_sub_position);
+                }
+            }
+        }
+    }
+    private void Save_Sub_Tasks_New_Positions_4(int lesser_position,int greater_position, int original_from_position, int original_to_position,int lesser_position_assigned,long sub_taskID_a, long sub_taskID_b, int position_a, int position_b) {
+
+        true_from_position = -1;
+
+        if(order_type == 2 || !Is_Valid_To_Sort_Completed_Sub_Tasks()){
+            /// IF ALL ELEMENTS are completed or uncompleted:
+            for(int i = lesser_position; i <= task_subList.size()-1; i++){
+
+                sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, i + 1);
+                task_subList.get(i).setTask_sub_position(i+1);
+                Log.d("Moving Position", "  →task: "+task_subList.get(i).note+ "    new position: "+(i+1));
+                if(task_subList.get(i).task_sub_position == greater_position + 1) break;
+            }
+
+        }else if(order_type < 2){ /// Include Order_Type 1 and Order_Type 2:
+            int max_changes = greater_position - lesser_position;
+        /// Este metodo no tiene stop y se puede usar cuando cruza de un grupo a otro:
+            //Log.d("Moving Position", "      -------------------------------------Order Type 1:  ");
+            Log.d("Moving Position", "      -------------------------------------Order Type == 1 o Order Type == 2:  ");
+
+            if(original_from_position < original_to_position) {/// Movimiento de Arriba hacia abajo
+                Log.d("Moving Position", "      User Arriba hacia abajo:  ");
+
+                if(position_a > position_b){/// Movimiento de Arriba hacia abajo
+                    Log.d("Moving Position", "      Posicion Real --  Arriba hacia abajo ↓:  ");
+                    for (int i = 0; i <= task_subList.size() - 1; i++) {
+                        Task_Sub task_sub = task_subList.get(i);
+
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() <= position_a && task_sub.getTask_sub_position() > position_b) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        }
+                    }
+                    task_subList.get(original_to_position).setTask_sub_position(position_a);
+                    DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                    Log.d("Moving Position", "          ↓↓: task: " + task_subList.get(original_to_position).note + "    new position: " + task_subList.get(original_to_position).task_sub_position);
+                }else {
+                    /// Movimiento de Abajo hacia arriba
+                    Log.d("Moving Position", "      ***Posicion Real --  Abajo hacia arriba ↑:  ");
+                    for(int i = 0; i <= task_subList.size()-1; i++){
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↑: task_pos: "+task_subList.get(i).getTask_sub_position()+ "    •[ " + task_subList.get(i).note+ " ]•    lesser_pos: " + lesser_position);
+                        if(task_sub.getTask_sub_position() > position_a && task_sub.getTask_sub_position() < position_b ){
+                            task_sub.setTask_sub_position(task_sub.task_sub_position + 1) ;
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position );
+                            Log.d("Moving Position", "          ↑: task: "+task_subList.get(i).note+ "    new position: "+(task_sub.task_sub_position));
+                        }
+                    }
+                    task_subList.get(original_to_position).setTask_sub_position(position_a + 1);
+                    DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a + 1);
+                    Log.d("Moving Position", "          ↑↑↑: task: " + task_subList.get(original_to_position).note + "    new position: " + task_subList.get(original_to_position).task_sub_position);
+                }
+            }else{
+                Log.d("Moving Position", "      User Abajo hacia arriba:  ");
+                /// Movimiento de Abajo hacia arriba ↑
+                if(position_a < position_b){
+                    Log.d("Moving Position", "      Posicion Real --  Abajo hacia arriba ↑:  ");
+                    for(int i = 0; i <= task_subList.size()-1; i++){
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↑: task_pos: "+task_subList.get(i).getTask_sub_position()+ "    •[ " + task_subList.get(i).note+ " ]•    lesser_pos: " + lesser_position);
+                        if(task_sub.getTask_sub_position() >= position_a && task_sub.getTask_sub_position() < position_b ){
+                            task_sub.setTask_sub_position(task_sub.task_sub_position + 1) ;
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position );
+                            Log.d("Moving Position", "          ↑: task: "+task_subList.get(i).note+ "    new position: "+(task_sub.task_sub_position));
+                        }
+                    }
+                    task_subList.get(original_to_position).setTask_sub_position(position_a);
+                    DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                    Log.d("Moving Position", "          ↑↑: task: " + task_subList.get(original_to_position).note + "    new position: " + task_subList.get(original_to_position).task_sub_position);
+
+                }else{
+                    Log.d("Moving Position", "      [↑*↓]***Posicion Real --  Arriba hacia abajo ↓:  ");
+                    for (int i = 0; i <= task_subList.size() - 1; i++) {
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() < position_a && task_sub.getTask_sub_position() > position_b) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        }
+                    }
+                    task_subList.get(original_to_position).setTask_sub_position(position_a - 1);
+                    DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a - 1);
+                    Log.d("Moving Position", "          ↓↓↓: task: " + task_subList.get(original_to_position).note + "    new position: " + task_subList.get(original_to_position).task_sub_position);
+                }
+            }
+        }
+    }
+    private void Save_Sub_Tasks_New_Positions_3(int lesser_position,int greater_position, int original_from_position, int original_to_position,int lesser_position_assigned,long sub_taskID_a, long sub_taskID_b, int position_a, int position_b) {
+
+        true_from_position = -1;
+
+        if(order_type == 2 || !Is_Valid_To_Sort_Completed_Sub_Tasks()){
+            /// IF ALL ELEMENTS are completed or uncompleted:
+            for(int i = lesser_position; i <= task_subList.size()-1; i++){
+
+                sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, i + 1);
+                task_subList.get(i).setTask_sub_position(i+1);
+                Log.d("Moving Position", "  →task: "+task_subList.get(i).note+ "    new position: "+(i+1));
+                if(task_subList.get(i).task_sub_position == greater_position + 1) break;
+            }
+
+        }else if(order_type < 2){ /// Include Order_Type 1 and Order_Type 2:
+            /// Este metodo no tiene stop y se puede usar cuando cruza de un grupo a otro:
+            //Log.d("Moving Position", "      -------------------------------------Order Type 1:  ");
+            Log.d("Moving Position", "      -------------------------------------Order Type == 1 o Order Type == 2:  ");
+            if(original_from_position < original_to_position) {/// Movimiento de Arriba hacia abajo
+                Log.d("Moving Position", "      User Arriba hacia abajo:  ");
+
+                if(position_a > position_b){/// Movimiento de Arriba hacia abajo
+                    Log.d("Moving Position", "      Posicion Real --  Arriba hacia abajo ↓:  ");
+                    for (int i = 0; i <= task_subList.size() - 1; i++) {
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() <= position_a && task_sub.getTask_sub_position() > position_b) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        } else if (task_sub.getTask_Sub_id() == sub_taskID_b) {
+                            task_sub.setTask_sub_position(position_a );
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        }
+                    }
+                }else {
+                    /// Movimiento de Abajo hacia arriba
+                    Log.d("Moving Position", "      ***Posicion Real --  Abajo hacia arriba ↑:  ");
+                    for(int i = 0; i <= task_subList.size()-1; i++){
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↑: task_pos: "+task_subList.get(i).getTask_sub_position()+ "    •[ " + task_subList.get(i).note+ " ]•    lesser_pos: " + lesser_position);
+                        if(task_sub.getTask_sub_position() > position_a && task_sub.getTask_sub_position() < position_b ){
+                            task_sub.setTask_sub_position(task_sub.task_sub_position + 1) ;
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position );
+                            Log.d("Moving Position", "          ↑: task: "+task_subList.get(i).note+ "    new position: "+(task_sub.task_sub_position));
+                        }else if(task_sub.getTask_Sub_id() == sub_taskID_b){
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                            task_sub.setTask_sub_position(position_a + 1);
+                            Log.d("Moving Position", "          ↑↑: task: "+task_sub.note+ "    new position: "+(task_sub.task_sub_position ));
+                        }
+                    }
+                }
+            }else{
+                Log.d("Moving Position", "      User Abajo hacia arriba:  ");
+                /// Movimiento de Abajo hacia arriba ↑
+                if(position_a < position_b){
+                    Log.d("Moving Position", "      Posicion Real --  Abajo hacia arriba ↑:  ");
+                    for(int i = 0; i <= task_subList.size()-1; i++){
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↑: task_pos: "+task_subList.get(i).getTask_sub_position()+ "    •[ " + task_subList.get(i).note+ " ]•    lesser_pos: " + lesser_position);
+                        if(task_sub.getTask_sub_position() >= position_a && task_sub.getTask_sub_position() < position_b ){
+                            task_sub.setTask_sub_position(task_sub.task_sub_position + 1) ;
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position );
+                            Log.d("Moving Position", "          ↑: task: "+task_subList.get(i).note+ "    new position: "+(task_sub.task_sub_position));
+                        }else if(task_sub.getTask_Sub_id() == sub_taskID_b){
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                            task_sub.setTask_sub_position(position_a );
+                            Log.d("Moving Position", "          ↑↑: task: "+task_sub.note+ "    new position: "+(task_sub.task_sub_position ));
+                        }
+                    }
+
+                }else{
+                    Log.d("Moving Position", "      [↑*↓]***Posicion Real --  Arriba hacia abajo ↓:  ");
+                    for (int i = 0; i <= task_subList.size() - 1; i++) {
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() < position_a && task_sub.getTask_sub_position() > position_b) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        } else if (task_sub.getTask_Sub_id() == sub_taskID_b) {
+                            task_sub.setTask_sub_position(position_a  - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private void Save_Sub_Tasks_New_Positions_2(int lesser_position,int greater_position, int original_from_position, int original_to_position,int lesser_position_assigned,long sub_taskID_a, long sub_taskID_b, int position_a, int position_b) {
+
+        true_from_position = -1;
+
+        if(order_type == 2 || !Is_Valid_To_Sort_Completed_Sub_Tasks()){
+            /// IF ALL ELEMENTS are completed or uncompleted:
+            for(int i = lesser_position; i <= task_subList.size()-1; i++){
+
+                sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, i + 1);
+                task_subList.get(i).setTask_sub_position(i+1);
+                Log.d("Moving Position", "  →task: "+task_subList.get(i).note+ "    new position: "+(i+1));
+                if(task_subList.get(i).task_sub_position == greater_position + 1) break;
+            }
+
+        }else if(order_type == 0){
+            /// Este metodo no tiene stop y se puede usar cuando cruza de un grupo a otro:
+
+            if(original_from_position < original_to_position){/// Movimiento de Arriba hacia abajo
+                Log.d("Moving Position", "      User Arriba hacia abajo:  ");
+
+                if(position_a > position_b){
+                    Log.d("Moving Position", "      Posicion Real --  Arriba hacia abajo ↓:  ");
+                    for (int i = 0; i <= task_subList.size() - 1; i++) {
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() <= position_a && task_sub.getTask_sub_position() > position_b ) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        } else if (task_sub.getTask_Sub_id() == sub_taskID_b) {
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                            task_sub.setTask_sub_position(position_a);
+                            Log.d("Moving Position", "          ↓↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        }
+                    }
+                }else{
+                    Log.d("Moving Position", "      ***Posicion Real --  Abajo hacia arriba ↑:  ");
+                    for (int i = 0; i <= task_subList.size() - 1; i++) {
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↑: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() > position_a && task_sub.getTask_sub_position() < position_b ) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position + 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↑: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        } else if (task_sub.getTask_Sub_id() == sub_taskID_b) {
+                            task_sub.setTask_sub_position(position_a + 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↑↑: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        }
+                    }
+                }
+
+            }else {
+                /// Movimiento de Abajo hacia arriba
+                if(position_a < position_b){
+                    Log.d("Moving Position", "      Posicion Real --  Abajo hacia arriba ↑:  ");
+                    for(int i = 0; i <= task_subList.size()-1; i++){
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↑: task_pos: "+task_subList.get(i).getTask_sub_position()+ "    •[ " + task_subList.get(i).note+ " ]•    lesser_pos: " + lesser_position);
+                        if(task_sub.getTask_sub_position() >= position_a && task_sub.getTask_sub_position() < position_b ){
+                            task_sub.setTask_sub_position(task_sub.task_sub_position+1) ;
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position );
+                            //task_subList.get(i).setTask_sub_position(task_sub.task_sub_position - 1);
+                            Log.d("Moving Position", "          ↑: task: "+task_subList.get(i).note+ "    new position: "+(task_sub.task_sub_position));
+                        }else if(task_sub.getTask_Sub_id() == sub_taskID_b){
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                            task_sub.setTask_sub_position(position_a);
+                            Log.d("Moving Position", "          ↑↑: task: "+task_sub.note+ "    new position: "+(task_sub.task_sub_position ));
+                        }
+                    }
+
+                }else{
+                    Log.d("Moving Position", "      ***Posicion Real --  Arriba hacia abajo ↓:  ");
+
+                    for (int i = 0; i <= task_subList.size() - 1; i++) {
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() < position_a && task_sub.getTask_sub_position() > position_b && task_sub.getTask_Sub_id() != sub_taskID_b) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        } else if (task_sub.getTask_Sub_id() == sub_taskID_b) {
+                            task_sub.setTask_sub_position(position_a - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        }
+                    }
+                }
+            }
+
+        }else if(order_type ==1){
+            /// Este metodo no tiene stop y se puede usar cuando cruza de un grupo a otro:
+            Log.d("Moving Position", "      -------------------------------------Order Type 1:  ");
+            if(original_from_position < original_to_position) {/// Movimiento de Arriba hacia abajo
+                Log.d("Moving Position", "      User Arriba hacia abajo:  ");
+
+                if(position_a > position_b){/// Movimiento de Arriba hacia abajo
+                    Log.d("Moving Position", "      Posicion Real --  Arriba hacia abajo ↓:  ");
+                    for (int i = 0; i <= task_subList.size() - 1; i++) {
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() <= position_a && task_sub.getTask_sub_position() > position_b) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        } else if (task_sub.getTask_Sub_id() == sub_taskID_b) {
+                            task_sub.setTask_sub_position(position_a );
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        }
+                    }
+                }else {
+                    /// Movimiento de Abajo hacia arriba
+                    Log.d("Moving Position", "      ***Posicion Real --  Abajo hacia arriba ↑:  ");
+                    for(int i = 0; i <= task_subList.size()-1; i++){
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↑: task_pos: "+task_subList.get(i).getTask_sub_position()+ "    •[ " + task_subList.get(i).note+ " ]•    lesser_pos: " + lesser_position);
+                        if(task_sub.getTask_sub_position() > position_a && task_sub.getTask_sub_position() < position_b ){
+                            task_sub.setTask_sub_position(task_sub.task_sub_position + 1) ;
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position );
+                            Log.d("Moving Position", "          ↑: task: "+task_subList.get(i).note+ "    new position: "+(task_sub.task_sub_position));
+                        }else if(task_sub.getTask_Sub_id() == sub_taskID_b){
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                            task_sub.setTask_sub_position(position_a + 1);
+                            Log.d("Moving Position", "          ↑↑: task: "+task_sub.note+ "    new position: "+(task_sub.task_sub_position ));
+                        }
+                    }
+                }
+            }else{
+                Log.d("Moving Position", "      User Abajo hacia arriba:  ");
+                /// Movimiento de Abajo hacia arriba ↑
+                if(position_a < position_b){
+                    Log.d("Moving Position", "      Posicion Real --  Abajo hacia arriba ↑:  ");
+                    for(int i = 0; i <= task_subList.size()-1; i++){
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↑: task_pos: "+task_subList.get(i).getTask_sub_position()+ "    •[ " + task_subList.get(i).note+ " ]•    lesser_pos: " + lesser_position);
+                        if(task_sub.getTask_sub_position() >= position_a && task_sub.getTask_sub_position() < position_b ){
+                            task_sub.setTask_sub_position(task_sub.task_sub_position + 1) ;
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position );
+                            Log.d("Moving Position", "          ↑: task: "+task_subList.get(i).note+ "    new position: "+(task_sub.task_sub_position));
+                        }else if(task_sub.getTask_Sub_id() == sub_taskID_b){
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                            task_sub.setTask_sub_position(position_a );
+                            Log.d("Moving Position", "          ↑↑: task: "+task_sub.note+ "    new position: "+(task_sub.task_sub_position ));
+                        }
+                    }
+
+                }else{
+                    Log.d("Moving Position", "      [↑*↓]***Posicion Real --  Arriba hacia abajo ↓:  ");
+                    for (int i = 0; i <= task_subList.size() - 1; i++) {
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() < position_a && task_sub.getTask_sub_position() > position_b) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        } else if (task_sub.getTask_Sub_id() == sub_taskID_b) {
+                            task_sub.setTask_sub_position(position_a  - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private void Save_Sub_Tasks_New_Positions(int lesser_position,int greater_position, int original_from_position, int original_to_position,int lesser_position_assigned,long sub_taskID_a, long sub_taskID_b, int position_a, int position_b) {
+        //DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, position_b);
+
+        true_from_position = -1;
+        //Log.d("Moving Position", "      ORIGINAL_TO VS TRUE_TO:    original: " + original_to_position + "    true_to: " + true_to_position);
+        //true_to_position = -1;
+
+        if(order_type == 2 || !Is_Valid_To_Sort_Completed_Sub_Tasks()){
+            //DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, position_b);
+            /// IF ALL ELEMENTS are completed or uncompleted:
+            Log.d("Moving Position", "      Pisicion B: " + position_b + "    Posicion A: " + position_a+ "    New Pos A: " + new_position_a+ "    New Pos B: " + new_position_b + "    New Pos false A: " + new_position_a_false +
+                    "\n          Lesser_Position: " + lesser_position  + "    Greater_Position: " + greater_position + "    original_from: " + original_from_position + "    original_to: " + original_to_position);
+            for(int i = lesser_position; i <= task_subList.size()-1; i++){
+
+                sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, i + 1);
+                task_subList.get(i).setTask_sub_position(i+1);
+                Log.d("Moving Position", "  →task: "+task_subList.get(i).note+ "    new position: "+(i+1));
+                if(task_subList.get(i).task_sub_position == greater_position + 1) break;
+            }
+
+        }else if(order_type == 0){
+            /// Este metodo no tiene stop y se puede usar cuando cruza de un grupo a otro:
+
+            Log.d("Moving Position", "      true from : " + true_from_position + "    original from: " + original_from_position + "    original_to: " + original_to_position );
+            Log.d("Moving Position", "      Pisicion B: " + position_b + "    Posicion A: " + position_a+ "    New Pos A: " + new_position_a+ "    New Pos B: " + new_position_b + "    New Pos false A: " + new_position_a_false +
+                    "\n          Lesser_Position: " + lesser_position  + "    Greater_Position: " + greater_position + "    original_from: " + original_from_position + "    original_to: " + original_to_position);
+            if(original_from_position < original_to_position){/// Movimiento de Arriba hacia abajo
+                    Log.d("Moving Position", "      User Arriba hacia abajo:  ");
+
+                if(position_a > position_b){
+                    Log.d("Moving Position", "      Posicion Real --  Arriba hacia abajo ↓:  ");
+                    for (int i = 0; i <= task_subList.size() - 1; i++) {
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() <= position_a && task_sub.getTask_sub_position() >= position_b && task_sub.getTask_Sub_id() != sub_taskID_b) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        } else if (task_sub.getTask_Sub_id() == sub_taskID_b) {
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                            task_sub.setTask_sub_position(position_a);
+                            Log.d("Moving Position", "          ↓↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        }
+                    }
+                }else{
+                    Log.d("Moving Position", "      ***Posicion Real --  Abajo hacia arriba ↑:  ");
+                    for (int i = 0; i <= task_subList.size() - 1; i++) {
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↑: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() > position_a && task_sub.getTask_sub_position() < position_b && task_sub.getTask_Sub_id() != sub_taskID_b) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position + 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↑: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        } else if (task_sub.getTask_Sub_id() == sub_taskID_b) {
+                            task_sub.setTask_sub_position(position_a + 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↑↑: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        }
+                    }
+                }
+
+            }else {
+                /// Movimiento de Abajo hacia arriba
+                Log.d("Moving Position", "      Abajo hacia arriba: ");
+                Log.d("Moving Position", "      Pisicion B: " + position_b + "    Posicion A: " + position_a+ "    New Pos A: " + new_position_a+ "    New Pos B: " + new_position_b + "    New Pos false A: " + new_position_a_false +
+                        "\n          Lesser_Position: " + lesser_position  + "    Greater_Position: " + greater_position + "    original_from: " + original_from_position + "    original_to: " + original_to_position);
+                /// !!!!!!!!!
+                if(position_a < position_b){
+                    Log.d("Moving Position", "      Posicion Real --  Abajo hacia arriba ↑:  ");
+                    for(int i = 0; i <= task_subList.size()-1; i++){
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↑: task_pos: "+task_subList.get(i).getTask_sub_position()+ "    •[ " + task_subList.get(i).note+ " ]•    lesser_pos: " + lesser_position);
+                        if(task_sub.getTask_sub_position() >= position_a && task_sub.getTask_sub_position() <= position_b && task_sub.getTask_Sub_id() != sub_taskID_b){
+                            task_sub.setTask_sub_position(task_sub.task_sub_position+1) ;
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position );
+                            //task_subList.get(i).setTask_sub_position(task_sub.task_sub_position - 1);
+                            Log.d("Moving Position", "          ↑: task: "+task_subList.get(i).note+ "    new position: "+(task_sub.task_sub_position));
+                        }else if(task_sub.getTask_Sub_id() == sub_taskID_b){
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                            task_sub.setTask_sub_position(position_a);
+                            Log.d("Moving Position", "          ↑↑: task: "+task_sub.note+ "    new position: "+(task_sub.task_sub_position ));
+                        }
+                    }
+
+                }else{
+                    Log.d("Moving Position", "      ***Posicion Real --  Arriba hacia abajo ↓:  ");
+
+                    for (int i = 0; i <= task_subList.size() - 1; i++) {
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() < position_a && task_sub.getTask_sub_position() > position_b && task_sub.getTask_Sub_id() != sub_taskID_b) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        } else if (task_sub.getTask_Sub_id() == sub_taskID_b) {
+                            task_sub.setTask_sub_position(position_a - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        }
+                    }
+                }
+            }
+
+        }else if(order_type ==1){
+            /// Este metodo no tiene stop y se puede usar cuando cruza de un grupo a otro:
+            Log.d("Moving Position", "      -------------------------------------Order Type 1:  ");
+            //if(original_from_position < original_to_position){/// Movimiento de Arriba hacia abajo
+            if(original_from_position < original_to_position) {/// Movimiento de Arriba hacia abajo
+                Log.d("Moving Position", "      User Arriba hacia abajo:  ");
+
+                if(position_a > position_b){/// Movimiento de Arriba hacia abajo
+                    Log.d("Moving Position", "      Posicion Real --  Arriba hacia abajo ↓:  ");
+                    for (int i = 0; i <= task_subList.size() - 1; i++) {
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() <= position_a && task_sub.getTask_sub_position() > position_b && task_sub.getTask_Sub_id() != sub_taskID_b) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        } else if (task_sub.getTask_Sub_id() == sub_taskID_b) {
+                            task_sub.setTask_sub_position(position_a );
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        }
+                    }
+                }else {
+                    /// Movimiento de Abajo hacia arriba
+                    Log.d("Moving Position", "      ***Posicion Real --  Abajo hacia arriba ↑:  ");
+                    for(int i = 0; i <= task_subList.size()-1; i++){
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↑: task_pos: "+task_subList.get(i).getTask_sub_position()+ "    •[ " + task_subList.get(i).note+ " ]•    lesser_pos: " + lesser_position);
+                        if(task_sub.getTask_sub_position() > position_a && task_sub.getTask_sub_position() < position_b && task_sub.getTask_Sub_id() != sub_taskID_b){
+                            task_sub.setTask_sub_position(task_sub.task_sub_position + 1) ;
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position );
+                            //task_subList.get(i).setTask_sub_position(task_sub.task_sub_position - 1);
+                            Log.d("Moving Position", "          ↑: task: "+task_subList.get(i).note+ "    new position: "+(task_sub.task_sub_position));
+                        }else if(task_sub.getTask_Sub_id() == sub_taskID_b){
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                            task_sub.setTask_sub_position(position_a + 1);
+                            Log.d("Moving Position", "          ↑↑: task: "+task_sub.note+ "    new position: "+(task_sub.task_sub_position ));
+                        }
+                    }
+                }
+            }else{
+                Log.d("Moving Position", "      User Arriba hacia abajo:  ");
+                /// Movimiento de Abajo hacia arriba
+                if(position_a < position_b){
+                    Log.d("Moving Position", "      Posicion Real --  Abajo hacia arriba ↑:  ");
+                    for(int i = 0; i <= task_subList.size()-1; i++){
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↑: task_pos: "+task_subList.get(i).getTask_sub_position()+ "    •[ " + task_subList.get(i).note+ " ]•    lesser_pos: " + lesser_position);
+                        if(task_sub.getTask_sub_position() >= position_a && task_sub.getTask_sub_position() < position_b && task_sub.getTask_Sub_id() != sub_taskID_b){
+                            task_sub.setTask_sub_position(task_sub.task_sub_position + 1) ;
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position );
+                            //task_subList.get(i).setTask_sub_position(task_sub.task_sub_position - 1);
+                            Log.d("Moving Position", "          ↑: task: "+task_subList.get(i).note+ "    new position: "+(task_sub.task_sub_position));
+                        }else if(task_sub.getTask_Sub_id() == sub_taskID_b){
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, position_a);
+                            task_sub.setTask_sub_position(position_a );
+                            Log.d("Moving Position", "          ↑↑: task: "+task_sub.note+ "    new position: "+(task_sub.task_sub_position ));
+                        }
+                    }
+
+                }else{
+                    Log.d("Moving Position", "      ***Posicion Real --  Arriba hacia abajo ↓:  ");
+                    for (int i = 0; i <= task_subList.size() - 1; i++) {
+
+                        Task_Sub task_sub = task_subList.get(i);
+                        sub_taskID_a = task_subList.get(i).getTask_Sub_id();
+                        Log.d("Moving Position", "      ↓: task_pos: " + task_subList.get(i).getTask_sub_position() + "    •[ " + task_subList.get(i).note + " ]•    lesser_pos: " + lesser_position);
+                        if (task_sub.getTask_sub_position() < position_a && task_sub.getTask_sub_position() >= position_b && task_sub.getTask_Sub_id() != sub_taskID_b) {
+                            task_sub.setTask_sub_position(task_sub.task_sub_position - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_a, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        } else if (task_sub.getTask_Sub_id() == sub_taskID_b) {
+                            task_sub.setTask_sub_position(position_a  - 1);
+                            DB_T.Modify_Sub_Task_New_Position(sub_taskID_b, task_sub.task_sub_position);
+                            Log.d("Moving Position", "          ↓↓: task: " + task_sub.note + "    new position: " + (task_sub.task_sub_position));
+                        }
+                    }
+
+                }
+            }
         }
     }
 
@@ -385,6 +1222,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                     fl_Set_Order.setBackground(ContextCompat.getDrawable(fl_Set_Order.getContext(),R.drawable.sort_icon_original_sort_2));
 
                 }
+                Debug_sub_task_list_position();
             }
         });
         fl_Main_Task_Complete.setOnClickListener(new View.OnClickListener() {
@@ -402,6 +1240,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                 Update_Date();
                 fl_Set_Order.setVisibility(Is_Valid_To_Sort_Completed_Sub_Tasks()? View.VISIBLE : View.GONE);
                 Sort_Sub_Task_According_Original_Order();
+                Debug_sub_task_list_position();
             }
         });
         fl_Change_Pin_Status_Ghost.setOnClickListener(new View.OnClickListener() {
@@ -740,13 +1579,14 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
             received_task_id = task.task_id;
         }
         int _new_sub_task_position = DB_T.Verify_Top_Sub_Task_Position(received_task_id) + 1;
+        Log.d("Task_Visualizer", "--------------new sub task position: " +_new_sub_task_position);
         long task_sub_new_id = DB_T.Insert_Task_Sub_L(received_task_id,"",false,_new_sub_task_position);
         if(task_sub_new_id >= 0){
             Task_Sub task_sub = new Task_Sub(task_sub_new_id,
                     received_task_id,
                     "",
                     false,
-                    task_subList.size());
+                    _new_sub_task_position);
 
             selected_list.add(false);
             task_subList.add(task_sub);
@@ -785,11 +1625,11 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         if (task.completed) {
             //!!--Verificar los colores correctos:
             fl_Main_Task_Complete.setBackground(ContextCompat.getDrawable(this,R.drawable.icon_completed_task_test_11));
-            fl_Main_Task_Complete.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.ex_green)));
+            fl_Main_Task_Complete.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.task_completed_color)));
         } else {
             //!!--Verificar los colores correctos:
             fl_Main_Task_Complete.setBackground(ContextCompat.getDrawable(this,R.drawable.icon_complete_task_test_4));
-            fl_Main_Task_Complete.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.gray_light_3)));
+            fl_Main_Task_Complete.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.task_uncompleted_color)));
         }
 
         if(task.has_sub_tasks){
@@ -1083,6 +1923,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         change_in_task = true;
     }
 
+
     @Override
     public void Mark_Sub_Task_As_Completed(int position) {
         //!!--Esto est'a funcionando como un auxiliar, se debe primero captar la modificacion y si es valida entonces se debe guardar en la base de datos, no al revez.
@@ -1105,8 +1946,17 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
 
         ///
         Set_Sub_Tasks_Order_When_Complete(position);
+        Debug_sub_task_list_position();
         change_in_task = true;
+        ///
+        //recyclerView.smoothScrollToPosition(0);
 
+    }
+    private void Debug_sub_task_list_position() {
+        for(int i = 0; i <= task_subList.size()-1; i++){
+            Task_Sub task_sub = task_subList.get(i);
+            Log.d("Task Visualizer", "        ••: " + task_sub.note + "    -pos: "+task_sub.getTask_sub_position());
+        }
     }
 
 
@@ -1127,7 +1977,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         if(DB_T.Modify_Main_Task_Completed_Status(task.task_id, task.completed, _current_time)) {
             //!!--Verificar los colores correctos
             fl_Main_Task_Complete.setBackground(ContextCompat.getDrawable(this, task.completed ?R.drawable.icon_completed_task_test_11 : R.drawable.icon_complete_task_test_4));///Ternary Operator
-            fl_Main_Task_Complete.setBackgroundTintList(ColorStateList.valueOf(getColor(task.completed ? R.color.ex_green : R.color.gray_light_3)));///Ternary Operator
+            fl_Main_Task_Complete.setBackgroundTintList(ColorStateList.valueOf(getColor(task.completed ? R.color.task_completed_color : R.color.task_uncompleted_color)));///Ternary Operator
             task.date_completed = _current_time;
             Update_Date();
         }
@@ -1374,8 +2224,8 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         }
         Log.d("Task Visualizer", "Out_Of_Activity: now is something written" + now_is_something_written);
 
-        //if (!now_is_something_written) {
-        if (et_Task_main.getText().toString().isEmpty() ) {
+        if (!now_is_something_written) {
+        //if (et_Task_main.getText().toString().isEmpty() ) {
             Delete_Task();
         } else {
             if (tv_Date.getText().toString().isEmpty()) {

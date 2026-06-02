@@ -43,19 +43,34 @@
             android:textSize="24sp"
             android:textColor="@color/item_visualizer_title_text_color"
             android:textStyle="normal" />
-        <FrameLayout
-            android:id="@+id/Fl_Unfold"
-            android:layout_width="16dp"
-            android:layout_height="10dp"
-            android:layout_gravity="bottom|right"
-            android:layout_marginRight="58dp"
-            android:layout_marginTop="5dp"
+        <LinearLayout
+            android:id="@+id/Layout_Unfold_Ghost"
+            android:layout_width="35dp"
+            android:layout_height="30dp"
+            android:layout_gravity="end|top"
+            android:layout_marginTop="0dp"
             android:layout_marginBottom="0dp"
-            android:clickable="false"
-            android:focusable="false"
-            android:background="@drawable/icon_desplegar_test_5"
-            android:backgroundTint="@color/ex_green"
-            android:longClickable="false" />
+            android:layout_marginRight="58dp"
+            android:gravity="fill"
+            android:orientation="vertical"
+            >
+            <FrameLayout
+                android:id="@+id/Fl_Unfold"
+                android:layout_width="16dp"
+                android:layout_height="10dp"
+                android:layout_gravity="bottom|right"
+                android:layout_marginRight="9dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="0dp"
+                android:clickable="false"
+                android:focusable="false"
+                android:background="@drawable/icon_desplegar_test_5"
+                android:backgroundTint="@color/ex_green"
+                android:longClickable="false" />
+
+        </LinearLayout>
+
+
 
     </LinearLayout>
     <LinearLayout
@@ -173,6 +188,7 @@
             android:backgroundTint="@color/item_visualizer_icon_reminder_tint"
             android:clickable="false"
             android:focusable="false"
+            android:visibility="gone"
             android:longClickable="false" />
     </LinearLayout>
     <LinearLayout
@@ -195,6 +211,7 @@
             android:layout_marginBottom="0dp"
             android:clickable="false"
             android:focusable="false"
+            android:visibility="gone"
             android:longClickable="false" />
     </LinearLayout>
     <LinearLayout

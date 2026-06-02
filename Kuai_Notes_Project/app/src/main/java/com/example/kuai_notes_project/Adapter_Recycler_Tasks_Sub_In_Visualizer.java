@@ -88,11 +88,11 @@ public class Adapter_Recycler_Tasks_Sub_In_Visualizer extends RecyclerView.Adapt
         if(task_subList.get(position).completed){
             Drawable background = ContextCompat.getDrawable(context,R.drawable.icon_completed_task_test_11);
             taskHolder.fl_task_sub_completed.setBackground(drw_completed);
-            taskHolder.fl_task_sub_completed.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.ex_green)));
+            taskHolder.fl_task_sub_completed.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.task_completed_color)));
         }else{
             Drawable background = ContextCompat.getDrawable(context,R.drawable.icon_complete_task_test_4);
             taskHolder.fl_task_sub_completed.setBackground(drw_uncompleted);
-            taskHolder.fl_task_sub_completed.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.gray_light_3)));
+            taskHolder.fl_task_sub_completed.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.task_uncompleted_color)));
         }
 
         taskHolder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),is_selected   ? R.color.item_background_selected : R.color.white_sand_light )));

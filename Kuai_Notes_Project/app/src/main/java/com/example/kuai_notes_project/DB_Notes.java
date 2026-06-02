@@ -65,13 +65,21 @@ public class DB_Notes extends SQLiteOpenHelper {
                 "INSERT INTO Notes_fts(docid, title, note, deleted) VALUES(new._id, new.title, new.note, new.deleted); "+
                 "END;");
 
-        //DB_N.execSQL("Create TRIGGER Notes_after_delete AFTER DELETE ON Notes BEGIN " +
-        //        "DELETE FROM Notes_fts WHERE docid = old._id; "+
-        //        "END;");
+        DB_N.execSQL("Create TRIGGER Notes_before_update BEFORE UPDATE OF title, note, deleted ON Notes BEGIN " +
+                //"UPDATE  Notes_fts SET title = new.title, note = new.note WHERE docid = old._id; "+
+                "DELETE FROM Notes_fts WHERE docid = old._id; "+
+                "END;");
+        DB_N.execSQL("Create TRIGGER Notes_after_update AFTER UPDATE OF title, note, deleted ON Notes BEGIN " +
+                //"UPDATE  Notes_fts SET title = new.title, note = new.note WHERE docid = old._id; "+
+                "INSERT INTO Notes_fts(docid, title, note, deleted) VALUES(new._id, new.title, new.note, new.deleted); "+
+                "END;");
+        ///DB_N.execSQL("Create TRIGGER Notes_after_update AFTER UPDATE OF title, note, deleted ON Notes BEGIN " +
+        ///        //"UPDATE  Notes_fts SET title = new.title, note = new.note WHERE docid = old._id; "+
+        ///        "END;");
+        DB_N.execSQL("Create TRIGGER Notes_after_delete AFTER DELETE ON Notes BEGIN " +
+                "DELETE FROM Notes_fts WHERE docid = old._id; "+
+                "END;");
 
-        //DB_N.execSQL("Create TRIGGER Notes_after_update AFTER UPDATE ON Notes BEGIN " +
-        //        "UPDATE  Notes_fts SET title = new.title, note = new.note WHERE docid = old._id; "+
-        //        "END;");
     }
 
     @Override
@@ -334,6 +342,24 @@ public class DB_Notes extends SQLiteOpenHelper {
         SQLiteDatabase DB_N = this.getWritableDatabase();
         ContentValues contentValues = ContentValues_Complete_Setter(current_date,title,note,pin,
                 0,0,0,0,expire_days,1);
+
+        int result = DB_N.update("Notes", contentValues, "_id = ? ", new String[]{String.valueOf(note_id)});
+        Result_Log_treatment(result, "Send_Note_To_Trash");
+        return result > 0;
+    }
+    public Boolean Send_Note_To_Trash_With_Out_DataBase_Modification(long note_id, boolean pin, int expire_days){
+
+        SQLiteDatabase DB_N = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("pin", pin);
+        contentValues.put("reminder", 0);
+        contentValues.put("reminder_type", 0);
+        contentValues.put("reminder_interval", 0);
+        //!!--categoria_id no implementada todavia
+        contentValues.put("category_id",0);
+        //!!--expire_days no implementada todavia
+        contentValues.put("expire_days",expire_days);
+        contentValues.put("deleted",1);
 
         int result = DB_N.update("Notes", contentValues, "_id = ? ", new String[]{String.valueOf(note_id)});
         Result_Log_treatment(result, "Send_Note_To_Trash");

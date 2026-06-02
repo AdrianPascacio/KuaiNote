@@ -66,6 +66,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
         /// Completed icon:
         drw_completed = ContextCompat.getDrawable(context, R.drawable.icon_completed_task_test_11);
         drw_uncompleted = ContextCompat.getDrawable(context, R.drawable.icon_complete_task_test_4);
+        //drw_completed = DrawableCompat.wrap(drw_completed.mutate());
     }
 
 
@@ -105,6 +106,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
 
         boolean isSelected = selected_id.get(position);
         Drawable background;
+        Drawable completed_icon;
         if( getItemViewType(position) == TYPE_TASK_MAIN){
 
 
@@ -125,19 +127,26 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             taskHolder.title_id.setVisibility(View.VISIBLE);
             taskHolder.title_id.setText(task_elements.get(position).getContent() );
 
-            taskHolder.fl_reminder.setVisibility(isReminded ? View.VISIBLE : View.GONE); ///Ternary Operator
+            //taskHolder.fl_reminder.setVisibility(isReminded ? View.VISIBLE : View.GONE); ///Ternary Operator
+            //taskHolder.fl_reminder_activated.setVisibility(isReminded ? View.VISIBLE : View.GONE); ///Ternary Operator
 
-            taskHolder.fl_complete_mark.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), task.completed ? R.color.ex_green : R.color.gray_light_3 ))); ///Ternary Operator
-            taskHolder.fl_complete_mark.setBackground( task.completed ? drw_completed : drw_uncompleted); ///Ternary Operator
+            completed_icon = task.completed ? drw_completed.getConstantState().newDrawable().mutate() : drw_uncompleted.getConstantState().newDrawable().mutate();
+            //taskHolder.fl_complete_mark.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), task.completed ? R.color.ex_green : R.color.gray_light_3 ))); ///Ternary Operator
+            taskHolder.fl_complete_mark.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), task.completed ? R.color.task_completed_color : R.color.task_uncompleted_color ))); ///Ternary Operator
+            //taskHolder.fl_complete_mark.setBackground( task.completed ? drw_completed : drw_uncompleted); ///Ternary Operator
+            taskHolder.fl_complete_mark.setBackground( completed_icon); ///Ternary Operator
 
             if(isHas_Sub_Tasks){
                 taskHolder.fl_unfold.setVisibility(View.VISIBLE);
-                taskHolder.fl_unfold.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), task.unfolded ? R.color.ex_green : R.color.gray_light_3 ))); ///Ternary Operator
+                taskHolder.ghost_unfold.setVisibility(View.VISIBLE);
+                taskHolder.fl_unfold.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), task.unfolded ? R.color.green_dark_cha : R.color.gray_light_2 ))); ///Ternary Operator
             }else{
                 taskHolder.fl_unfold.setVisibility(View.GONE);
+                taskHolder.ghost_unfold.setVisibility(View.GONE);
             }
 
             taskHolder.fl_pin_icon_activated.setVisibility( !isSelected && isPinned ? View.VISIBLE : View.GONE); ///Ternary Operator
+            taskHolder.fl_reminder_activated.setVisibility( isReminded  && (!isSelected || multi_selection_state)? View.VISIBLE : View.GONE); ///Ternary Operator
             taskHolder.fl_delete_ghost.setVisibility(isSelected && !multi_selection_state ? View.VISIBLE : View.GONE);
             taskHolder.fl_delete.setVisibility(isSelected  && !multi_selection_state ? View.VISIBLE : View.GONE);
             taskHolder.fl_pin.setVisibility(isSelected  && !multi_selection_state ? View.VISIBLE : View.GONE);
@@ -181,8 +190,9 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
 
             Task_Sub task_sub = (Task_Sub) task_elements.get(position);
 
-            subTaskHolder.fl_task_sub_completed.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),task_sub.completed ? R.color.ex_green : R.color.gray_light_3 ))); ///Ternary Operator
-            subTaskHolder.fl_task_sub_completed.setBackground( task_sub.completed ? drw_completed : drw_uncompleted ); ///Ternary Operator
+            completed_icon = task_sub.completed ? drw_completed.getConstantState().newDrawable().mutate() : drw_uncompleted.getConstantState().newDrawable().mutate();
+            subTaskHolder.fl_task_sub_completed.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),task_sub.completed ? R.color.task_completed_color : R.color.task_uncompleted_color ))); ///Ternary Operator
+            subTaskHolder.fl_task_sub_completed.setBackground( completed_icon); ///Ternary Operator
 
             subTaskHolder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_sand_light )));
 
@@ -223,6 +233,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
     public class MyViewHolder_Task_Main extends RecyclerView.ViewHolder {
         TextView date_id, title_id, note_preview_id;
         View layout_btn_options, layout_btn_options_ghost, layout_global_item, layout_reminder, layout_options_reminder_ghost;
+        View ghost_unfold;
         FrameLayout fl_delete, fl_reminder, fl_pin ,fl_delete_ghost, fl_reminder_ghost, fl_pin_ghost ,  fl_pin_icon_activated, fl_reminder_activated;
         FrameLayout fl_complete_mark, fl_unfold;
         FrameLayout fl_item;
@@ -249,6 +260,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             fl_item = itemView.findViewById((R.id.Layout_Item));
             fl_complete_mark = itemView.findViewById((R.id.Fl_Completed_Mark));
             fl_unfold = itemView.findViewById((R.id.Fl_Unfold));
+            ghost_unfold = itemView.findViewById(R.id.Layout_Unfold_Ghost);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -296,7 +308,18 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
                     }
                 }
             });
-            itemView.findViewById(R.id.Fl_Completed_Mark).setOnClickListener(new View.OnClickListener(){
+            //itemView.findViewById(R.id.Fl_Completed_Mark).setOnClickListener(new View.OnClickListener(){
+            //    @Override
+            //    public void onClick(View v){
+            //        if (recyclerTasksListInterface != null){
+            //            int pos = getAbsoluteAdapterPosition();
+            //            if (pos != RecyclerView.NO_POSITION){
+            //                recyclerTasksListInterface.Complete_Main_Task(pos);
+            //            }
+            //        }
+            //    }
+            //});
+            itemView.findViewById(R.id.Fl_Completed_Mark_Ghost).setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v){
                     if (recyclerTasksListInterface != null){
@@ -307,7 +330,18 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
                     }
                 }
             });
-            itemView.findViewById(R.id.Fl_Unfold).setOnClickListener(new View.OnClickListener(){
+            //itemView.findViewById(R.id.Fl_Unfold).setOnClickListener(new View.OnClickListener(){
+            //    @Override
+            //    public void onClick(View v){
+            //        if (recyclerTasksListInterface != null){
+            //            int pos = getAbsoluteAdapterPosition();
+            //            if (pos != RecyclerView.NO_POSITION){
+            //                recyclerTasksListInterface.Unfold(pos,task_elements.get(pos).getId());
+            //            }
+            //        }
+            //    }
+            //});
+            itemView.findViewById(R.id.Layout_Unfold_Ghost).setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v){
                     if (recyclerTasksListInterface != null){
@@ -371,7 +405,18 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
                     return false;
                 }
             });
-            itemView.findViewById(R.id.Fl_Completed_Mark).setOnClickListener(new View.OnClickListener(){
+            //itemView.findViewById(R.id.Fl_Completed_Mark).setOnClickListener(new View.OnClickListener(){
+            //    @Override
+            //    public void onClick(View v){
+            //        if (recyclerTasksSubListInterface != null){
+            //            int pos = getAbsoluteAdapterPosition();
+            //            if (pos != RecyclerView.NO_POSITION){
+            //                recyclerTasksSubListInterface.Complete_Sub_Task(pos);
+            //            }
+            //        }
+            //    }
+            //});
+            itemView.findViewById(R.id.Fl_Completed_Mark_Ghost).setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v){
                     if (recyclerTasksSubListInterface != null){

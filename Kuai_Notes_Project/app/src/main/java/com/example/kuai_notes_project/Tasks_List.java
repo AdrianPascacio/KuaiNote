@@ -69,6 +69,9 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
     private boolean pin_initial_state_MS= false;
     private boolean selection_mode = false;
     private boolean pin_multi_change = false;
+
+
+    private int order_type = 0;
     ///private AdapterView.OnItemClickListener listener;
     ///public void setOnItemClickListener(AdapterView.OnItemClickListener listener){
     ///    this.listener = listener;
@@ -135,6 +138,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         fl_generate_random_content = findViewById(R.id.FrameLayout_Generate_Random_Content);
         fl_generate_stable_content = findViewById(R.id.FrameLayout_Generate_Stable_Content);
         fl_delete_all_tasks_database = findViewById(R.id.FrameLayout_Delete_All_Tasks_DataBase);
+
 
         floating_button = findViewById(R.id.floatingActionButton);
 
@@ -207,7 +211,7 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
         Random_G.Random_Tasks_Generator(this,10);
     }
     private void Generate_Stable_Content_For_Test() {
-        Stable_G.Stable_Tasks_Generator(this,10, 10,0,100);
+        Stable_G.Stable_Tasks_Generator(this,10, 100,0,25);
     }
     private void Generate_Random_Content_For_Test_Old() {
         String seed_text = "Una mañana, tras un sueño intranquilo, Gregorio Samsa se despertó convertido en un monstruoso insecto. Estaba echado de espaldas sobre un duro caparazón y, al alzar la cabeza, vio su vientre convexo y oscuro, surcado por curvadas callosidades, sobre el que casi no se aguantaba la colcha, que estaba a punto de escurrirse hasta el suelo. Numerosas patas, penosamente delgadas en comparación con el grosor normal de sus piernas, se agitaban sin concierto. —¿Qué me ha ocurrido? No estaba soñando. Su habitación, una habitación normal, aunque muy pequeña, tenía el aspecto habitual. Sobre la mesa había desparramado un muestrario de paños —Samsa era viajante de comercio—, y de la pared colgaba una estampa recientemente recortada de una revista ilustrada y puesta en un marco dorado. La estampa mostraba a una mujer tocada con un gorro de pieles, envuelta en una estola también de pieles, y que, muy erguida, esgrimía un amplio manguito, asimismo de piel, que ocultaba todo su antebrazo. Gregorio miró hacia la ventana; estaba nublado, y sobre el cinc del alféizar repiqueteaban las gotas de lluvia, lo que le hizo sentir una gran melancolía. «Bueno —pensó—; ¿y si siguiese durmiendo un rato y me olvidase de todas estas locuras?» Pero no era posible, pues Gregorio tenía la costumbre de dormir sobre el lado derecho, y su actual estado no le permitía adoptar tal postura. Por más que se esforzara volvía a quedar de espaldas. Intentó en vano esta operación numerosas veces; cerró los ojos para no tener que ver aquella confusa agitación de patas, que no cesó hasta que notó en el costado un dolor leve y punzante, un dolor jamás sentido hasta entonces. —¡Qué cansada es la profesión que he elegido! —se dijo—. Siempre de viaje. Las preocupaciones son mucho mayores cuando se trabaja fuera, por no hablar de las molestias propias de los viajes: estar pendiente de los enlaces de los trenes; la comida mala, irregular; relaciones que cambian constantemente, que nunca llegan a ser verdaderamente cordiales, y en las que no tienen cabida los sentimientos. ¡Al diablo con todo! Sintió en el vientre una ligera picazón. Lentamente, se estiró sobre la espalda en dirección a la cabecera de la cama, para poder alzar mejor la cabeza. Vio que el sitio que le picaba estaba cubierto de extraños puntitos blancos. Intentó rascarse con una pata; pero tuvo que retirarla inmediatamente, pues el roce le producía escalofríos. —Estoy atontado de tanto madrugar —se dijo—. No duermo lo suficiente. Hay viajantes que viven mucho mejor. Cuando a media mañana regreso a la fonda para anotar los pedidos, me los encuentro desayunando cómodamente sentados. Si yo, con el jefe que tengo, hiciese lo mismo, me despedirían en el acto. Lo cual, probablemente sería lo mejor que me podría pasar. Si no fuese por mis padres, ya hace tiempo que me hubiese marchado. Hubiera ido a ver el director y le habría dicho todo lo que pienso. Se caería de la mesa, ésa sobre la que se sienta para, desde aquella altura, hablar a los empleados, que, como es sordo, han de acercársele mucho. Pero todavía no he perdido la esperanza. En cuanto haya reunido la cantidad necesaria para pagarle la deuda de mis padres —unos cinco o seis años todavía—, me va a oír. Bueno; pero, por ahora, lo que tengo que hacer es levantarme, que el tren sale a las cinco. Eran más de las seis y media, y las manecillas seguían avanzando tranquilamente. En realidad, ya eran casi las siete menos cuarto. ¿Es que no había sonado el despertador? Desde la cama se veía que estaba puesto a las cuatro; por tanto, tenía que haber sonado. Pero ¿era posible seguir durmiendo a pesar de aquel sonido que hacía estremecer hasta los muebles? Su sueño no había sido tranquilo. Pero, por eso mismo, debía de haber dormido al final más profundamente. ¿Qué podía hacer ahora? El tren siguiente salía a las siete; para cogerlo tendría que darse muchísima prisa. El muestrario no estaba aún empaquetado, y él mismo no se sentía nada dispuesto. Además, aunque alcanzase el tren, no evitaría reprimenda del amo, pues el mozo del almacén, que había acudido al tren a las cinco,";
@@ -488,6 +492,39 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
                 DB_T.Modify_All_Sub_Task_Completed_Status(_task.task_id, _task.completed);
             }
         }
+
+        Sort_Sub_Task_According_Original_Order(position);
+    }
+    private void Sort_Sub_Task_According_Original_Order(int position) {
+        //if (!Find_Completion_Ratio()) return;
+        if(order_type == 2) return;
+        int first_sub = position + 1;
+        int last_sub = position;
+        Log.d("Task Visualizer", "      before while:  last_sub_value: "+last_sub);
+        while(task_elements.size() - 1 >= (last_sub + 1) && task_elements.get(last_sub + 1).getViewType() == 1){
+            Log.d("Task Visualizer", "      on while: last_sub_value: " + last_sub );
+            last_sub++;
+        }
+        //int sub_Task_size = task_subList.size();
+        Log.d("Task Visualizer", "      first: " + first_sub + "   last sub: " + last_sub);
+        if ((last_sub - first_sub) < 1) return;
+        Log.d("Task Visualizer", "      Sort_subTask According original order: ");
+        int looking_position = 0 ;
+        for (int i = first_sub; i <= last_sub; i++) {
+            looking_position ++;
+            Task_Sub task_sub_i = (Task_Sub) task_elements.get(i);
+            if (task_sub_i.getTask_sub_position() != (looking_position)) {
+                for (int j = i + 1; j <= last_sub; j++) {
+                    Task_Sub task_sub_j = (Task_Sub) task_elements.get(j);
+                    if (task_sub_j.getTask_sub_position() == (looking_position)) {
+                        task_elements.remove(j);
+                        task_elements.add(i, task_sub_j);
+                        adapter.notifyItemMoved(j, i);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -508,6 +545,8 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
             }
         }
 
+        Set_Sub_Tasks_Order_When_Complete(position);
+
         if(result > 0){
             if(_task_main.completed) return;
             Change_Complete_Main_Task_Status(_task_main, _task_main_position);
@@ -515,7 +554,63 @@ public class Tasks_List extends AppCompatActivity implements Recycler_Tasks_List
             if(!_task_main.completed) return;
             Change_Complete_Main_Task_Status(_task_main, _task_main_position);
         }
+
+
     }
+
+
+    private void Set_Sub_Tasks_Order_When_Complete(int position) {
+        Log.d("TasksList","   -Set_Sub_Tasks_Order_When_Complete:  ");
+        Task_Sub _task_sub = (Task_Sub) task_elements.get(position);
+        int first_sub = position;
+        int last_sub = position;
+        while(task_elements.get(first_sub-1).getViewType()==1){
+            first_sub--;
+        }
+        while(task_elements.size() - 1 >= (last_sub + 1) && task_elements.get(last_sub + 1).getViewType() == 1){
+            last_sub++;
+        }
+        //int sub_Task_size = task_subList.size();
+        if ((last_sub - first_sub) < 1) return;
+        if (order_type == 1) { //--   Complete first
+            if(_task_sub.completed == true) {
+                Move_To_Superior_Opposite_Group(position, first_sub, _task_sub);
+            }else if(_task_sub.completed == false){
+                Move_To_Inferior_Opposite_Group(position,last_sub,_task_sub);
+            }
+        } else if (order_type == 0) {//--   Default (Uncomplete first)
+            if(_task_sub.completed == true) {
+                Move_To_Inferior_Opposite_Group(position,last_sub,_task_sub);
+            }else if(_task_sub.completed == false){
+                Move_To_Superior_Opposite_Group(position, first_sub, _task_sub);
+            }
+        }
+    }
+    private void Move_To_Inferior_Opposite_Group(int position, int last_sub_position, Task_Sub _task_sub) {
+        for (int i = last_sub_position; i >= position; i--) {/// Move to the inferior group that is the opposite (completed / uncompleted)
+            Task_Sub task_sub_i = (Task_Sub) task_elements.get(i);
+            if (task_elements.get(i).getCompletion() != _task_sub.completed || task_sub_i.getTask_sub_position() <= _task_sub.getTask_sub_position()) {/// if complete value is different let it pass, else , verify if the current task have a LesserOrEqual positon
+                Update_Sub_Tasks_Order_When_Complete(position, i, _task_sub);
+                break;
+            }
+        }
+    }
+    private void Move_To_Superior_Opposite_Group(int position, int first_sub_position, Task_Sub _task_sub) {
+        for (int i = first_sub_position; i <= position ; i++) { /// Move to the superior group that is the opposite (completed / uncompleted)
+            Task_Sub task_sub_i = (Task_Sub) task_elements.get(i);
+            if (task_elements.get(i).getCompletion() != _task_sub.completed || task_sub_i.getTask_sub_position() >= _task_sub.getTask_sub_position()) {/// if complete value is different let it pass, else , verify if the current task have a GreaterOrEqual positon
+                Update_Sub_Tasks_Order_When_Complete(position, i, _task_sub);
+                break;
+            }
+        }
+    }
+    private void Update_Sub_Tasks_Order_When_Complete(int from_position, int to_position, Task_Sub _task_sub){
+        task_elements.remove(from_position);
+        task_elements.add(to_position, _task_sub);
+        adapter.notifyItemMoved(from_position, to_position);
+    }
+
+
     private void Change_Complete_Main_Task_Status(Task_Main _task_main, int _task_main_position) {
         _task_main.setCompleted(!_task_main.completed);///cambio en task_elements al ser un puntero.
         long _current_time = System.currentTimeMillis();

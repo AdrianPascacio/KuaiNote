@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
@@ -59,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
     protected void onResume() {
         super.onResume();
         if (Note_is_not_empty() && change_in_note) {
-            Log.d("Delete", "onResume, saving");
+            Log.d("onResume", "-------------------------onResume, saving");
             Save_Note();
         }
     }
@@ -276,18 +277,24 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
 
     private void Verify_if_exist_something() {
         if (Note_is_not_empty() != now_is_something_written) {//    si el estado de la nota ha cambiado:
-            now_is_something_written = Note_is_not_empty();
+            now_is_something_written = now_is_something_written ^ true; ///Bitwise ^  1 ^ 1 = 0 (Only true [1] when is different)
             Update_Note_Status(now_is_something_written);
         }
     }
 
     private boolean Note_is_not_empty() {
-        String _title = et_Title.getText().toString();
-        String _note = et_Note.getText().toString();
-
-
-
-        return !_title.isEmpty() || !_note.isEmpty();
+        Editable __title = et_Title.getText();
+        Editable __note = et_Note.getText();
+        boolean title_empty = __title.length()==0;
+        boolean note_empty = __note.length()==0;
+        return !title_empty || !note_empty;
+        /// Original: Using toString:
+        //!!--Verify if this is more effiecient that a String verification
+        //String _title = et_Title.getText().toString();
+        //String _note = et_Note.getText().toString();
+        //return !_title.isEmpty() || !_note.isEmpty();
+        /// Secure Option: Verify if the EditText is Null:
+        //boolean title_emptyx = TextUtils.isEmpty(et_Title.getText());
     }
 
     private void Update_Note_Status(boolean current_status) {
@@ -416,16 +423,21 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
             if (note.note_id != 0) {      //Delete Reminder if exist
                 Reminder_Notification.Cancel_Reminder_Alarm(layout_body_note, note.note_id, 0,note.reminder);
             }
-
         }
     }
     private Boolean Save_Note_in_TrashCan() {
         if (!now_is_something_written) { //if there_is_nothing__wrote > Send to trashcan what was in the database before save
             if (note.title != null || note.note != null) {
-                Log.d("Delete","1-");
+                Log.d("Delete","Delete 1-");
                 return  getNoteInTrashCan(note.date,note.title,note.note, 20, "1-Insertado datos previous");
             } else {
-                Log.d("Delete","2-");
+                if(note.note_id > 0 && DB_N.Note_Exist(note.note_id)){
+                    Log.d("Delete","Delete 6-");
+                    change_in_note = false;
+                    Toast.makeText(MainActivity.this, "6.1-Insertado datos previous MOD", Toast.LENGTH_SHORT).show();//salvado previo con cambios sin guardar
+                    return DB_N.Send_Note_To_Trash_With_Out_DataBase_Modification(note.getNote_id(),note.pin,20); //!!--Check cual es la mejor opcion para este valor de expire days
+                }
+                Log.d("Delete","Delete 2-");
                 Toast.makeText(MainActivity.this, "2- No hay nada que guardar ", Toast.LENGTH_SHORT).show();//si se utiliza reminder y luego se borra
                 return true;
             }
@@ -434,16 +446,16 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
         String _note = et_Note.getText().toString();
         long _current_time = System.currentTimeMillis();
         if (!change_in_note) {   //if there_is_something save in database > Send to trashcan what was in the database before save
-            Log.d("Delete","3-");
+            Log.d("Delete","Delete 3-");
             return getNoteInTrashCan(note.date, _title, _note, 20,"3- Sin cambios, save proyectado en edit.T ");
         } else {
-            Log.d("Delete","4-");
+            Log.d("Delete","Delete 4-");
             return getNoteInTrashCan(_current_time, _title, _note, 20,"4- Cambios realizados, moving to trash ");
         }
     }
     private Boolean getNoteInTrashCan(long date, String title, String _note, int expire_days, String Delete_Case) {
         if ( note.note_id == 0 ) {
-            Log.d("Delete","5-");
+            Log.d("Delete","Delete 5-");
             Toast.makeText(MainActivity.this, "5- Cambios realizados, directo a TrashCan ", Toast.LENGTH_SHORT).show();//salvado previo con cambios sin guardar
             change_in_note = false;
             return DB_N.Insert_Note_Directly_in_Trash(date,title,_note,note.pin,20); //!!--Check cual es la mejor opcion para este valor de expire days
@@ -476,6 +488,7 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
             Return_To_Memo_Board();
         }
     }
+
     public void Return_To_Memo_Board() {
         View view = this.getCurrentFocus();
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);

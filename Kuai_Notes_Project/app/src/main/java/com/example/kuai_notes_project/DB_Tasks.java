@@ -78,6 +78,14 @@ public class DB_Tasks extends SQLiteOpenHelper {
                 ///"INSERT INTO Tasks_fts(docid, title, note) VALUES(new._id,new.title, new.note); "+
                 "INSERT INTO Tasks_fts(docid, title) VALUES(new._id,new.title); "+
                 "END;");
+        DB_T.execSQL("Create TRIGGER Before_Tasks_update BEFORE UPDATE ON Tasks BEGIN " +
+                //"UPDATE  Notes_fts SET title = new.title, note = new.note WHERE docid = old._id; "+
+                "DELETE FROM Tasks_fts WHERE docid = old._id; "+
+                "END;");
+        DB_T.execSQL("Create TRIGGER After_Tasks_update AFTER UPDATE ON Tasks BEGIN " +
+                //"UPDATE  Notes_fts SET title = new.title, note = new.note WHERE docid = old._id; "+
+                "INSERT INTO Tasks_fts(docid, title) VALUES(new._id, new.title); "+
+                "END;");
         DB_T.execSQL("Create TRIGGER After_Sub_Tasks_Insert AFTER INSERT ON Tasks_Sub BEGIN " +
                 ///"UPDATE Tasks_fts SET note = COALESCE(note, 'NoPreviousNote') || ' [\n -] ' || COALESCE(new.note, 'NoPreviousNote') "+
                 "UPDATE Tasks_fts SET note =  COALESCE('\n-' || new.note, 'NoPreviousNote') "+
@@ -381,7 +389,7 @@ public class DB_Tasks extends SQLiteOpenHelper {
         ContentValues contentValues = new ContentValues();
         contentValues.put("task_sub_position",new_position);
         int result = DB_T.update("Tasks_Sub", contentValues , "_id=? ", new String[]{String.valueOf(sub_task_id)});
-        Result_Log_treatment(result, "Modify_Sub_Task_New_Position");
+        //Result_Log_treatment(result, "Modify_Sub_Task_New_Position");
     }
     public Boolean Recycle_Note(long note_id){
 
@@ -397,7 +405,7 @@ public class DB_Tasks extends SQLiteOpenHelper {
     //--updated to Tasks: get_All_Notes:
     public Cursor get_All_Tasks(){
         SQLiteDatabase DB_T = this.getReadableDatabase();
-        Cursor cursor = DB_T.rawQuery("select * from Tasks where deleted = 0 order by  pin DESC, completed ASC, date DESC", null);
+        Cursor cursor = DB_T.rawQuery("select * from Tasks where deleted = 0 order by  pin DESC, completed ASC, date_modified DESC", null);
         return cursor;
     }
     public Task_Main getASpecificTask(long task_id){
