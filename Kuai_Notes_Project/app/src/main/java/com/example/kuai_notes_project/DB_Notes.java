@@ -46,8 +46,7 @@ public class DB_Notes extends SQLiteOpenHelper {
         DB_N.execSQL("create Virtual Table Notes_fts Using fts4(" +
                 "title, "+
                 "note, " +
-                "deleted, " +
-                "content='Notes')"
+                "deleted)"
         );
 
         //DB_N.execSQL("create Virtual Table Notes_fts Using fts4(content=\"Notes\", title, note)");
@@ -215,7 +214,7 @@ public class DB_Notes extends SQLiteOpenHelper {
         ///Cursor cursor = DB_N.rawQuery("select n._id, n.title, snippet(Notes_fts, '[', ']', '...', -1, 10) AS note  From Notes n Join Notes_fts f ON n._id = f.docid where  f.Notes_fts MATCH ? AND n.deleted = 0", new String[]{queryInput});
         ///Cursor cursor = DB_N.rawQuery("select n._id, n.title, snippet(Notes_fts, '[', ']', '...') As somthingelse From Notes n Join Notes_fts f ON n._id = f.docid where  f.Notes_fts MATCH ? AND n.deleted = 0", new String[]{queryInput});
         ///Cursor cursor = DB_N.rawQuery("select n._id, n.title, n.note, snippet(Notes_fts, '[', ']', '...') As search_snippet From Notes n Join Notes_fts f ON n._id = f.rowid where  f.Notes_fts MATCH ? AND n.deleted = 0", new String[]{queryInput});
-        Cursor cursor = DB_N.rawQuery("select n._id, n.title, n.note, snippet(Notes_fts, '[', ']', '...', 1, 13) As search_snippet, snippet(Notes_fts, '[', ']', '...', 0, 13) As search_snippetTitle From Notes n Join Notes_fts f ON n._id = f.docid where  f.Notes_fts MATCH ? AND n.deleted = 0", new String[]{queryInput});
+        Cursor cursor = DB_N.rawQuery("select n._id, n.title, n.note, snippet(Notes_fts, '[', ']', '...', 1, 13) As search_snippet, snippet(Notes_fts, '[', ']', '...', 0, 13) As search_snippetTitle From Notes n Join Notes_fts f ON n._id = f.docid where  f.Notes_fts MATCH ? AND n.deleted = 0 order by pin DESC, date DESC", new String[]{queryInput});
         return cursor;
 
     }

@@ -30,15 +30,15 @@ public class Stable_Content_Generator_For_Test {
             }
         }
     }
-    public void Stable_Note_Generator(Context context, int Content_Number, int note_start, int note_end){
+    public void Stable_Note_Generator(Context context, int Content_Number, int title_start, int title_length, int note_start, int note_length){
         DB_N = new DB_Notes(context);
 
         for(int i = Content_Number ; i>=0; i--){
             boolean stable_boolean = (i & 1) == 1; ///Bitwise i & 1 → comprobacion del ultimo bit (par o impar)
             long _current_time = System.currentTimeMillis();
 
-            String _title = i + seed_text_short.substring(note_start, 50 );
-            String _note = seed_text_short.substring(note_start, note_end);
+            String _title = i + seed_text_short.substring(title_start, title_start + title_length );
+            String _note = seed_text_short.substring(note_start, note_start + note_length);
 
             DB_N.Insert_Note_L(_current_time, _title, _note, stable_boolean, 0L, 0, 0);
         }

@@ -127,7 +127,8 @@ public class Aux_Search extends AppCompatActivity implements Recycler_Search_Int
         try (Cursor cursor_Notes = DB_N.get_All_Notes_fts_2(searched_Text)) {
             if(cursor_Notes.getCount()==0 || et_searched_Text.getTextSize()==0){
                 Log.d("2Search", "Zero : adapter itemcount:" + adapter.getItemCount());
-                item_count = adapter.getItemCount();
+                ///item_count = adapter.getItemCount();
+                item_count = id_List.size();
                 if(item_count > 0){
                     Clear_Lists();
 

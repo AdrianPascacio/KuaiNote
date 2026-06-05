@@ -69,6 +69,22 @@ public class Adapter_Recycler_Search extends RecyclerView.Adapter<Adapter_Recycl
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, @SuppressLint("RecyclerView") int position){
+        //Note note = noteList.get(position);
+
+        //Animation Animation_Pin_Gray_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.recycler_appear_trashcan);
+        //Animation Animation_Pin_Gray_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.recycler_appear_trashcan_invert);
+        //Animation Animation_TrashCan_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.fire_appear_trashcan);
+        //Animation Animation_TrashCan_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.fire_appear_trashcan_invert);
+        //Animation Animation_Extend = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.extend_item);
+        //Animation Animation_Extend_Invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.extend_item_invert);
+
+        //------Title Visibility depending on emptiness:
+        ////if((!note.title.isEmpty())){
+        ////    holder.title_id.setVisibility(View.VISIBLE);
+        ////    holder.title_id.setText(note.title);
+        ////}else {
+        ////    holder.title_id.setVisibility(View.GONE);
+        ////}
         SpannableString spannableString ;
         ///if(Journal_Element_Type == 0){
             if(title.get(position) != null && !title.get(position).isEmpty()){

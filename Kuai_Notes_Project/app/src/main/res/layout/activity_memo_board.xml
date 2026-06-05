@@ -26,6 +26,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/Recycler_MemoBoard"
                 android:layout_width="match_parent"
@@ -36,6 +37,34 @@
 
 
 
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/gray_neutral_trans"
+            app:tabTextColor="@color/transparent"
+            app:tabSelectedTextColor="@color/gray_neutral_trans"
+            app:tabIndicatorColor="@color/gray_neutral_trans"
+            app:tabIndicatorHeight="3dp"
+            >
+
+        </com.google.android.material.tabs.TabLayout>
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            >
+        </androidx.viewpager2.widget.ViewPager2>
 
     </LinearLayout>
 
@@ -53,9 +82,9 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.92"
         app:layout_constraintHorizontal_bias="0.84"
-        app:maxImageSize="85dp"
+        app:maxImageSize="50dp"
         app:shapeAppearanceOverlay="@style/CircularShapeStyle"
-        app:srcCompat="@drawable/cruz_add_note"
+        app:srcCompat="@drawable/icon_insert_cross_add_new_journal_element_4"
         app:tint="@color/white"
         android:outlineAmbientShadowColor="@color/transparent"
         android:outlineSpotShadowColor="@color/transparent"
@@ -76,7 +105,7 @@
         android:id="@+id/button_Check_Lists"
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:layout_marginRight="70dp"
+        android:layout_marginRight="23dp"
         android:layout_marginTop="14dp"
         android:background="@drawable/outline_fact_check_24"
         android:backgroundTintMode="multiply"
@@ -87,7 +116,7 @@
         android:id="@+id/button_Search"
         android:layout_width="24dp"
         android:layout_height="30dp"
-        android:layout_marginRight="23dp"
+        android:layout_marginRight="70dp"
         android:layout_marginTop="14dp"
         android:background="@drawable/search_icon_4"
         android:backgroundTintMode="multiply"

@@ -6,8 +6,14 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.icu.text.Transliterator;
 import android.opengl.Visibility;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,9 +35,7 @@ public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Re
     private ArrayList date_id;
     private ArrayList<Boolean> selected_id;
     private ArrayList<Note> noteList;
-    private ArrayList<String> searched_note_list;
-    private ArrayList<String> searched_title_list;
-    private ArrayList<String> searched_snipped_note_list;
+    private boolean is_searching_mode = false;
 
     private final Recycler_Memo_Board_Interface recycler_memo_board_interface;
     private boolean multi_selection_state = false;
@@ -42,18 +46,21 @@ public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Re
     public void Change_multi_selection_state (boolean multi_selection_state){
         this.multi_selection_state = multi_selection_state;
     }
+    public void Change_Searching_Mode_Status (boolean searching_mode_state){
+        this.is_searching_mode = searching_mode_state;
+    }
+    public boolean Get_Searching_Mode_Status (){
+        return is_searching_mode;
+    }
     public void Change_is_repeated_value (boolean is_repeated){
         this.is_repeated = is_repeated;
     }
 
-    public Adapter_Recycler_Memo_Board(Context context, ArrayList date_id, ArrayList<Boolean> selected_id, ArrayList noteList,ArrayList searched_title_list,ArrayList searched_note_list,ArrayList searched_snipped_note_list,  Recycler_Memo_Board_Interface recyclerMemoBoardInterface){
+    public Adapter_Recycler_Memo_Board(Context context, ArrayList date_id, ArrayList<Boolean> selected_id, ArrayList noteList,  Recycler_Memo_Board_Interface recyclerMemoBoardInterface){
         this.context = context;
         this.date_id = date_id;
         this.selected_id = selected_id;
         this.noteList = noteList;
-        this.searched_title_list = searched_title_list;
-        this.searched_note_list = searched_note_list;
-        this.searched_snipped_note_list = searched_snipped_note_list;
         this.recycler_memo_board_interface =recyclerMemoBoardInterface ;
 
     }
@@ -67,126 +74,250 @@ public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Re
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, @SuppressLint("RecyclerView") int position){
-        Note note = noteList.get(position);
-        boolean isPinned = note.pin;
-        boolean isReminded = note.reminder > 0;
-        Animation Animation_Pin_Orange_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_appear_memoboard);
-        Animation Animation_Pin_Orange_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_appear_memoboard_invert);
-        Animation Animation_Pin_Gray_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_gray_appear_memoboard);
-        Animation Animation_Pin_Gray_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_gray_appear_memoboard_invert);
-        Animation Animation_Reminder_Active_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.reminder_active_icon_appear_memoboard);
-        Animation Animation_Reminder_Active_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.reminder_active_icon_appear_memoboard_invert);
-        Animation Animation_TrashCan_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.trashcan_appear_memoboard);
-        Animation Animation_TrashCan_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.trashcan_appear_memoboard_invert);
-        Animation Animation_Extend = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.extend_item);
-        Animation Animation_Extend_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.extend_item_invert);
-        Body_Note_Preview BNP = new Body_Note_Preview();
+            ///Log.d("Adapter", "  ---Searching Mode: ");
 
-        //------Title Visibility depending on emptiness:
-        if((!note.title.isEmpty())){
-            holder.title_id.setVisibility(View.VISIBLE);
-            holder.title_id.setText(note.title);
+            //////if(Journal_Element_Type == 0){
 
-            holder.date_id.setPadding(0,0,0,0);
-        }else{
-            holder.title_id.setVisibility(View.GONE);
+            ///holder.date_id.setText("");
 
-            holder.date_id.setPadding(0,10,0,0);
+            ///holder.fl_reminder.setVisibility(View.GONE);
+            ///holder.fl_reminder_ghost.setVisibility(View.GONE);
+            ///holder.fl_pin.setVisibility(View.GONE);
+            ///holder.fl_pin_ghost.setVisibility(View.GONE);
+            ///holder.fl_delete.setVisibility(View.GONE);
+            ///holder.fl_delete_ghost.setVisibility(View.GONE);
+
+
+            Note note = noteList.get(position);
+            boolean isPinned = note.pin;
+            boolean isReminded = note.reminder > 0;
+            Animation Animation_Pin_Orange_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_appear_memoboard);
+            Animation Animation_Pin_Orange_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_appear_memoboard_invert);
+            Animation Animation_Pin_Gray_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_gray_appear_memoboard);
+            Animation Animation_Pin_Gray_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_gray_appear_memoboard_invert);
+            Animation Animation_Reminder_Active_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.reminder_active_icon_appear_memoboard);
+            Animation Animation_Reminder_Active_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.reminder_active_icon_appear_memoboard_invert);
+            Animation Animation_TrashCan_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.trashcan_appear_memoboard);
+            Animation Animation_TrashCan_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.trashcan_appear_memoboard_invert);
+            Animation Animation_Extend = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.extend_item);
+            Animation Animation_Extend_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.extend_item_invert);
+            Body_Note_Preview BNP = new Body_Note_Preview();
+
+            //------Title Visibility depending on emptiness:
+            if((!note.title.isEmpty())){
+                holder.title_id.setVisibility(View.VISIBLE);
+                holder.title_id.setText(note.title);
+
+                holder.date_id.setPadding(0,0,0,0);
+            }else{
+                holder.title_id.setVisibility(View.GONE);
+
+                holder.date_id.setPadding(0,10,0,0);
+            }
+
+            holder.date_id.setText(String.valueOf(date_id.get(position)));
+
+
+
+            holder.note_preview_id.setText(note.note);
+
+
+            //Is Searching Mode:
+
+
+        if(is_searching_mode) {
+            SpannableString spannableString;
+                //if (searched_title_list.get(position) != null && !searched_title_list.get(position).isEmpty()) {
+                //    holder.title_id.setVisibility(View.VISIBLE);
+                    //holder.note_preview_id.setText(note.get(position)+" \n " +snipped_note.get(position));
+                    //String raw_snipped_title = searched_title_list.get(position);
+                    String raw_snipped_title = note.title;
+                    spannableString = new SpannableString(raw_snipped_title);
+
+
+                    int start = raw_snipped_title.indexOf("[");
+                    while (start != -1) {
+                        int end = raw_snipped_title.indexOf("]", start);
+                        if (end != -1) {
+                            //ForegroundColorSpan highlightSpan = new ForegroundColorSpan(Color.parseColor("#a015a0"));
+                            //---Choosing color from R.color:
+                            //!!--getResources().getColor esta deprecado. es necesario remplazarlo en el libro
+                            ForegroundColorSpan highlightSpan = new ForegroundColorSpan(ContextCompat.getColor(holder.itemView.getContext(), R.color.ex_orange));
+
+                            StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
+                            ///spannableString.setSpan(highlightSpan,start,end + 1, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+                            spannableString.setSpan(highlightSpan, start + 1, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+                            spannableString.setSpan(boldSpan, start + 1, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+                            spannableString.setSpan(new RelativeSizeSpan(0f), start, start + 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                            spannableString.setSpan(new RelativeSizeSpan(0f), end, end + 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                            start = raw_snipped_title.indexOf("[", end + 1);
+                        } else {
+                            break;
+                        }
+                    }
+
+                    ///holder.note_preview_id.setText(snipped_note.get(position));
+                    holder.title_id.setText(spannableString);
+                    //Log.d("Adapter","visible note: " + note.get(position) + "\n    note size: " +note.size());
+                    //Log.d("Adapter", "visible snipped_note: " + searched_snipped_note_list.get(position));
+                    ////holder.title_id.setText(title.get(position));
+                    //Log.d("Adapter", "visible title: " + searched_title_list.get(position) + "\n    title size: " + searched_title_list.size());
+                //} else {
+                //    holder.title_id.setVisibility(View.GONE);
+                //    Log.d("Adapter", "gone title: ");
+                //}
+            //if (!searched_note_list.isEmpty()) {
+            //    Log.d("Adapter", "  ---NOTE Is not emtpy: ");
+            //    if (searched_note_list.get(position) != null && !searched_note_list.get(position).isEmpty()) {
+
+                    holder.note_preview_id.setVisibility(View.VISIBLE);
+                    //holder.note_preview_id.setText(note.get(position)+" \n " +snipped_note.get(position));
+                    //String raw_snipped_note = searched_snipped_note_list.get(position);
+                    String raw_snipped_note = note.note;
+                    spannableString = new SpannableString(raw_snipped_note);
+
+
+                    int start_indx_note = raw_snipped_note.indexOf("[");
+                    while (start_indx_note != -1) {
+                        int end = raw_snipped_note.indexOf("]", start_indx_note);
+                        if (end != -1) {
+                            //ForegroundColorSpan highlightSpan = new ForegroundColorSpan(Color.parseColor("#a015a0"));
+                            //---Choosing color from R.color:
+                            //!!--getResources().getColor esta deprecado. es necesario remplazarlo en el libro
+                            ForegroundColorSpan highlightSpan = new ForegroundColorSpan(ContextCompat.getColor(holder.itemView.getContext(), R.color.ex_orange));
+
+                            StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
+                            ///spannableString.setSpan(highlightSpan,start,end + 1, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+                            spannableString.setSpan(highlightSpan, start_indx_note + 1, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+                            spannableString.setSpan(boldSpan, start_indx_note + 1, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+                            spannableString.setSpan(new RelativeSizeSpan(0f), start_indx_note, start_indx_note + 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                            spannableString.setSpan(new RelativeSizeSpan(0f), end, end + 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                            start_indx_note = raw_snipped_note.indexOf("[", end + 1);
+                        } else {
+                            break;
+                        }
+                    }
+
+                    ///holder.note_preview_id.setText(snipped_note.get(position));
+                    holder.note_preview_id.setText(spannableString);
+                    //Log.d("Adapter","visible note: " + note.get(position) + "\n    note size: " +note.size());
+                    //Log.d("Adapter", "visible snipped_note: " + searched_snipped_note_list.get(position));
+
+            //    } else {
+
+            //        holder.note_preview_id.setVisibility(View.GONE);
+            //        Log.d("Adapter", "gone note: ");
+
+            //    }
+            //} else {
+
+            //    holder.note_preview_id.setVisibility(View.GONE);
+            //    Log.d("Adapter", "gone note: ");
+
+            //}
+
         }
 
-        holder.date_id.setText(String.valueOf(date_id.get(position)));
 
 
 
-        holder.note_preview_id.setText(note.note);
-        //------Visibility depending if it is Selected:
-        if(selected_id.get(position)==true){
-            //holder.note_preview_id.setText(note.note);
-            holder.note_preview_id.setMaxLines(3);
 
-            holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_background_selected)));
-            //holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#AEFDF2D8")));
-            //holder.fl_item.setScaleX(1.02f);
-            //holder.fl_item.setScaleY(1.02f);
 
-            //holder.fl_item.startAnimation(Animation_Extend);
-            //holder.fl_delete.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.red_bloody_1)));
-            holder.title_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_title_selected));
-            holder.date_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_date_selected));
-            holder.note_preview_id.setPadding(0,0,0,44);
-            holder.note_preview_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_note_preview_selected));
-            //Log.d("Adapter","    --Selected: " +position);
 
-            if(multi_selection_state){
-                if(multi_first_count > 0) {
-                    //Log.d("Adapter", "    --selected_in_single_mode: " + selected_in_single_mode);
-                    if(selected_in_single_mode == position) {
-                        Unselecting_View_For_First_Tow_Multiple_Selections(holder, Animation_TrashCan_Appear_invert, isPinned, Animation_Pin_Orange_Appear_invert, Animation_Pin_Gray_Appear_invert, isReminded, Animation_Reminder_Active_Appear_invert);
-                        //Log.d("Adapter", "    --Unselecting_View_For_First_Tow_Multiple_Selections: " + position);
+
+
+
+
+            //------Visibility depending if it is Selected:
+            if(selected_id.get(position)==true){
+                //holder.note_preview_id.setText(note.note);
+                holder.note_preview_id.setMaxLines(3);
+
+                holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_background_selected)));
+                //holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#AEFDF2D8")));
+                //holder.fl_item.setScaleX(1.02f);
+                //holder.fl_item.setScaleY(1.02f);
+
+                //holder.fl_item.startAnimation(Animation_Extend);
+                //holder.fl_delete.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.red_bloody_1)));
+                holder.title_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_title_selected));
+                holder.date_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_date_selected));
+                holder.note_preview_id.setPadding(0,0,0,44);
+                holder.note_preview_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_note_preview_selected));
+                //Log.d("Adapter","    --Selected: " +position);
+
+                if(multi_selection_state){
+                    if(multi_first_count > 0) {
+                        //Log.d("Adapter", "    --selected_in_single_mode: " + selected_in_single_mode);
+                        if(selected_in_single_mode == position) {
+                            Unselecting_View_For_First_Tow_Multiple_Selections(holder, Animation_TrashCan_Appear_invert, isPinned, Animation_Pin_Orange_Appear_invert, Animation_Pin_Gray_Appear_invert, isReminded, Animation_Reminder_Active_Appear_invert);
+                            //Log.d("Adapter", "    --Unselecting_View_For_First_Tow_Multiple_Selections: " + position);
+                        }else{
+                            Selecting_View_With_No_Animations(holder, isPinned, isReminded);
+                            //Log.d("Adapter", "    --Selecting_View_Without_animation_Multiple_Selections: " + position);
+                        }
+                        multi_first_count--;
                     }else{
                         Selecting_View_With_No_Animations(holder, isPinned, isReminded);
-                        //Log.d("Adapter", "    --Selecting_View_Without_animation_Multiple_Selections: " + position);
+                        //Log.d("Adapter","    --Add_Item_Without_animations_In_Multiple_Selections_Mode: " +position);
                     }
-                    multi_first_count--;
+                    ///Aux most have a better order...but it works
+                    holder.fl_reminder.setVisibility(View.GONE);
                 }else{
-                    Selecting_View_With_No_Animations(holder, isPinned, isReminded);
-                    //Log.d("Adapter","    --Add_Item_Without_animations_In_Multiple_Selections_Mode: " +position);
+                    //Log.d("Adapter","   Selecting_View_Single_Mode: " +position + "    selected_in_single_mode: "+selected_in_single_mode+"\n" +
+                    //      "       Is_Reminded:"+isReminded);
+                    Selecting_View_Single_Mode(holder, Animation_TrashCan_Appear, isPinned, Animation_Pin_Orange_Appear, Animation_Pin_Gray_Appear, isReminded, Animation_Reminder_Active_Appear);
+                    selected_in_single_mode = position;
                 }
-                ///Aux most have a better order...but it works
-                holder.fl_reminder.setVisibility(View.GONE);
             }else{
-                //Log.d("Adapter","   Selecting_View_Single_Mode: " +position + "    selected_in_single_mode: "+selected_in_single_mode+"\n" +
-                  //      "       Is_Reminded:"+isReminded);
-                Selecting_View_Single_Mode(holder, Animation_TrashCan_Appear, isPinned, Animation_Pin_Orange_Appear, Animation_Pin_Gray_Appear, isReminded, Animation_Reminder_Active_Appear);
-                selected_in_single_mode = position;
-            }
-        }else{
-            holder.note_preview_id.setMaxLines(2);
-            ///holder.note_preview_id.setText(BNP.Set_Body_Note_Preview(note.note,
-            ///        note.note,
-            ///        60,
-            ///        55,
-            ///        0,
-            ///        2,
-            ///        1,
-            ///        30));
+                holder.note_preview_id.setMaxLines(2);
+                ///holder.note_preview_id.setText(BNP.Set_Body_Note_Preview(note.note,
+                ///        note.note,
+                ///        60,
+                ///        55,
+                ///        0,
+                ///        2,
+                ///        1,
+                ///        30));
 
 
-            //holder.fl_item.clearAnimation();
-            holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_background_unselected)));
-            //holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#008F8F8F")));
+                //holder.fl_item.clearAnimation();
+                holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_background_unselected)));
+                //holder.fl_item.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#008F8F8F")));
 
-            holder.title_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_title_notselected));
-            holder.date_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_date_notselected));
-            holder.note_preview_id.setPadding(0,0,0,0);
-            holder.note_preview_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_note_preview_notselected));
+                holder.title_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_title_notselected));
+                holder.date_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_date_notselected));
+                holder.note_preview_id.setPadding(0,0,0,0);
+                holder.note_preview_id.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.item_visualizer_note_preview_notselected));
 
-            //holder.fl_item.setScaleX(1f);
-            //holder.fl_item.setScaleY(1f);
-            //Log.d("Adapter","   Not_Selected_View: " +position);
+                //holder.fl_item.setScaleX(1f);
+                //holder.fl_item.setScaleY(1f);
+                //Log.d("Adapter","   Not_Selected_View: " +position);
 
-            if(is_repeated){
-                Unselecting_View_Repeated(holder, Animation_TrashCan_Appear_invert, isPinned, Animation_Pin_Orange_Appear_invert, Animation_Pin_Gray_Appear_invert, isReminded, Animation_Reminder_Active_Appear_invert);
-                //Log.d("Adapter","   Unselecting_View Repeated: " +position);
-                is_repeated = false;
-                selected_in_single_mode = -1;
-            }else{
-                if(multi_selection_state){
-                    Unselect_Item_Without_Animations(holder, isPinned, isReminded);
-                    //Log.d("Adapter","   --Rest_Item_Without_animations_In_Multiple_Selections_Mode: " +position);
+                if(is_repeated){
+                    Unselecting_View_Repeated(holder, Animation_TrashCan_Appear_invert, isPinned, Animation_Pin_Orange_Appear_invert, Animation_Pin_Gray_Appear_invert, isReminded, Animation_Reminder_Active_Appear_invert);
+                    //Log.d("Adapter","   Unselecting_View Repeated: " +position);
+                    is_repeated = false;
+                    selected_in_single_mode = -1;
                 }else{
-                    Unselect_Item_Without_Animations(holder, isPinned, isReminded);
-                    //Log.d("Adapter","   Unselecting View  (no multi_mode)-------: " +position);
+                    if(multi_selection_state){
+                        Unselect_Item_Without_Animations(holder, isPinned, isReminded);
+                        //Log.d("Adapter","   --Rest_Item_Without_animations_In_Multiple_Selections_Mode: " +position);
+                    }else{
+                        Unselect_Item_Without_Animations(holder, isPinned, isReminded);
+                        //Log.d("Adapter","   Unselecting View  (no multi_mode)-------: " +position);
+                    }
                 }
             }
-        }
 
-        if (!multi_selection_state){
-            if(multi_first_count == 0) {
-                selected_in_single_mode = -1;
+            if (!multi_selection_state){
+                if(multi_first_count == 0) {
+                    selected_in_single_mode = -1;
+                }
+                multi_first_count = 2;
             }
-            multi_first_count = 2;
-        }
+
+
     }
 
     private static void Unselect_Item_Without_Animations(@NonNull MyViewHolder holder, boolean isPinned, boolean isReminded) {
