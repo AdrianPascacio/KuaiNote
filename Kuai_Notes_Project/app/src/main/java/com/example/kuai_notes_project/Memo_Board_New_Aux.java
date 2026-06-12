@@ -32,7 +32,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 ///324 V3, 305 V4, 358 V6, 306 V7, 450 V7.2, 570 v9.0B
-public class Memo_Board_New_Aux extends AppCompatActivity implements Recycler_Memo_Board_Interface, Reminder_PopUpWindow.OnValueSelectedListener,Reminder_PopUpWindow.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener , NotesFragment.Note_Fragment_ReminderListener {
+public class Memo_Board_New_Aux extends AppCompatActivity implements Recycler_Memo_Board_Interface, Reminder_PopUpWindow.OnValueSelectedListener,Reminder_PopUpWindow.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener , NotesFragment.Note_Fragment_ReminderListener, NotesFragment.Note_Fragment_Out_ReminderListener {
+
     public interface MemoBoardNewAux_OutReminder_Listener {//esto puede ir tambien en una clase separada
         void onMemoBoardNewAux_OutReminder(int salida, int position); // 0 nada/normal, 1 cambio realizado, 2 cancelado
     }
@@ -521,6 +522,7 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements Recycler_Me
     }
     @Override
     public void OnValueSelected(int position, long alarm_time) {
+
     }
     @Override
     public void onPopupClosed(int salida, int position) {
@@ -654,26 +656,70 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements Recycler_Me
         layout_dim.startAnimation(AnimationLayoutDimAppear);
 
         //adapter.Change_is_repeated_value(true);
-        Reminder_PopUpWindow reminder_PopUp = new Reminder_PopUpWindow(this, position);
-        reminder_PopUp.setListener(this);
-        reminder_PopUp.setListener_dismiss(this);
+        ///Reminder_PopUpWindow reminder_PopUp = new Reminder_PopUpWindow(this, position);
+        ///reminder_PopUp.setListener(this);
+        ///reminder_PopUp.setListener_dismiss(this);
 
 
 
-        //Note _note = noteList.get(position);
-        reminder_PopUp.show(main, note);
+        /////Note _note = noteList.get(position);
+        ///reminder_PopUp.show(main, note);
+    }
+    @Override
+    public void onNoteFragment_Out_Reminder_Open(int salida, int position) {
+        layout_dim.setVisibility(View.VISIBLE);
+        //Restart_Selection();
+        if(salida == 1){//setter
+            layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.reminder_confirm)));
+            layout_dim.startAnimation(AnimationLayoutDimDisappear_Setter);
+
+            Toast.makeText(this, "reminder"+" setter", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if(salida == 2){//cancel
+            layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.reminder_discard)));
+            layout_dim.startAnimation(AnimationLayoutDimDisappear_Cancel);
+            Toast.makeText(this, "reminder"+" cancel", Toast.LENGTH_SHORT).show();
+
+            return;
+        }
+
+        //////Have to put this into the NoteFragment:
+        ///    //selected_list.set(position,false);
+
+        ///    //adapter.notifyItemChanged(position);
+        //Reminder_PopUpWindow reminderPopUpWindow = Reminder_PopUpWindow(new Reminder_PopUpWindow(){
+        //    @Override
+        //    public void onPopupClosed_Repeater(int salida) {
+
+        //        layout_dim.setVisibility(View.VISIBLE);
+
+        //        layout_dim.startAnimation(AnimationLayoutDimDisappear_Normal);
+
+        //    }
+
+        //});
+
+        //notesFragment.adapter_noteFragment.notifyItemChanged(position);
+        //memoBoardNewAuxOutReminderListener.onMemoBoardNewAux_OutReminder(salida,position);
+
+
+        //if(memoBoardNewAuxOutReminderListener != null){
+        //    memoBoardNewAuxOutReminderListener.onMemoBoardNewAux_OutReminder(salida,position);
+        //}
+
+        layout_dim.startAnimation(AnimationLayoutDimDisappear_Normal);
+
+        ///!!-- duplicated
+        //Restart_Selection();
+
+        Toast.makeText(this, "reminder"+" normal", Toast.LENGTH_SHORT).show();
+
     }
     public void ejecutarPopUP(MemoBoardNewAux_OutReminder_Listener listener, Note note){
-        Reminder_PopUpWindow reminder_PopUp = new Reminder_PopUpWindow(this, 0);
-        //reminder_PopUp.setListener(this);
-        //reminder_PopUp.setListener_dismiss(this);
-
-
-
-        ////Note _note = noteList.get(position);
-        //reminder_PopUp.show(main, note);
+        //Note _note = noteList.get(position);
         this.memoBoardNewAuxOutReminderListener = listener;
-        reminder_PopUp = new Reminder_PopUpWindow(new Reminder_PopUpWindow.PopupDismissListener(){
+        Reminder_PopUpWindow reminder_PopUp = new Reminder_PopUpWindow(new Reminder_PopUpWindow.PopupDismissListener(){ ///Sobrescribir un metodo de otra clase dentro de una interfaz propia???:
             @Override
             public void onPopupClosed(int salida, int position){
                 if(memoBoardNewAuxOutReminderListener != null){
@@ -682,8 +728,6 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements Recycler_Me
             }
 
         });
-        reminder_PopUp.setListener(this);
-        reminder_PopUp.setListener_dismiss(this);
         reminder_PopUp.show(main, note);
     }
 }

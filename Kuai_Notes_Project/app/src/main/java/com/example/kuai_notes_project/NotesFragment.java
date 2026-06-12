@@ -58,7 +58,7 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
 
     Button btn_config, btn_check_lists, btn_search, btn_generate_random_content, btn_generate_stable_content, btn_delete_all_notes_database;
 
-    View main;
+    View main_NotesFragment;
     View layout_dim;
     Body_Note_Preview BNP;
     Date_of_Note_Item_View_DEPRECATED DoN_IV;
@@ -95,7 +95,7 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
     public void iniciarFlujo(Note note){
         Log.d("NotesFragment", "iniciar flujo");
         //memoBoardNewAux = new Memo_Board_New_Aux();
-        memoBoardNewAux.ejecutarPopUP((salida, position) -> {
+        memoBoardNewAux.ejecutarPopUP((salida, position) -> {///  Implementacion de interfaz sin tener que  implementarla en la clase:
 
             selected_list.set(position,false);
 
@@ -120,6 +120,14 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
     ///public void onMemoBoardNewAux_OutReminder(int salida, int position) {
 
     ///}
+    public interface Note_Fragment_Out_ReminderListener {//esto puede ir tambien en una clase separada
+        void onNoteFragment_Out_Reminder_Open(int salida, int position); // 0 nada/normal, 1 cambio realizado, 2 cancelado
+    }
+    private Note_Fragment_Out_ReminderListener notefragment_out_reminder_listener;
+
+    public void setNoteFragment_Out_Reminder_Listener(Note_Fragment_Out_ReminderListener listener){
+        this.notefragment_out_reminder_listener = listener;
+    }
 
 
     public interface Note_Fragment_ReminderListener {//esto puede ir tambien en una clase separada
@@ -141,12 +149,19 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
             throw new RuntimeException(context.toString()
                     + " debe implementar Note_Fragment_DismissListener");
         }
+        if (context instanceof Note_Fragment_Out_ReminderListener) {
+            notefragment_out_reminder_listener = (Note_Fragment_Out_ReminderListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " debe implementar Note_Fragment_DismissListener 2222");
+        }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         notefragment_reminder_listener = null; // Evita fugas de memoria
+        notefragment_out_reminder_listener = null; // Evita fugas de memoria
     }
     @Override
     public void onResume(){
@@ -205,6 +220,7 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
         cursor_id_List = new ArrayList<>();
 
         et_searched_Text = view.findViewById(R.id.Searched_Text);
+        main_NotesFragment = view.findViewById(R.id.Layout_Main_Note_Fragment);
 
         BNP = new Body_Note_Preview();
         DoN_IV = new Date_of_Note_Item_View_DEPRECATED();
@@ -609,10 +625,10 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
         //NotesFragment.this.notefragment_listener_dismiss.onNoteFragmentClosed(1,position);
 
         adapter_noteFragment.Change_is_repeated_value(true);
-//        Reminder_PopUpWindow reminder_PopUp = new Reminder_PopUpWindow(getContext(), position);
-//        reminder_PopUp.setListener(this);
-//        reminder_PopUp.setListener_dismiss(this);
-//
+        Reminder_PopUpWindow reminder_PopUp = new Reminder_PopUpWindow(getContext(), position);
+        reminder_PopUp.setListener(this);
+        reminder_PopUp.setListener_dismiss(this);
+
         Note _note = noteList.get(position);
         notefragment_reminder_listener.onNoteFragment_Reminder_Open(1,position, _note);
         //notefragment_reminder_listener.onNoteFragment_Reminder_Open(1,position, _note);
@@ -622,8 +638,8 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
         ///    adapter_noteFragment.notifyItemChanged(position);
 
         ///});
-        iniciarFlujo(_note);
-        //reminder_PopUp.show(main, _note);
+        //iniciarFlujo(_note);
+        reminder_PopUp.show(main_NotesFragment, _note);
 
         //memoBoardNewAux.ejecutarPopUP((salida, position) -> {
 
@@ -648,19 +664,20 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
     }
     @Override
     public void onPopupClosed(int salida, int position) {
-        layout_dim.setVisibility(View.VISIBLE);
+        //layout_dim.setVisibility(View.VISIBLE);
 
         Restart_Selection();
+        notefragment_out_reminder_listener.onNoteFragment_Out_Reminder_Open(salida,position);
         if(salida == 1){//setter
             ///layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.reminder_confirm)));
-            layout_dim.startAnimation(AnimationLayoutDimDisappear_Setter);
+            //layout_dim.startAnimation(AnimationLayoutDimDisappear_Setter);
 
             Toast.makeText(getContext(), "reminder"+" setter", Toast.LENGTH_SHORT).show();
             return;
         }
         if(salida == 2){//cancel
             ///layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.reminder_discard)));
-            layout_dim.startAnimation(AnimationLayoutDimDisappear_Cancel);
+            //layout_dim.startAnimation(AnimationLayoutDimDisappear_Cancel);
             Toast.makeText(getContext(), "reminder"+" cancel", Toast.LENGTH_SHORT).show();
 
             return;
@@ -668,7 +685,7 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
         selected_list.set(position,false);
 
         adapter_noteFragment.notifyItemChanged(position);
-        layout_dim.startAnimation(AnimationLayoutDimDisappear_Normal);
+        //layout_dim.startAnimation(AnimationLayoutDimDisappear_Normal);
 
         ///!!-- duplicated
         //Restart_Selection();
@@ -680,7 +697,7 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
     public void RemoveItem(int position) {
         Note _note = noteList.get(position);
 
-        Reminder_Notification.Cancel_Reminder_Alarm(main,_note.note_id,0, _note.reminder);
+        Reminder_Notification.Cancel_Reminder_Alarm(main_NotesFragment,_note.note_id,0, _note.reminder);
 
         if(DB_N.Send_Note_To_Trash(_note.note_id,_note.date,_note.title,noteOriginal_list.get(position),_note.pin,20)){
             //----Remove Note from Recycler View
