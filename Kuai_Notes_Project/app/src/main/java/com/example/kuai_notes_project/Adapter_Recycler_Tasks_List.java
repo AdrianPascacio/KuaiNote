@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -95,6 +96,8 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
         ///Animation Animation_Pin_Orange_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_appear_memoboard);
         ///Animation Animation_Pin_Orange_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_appear_memoboard_invert);
         ///Animation Animation_Pin_Gray_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_gray_appear_memoboard);
+        Animation AnimationUnfold_on = AnimationUtils.loadAnimation(holder.itemView.getContext(), R.anim.unfold_icon_rotate_change_status);
+        Animation AnimationUnfold_off = AnimationUtils.loadAnimation(holder.itemView.getContext(), R.anim.unfold_icon_rotate_change_status_off);
         ///Animation Animation_Pin_Gray_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.pin_gray_appear_memoboard_invert);
         ///Animation Animation_Reminder_Active_Appear = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.reminder_active_icon_appear_memoboard);
         ///Animation Animation_Reminder_Active_Appear_invert = AnimationUtils.loadAnimation(holder.itemView.getContext(),R.anim.reminder_active_icon_appear_memoboard_invert);
@@ -122,8 +125,6 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             MyViewHolder_Task_Main taskHolder = (MyViewHolder_Task_Main) holder;
 
 
-
-
             taskHolder.title_id.setVisibility(View.VISIBLE);
             taskHolder.title_id.setText(task_elements.get(position).getContent() );
 
@@ -140,6 +141,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
                 taskHolder.fl_unfold.setVisibility(View.VISIBLE);
                 taskHolder.ghost_unfold.setVisibility(View.VISIBLE);
                 taskHolder.fl_unfold.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), task.unfolded ? R.color.green_dark_cha : R.color.gray_light_2 ))); ///Ternary Operator
+                //fa_btn.animate().alpha(0f).scaleY(0.7f).scaleX(0.7f).setDuration(325).withEndAction(new Runnable() {
             }else{
                 taskHolder.fl_unfold.setVisibility(View.GONE);
                 taskHolder.ghost_unfold.setVisibility(View.GONE);
@@ -161,23 +163,34 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             ////DrawableCompat.setTint(background,ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_sand_light ));
             //DrawableCompat.setTint(background, Color.parseColor("#FF5722"));
             //taskHolder.fl_item.setBackground(background);
-            taskHolder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_sand_light )));
+            ///taskHolder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_sand_light )));
+            taskHolder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_bamboo )));
             //taskHolder.fl_item.setBackgroundResource(R.drawable.bg_main_task_single);
             if (isUnfolded) {
                 //taskHolder.fl_item.setBackgroundResource(R.drawable.bg_main_task_father_unfolded);
                 background = drw_main_father.getConstantState().newDrawable().mutate();
+                taskHolder.line_buttom.setVisibility(View.GONE);
+                //taskHolder.fl_unfold.setRotation(90);
+                taskHolder.fl_unfold.startAnimation(AnimationUnfold_on);
+
+                taskHolder.fl_unfold.animate().scaleX(1.2f).setDuration(400);
             }else{
                 background = drw_main_single.getConstantState().newDrawable().mutate();
-
+                taskHolder.line_buttom.setVisibility(View.VISIBLE);
+                taskHolder.fl_unfold.startAnimation(AnimationUnfold_off);
+                taskHolder.fl_unfold.animate().scaleX(1.0f).setDuration(400);
             }
             //int color = (ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_sand_light ));
             //DrawableCompat.setTint(background,color);
             taskHolder.fl_item.setBackground(background);
 
             if(isSelected){
+
                 taskHolder.fl_item.setScaleX(1.02f);
                 taskHolder.fl_item.setScaleY(1.02f);
+
             }else{
+
                 taskHolder.fl_item.setScaleX(1.0f);
                 taskHolder.fl_item.setScaleY(1.0f);
 
@@ -194,13 +207,16 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             subTaskHolder.fl_task_sub_completed.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),task_sub.completed ? R.color.task_completed_color : R.color.task_uncompleted_color ))); ///Ternary Operator
             subTaskHolder.fl_task_sub_completed.setBackground( completed_icon); ///Ternary Operator
 
-            subTaskHolder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_sand_light )));
+            ///subTaskHolder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_sand_light )));
+            subTaskHolder.fl_item.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(),isSelected   ? R.color.item_background_selected : R.color.white_bamboo )));
 
             if(position + 1 <= task_elements.size()-1){
                 if( getItemViewType(position + 1) == TYPE_TASK_MAIN){
                     background = Objects.requireNonNull(drw_sub_end.getConstantState()).newDrawable().mutate();
+                    subTaskHolder.line_buttom.setVisibility(View.VISIBLE);
                 }else{
                     background = Objects.requireNonNull(drw_sub_middle.getConstantState()).newDrawable().mutate();
+                    subTaskHolder.line_buttom.setVisibility(View.GONE);
                 }
             }else{
                 background = Objects.requireNonNull(drw_sub_end.getConstantState()).newDrawable().mutate();
@@ -237,6 +253,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
         FrameLayout fl_delete, fl_reminder, fl_pin ,fl_delete_ghost, fl_reminder_ghost, fl_pin_ghost ,  fl_pin_icon_activated, fl_reminder_activated;
         FrameLayout fl_complete_mark, fl_unfold;
         FrameLayout fl_item;
+        View line_buttom;
 
 
         public MyViewHolder_Task_Main(@NonNull View itemView, Recycler_Tasks_List_Interface recyclerTasksListInterface){
@@ -261,6 +278,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             fl_complete_mark = itemView.findViewById((R.id.Fl_Completed_Mark));
             fl_unfold = itemView.findViewById((R.id.Fl_Unfold));
             ghost_unfold = itemView.findViewById(R.id.Layout_Unfold_Ghost);
+            line_buttom = itemView.findViewById((R.id.Layout_Button_Line));
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -372,6 +390,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
         FrameLayout fl_delete, fl_reminder, fl_pin ,fl_delete_ghost, fl_reminder_ghost, fl_pin_ghost ,  fl_pin_icon_activated, fl_reminder_activated;
         FrameLayout fl_task_sub_completed;
         FrameLayout fl_item;
+        View line_buttom;
 
 
         public MyViewHolder_Task_Sub(@NonNull View itemView, Recycler_Tasks_Sub_List_Interface recyclerTasksSubListInterface){
@@ -379,6 +398,7 @@ public class Adapter_Recycler_Tasks_List   extends RecyclerView.Adapter<Recycler
             title_id = itemView.findViewById(R.id.Text_Task_Sub_Title);
             fl_task_sub_completed = itemView.findViewById(R.id.Fl_Completed_Mark);
             fl_item = itemView.findViewById((R.id.Layout_Item));
+            line_buttom = itemView.findViewById((R.id.Layout_Button_Line));
 
 
             itemView.setOnClickListener(new View.OnClickListener() {

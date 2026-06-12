@@ -6,15 +6,11 @@ import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,8 +21,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.kuai_notes_project.ruled_out_code.Date_of_Note_Item_View_DEPRECATED;
@@ -36,17 +30,25 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Objects;
 
 ///324 V3, 305 V4, 358 V6, 306 V7, 450 V7.2, 570 v9.0B
-public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board_Interface, Reminder_PopUpWindow.OnValueSelectedListener,Reminder_PopUpWindow.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener {
-    RecyclerView recyclerView;
+public class Memo_Board_New_Aux extends AppCompatActivity implements Recycler_Memo_Board_Interface, Reminder_PopUpWindow.OnValueSelectedListener,Reminder_PopUpWindow.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener , NotesFragment.Note_Fragment_ReminderListener {
+    public interface MemoBoardNewAux_OutReminder_Listener {//esto puede ir tambien en una clase separada
+        void onMemoBoardNewAux_OutReminder(int salida, int position); // 0 nada/normal, 1 cambio realizado, 2 cancelado
+    }
+    private MemoBoardNewAux_OutReminder_Listener memoBoardNewAuxOutReminderListener;
+
+    public void setMemoBoardNewAuxOutReminderListener(MemoBoardNewAux_OutReminder_Listener outReminderListener){
+        this.memoBoardNewAuxOutReminderListener = outReminderListener;
+    }
+
+    ///RecyclerView recyclerView;
     ArrayList<String> dateEdited_list;
     ArrayList<String> noteOriginal_list;
     ArrayList<Boolean> selected_list;
     ArrayList<Note> noteList;
 
-    EditText et_searched_Text;
+    //EditText et_searched_Text;
     int item_count = 0 ;
 
     ArrayList<Integer> selected_positions_list;
@@ -55,7 +57,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     Random_Content_Generator_For_Test Random_G;
     Stable_Content_Generator_For_Test Stable_G;
 
-    Adapter_Recycler_Memo_Board adapter;
+    //Adapter_Recycler_Memo_Board adapter;
 
     long start_of_today = 0;
     Button btn_config, btn_check_lists, btn_search, btn_generate_random_content, btn_generate_stable_content, btn_delete_all_notes_database;
@@ -100,22 +102,23 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
     ///public void setOnItemClickListener(AdapterView.OnItemClickListener listener){
     ///    this.listener = listener;
     ///}
+    NotesFragment notesFragment;
 
     @Override
     protected void onResume(){
         super.onResume();
         getStartOfToday();
 
-        recyclerView = findViewById(R.id.Recycler_MemoBoard);
-        adapter = new Adapter_Recycler_Memo_Board(this, dateEdited_list,selected_list,noteList,this);
-        recyclerView.setAdapter(adapter);
+        //recyclerView = findViewById(R.id.Recycler_MemoBoard);
+        //adapter = new Adapter_Recycler_Memo_Board(this, dateEdited_list,selected_list,noteList,this);
+        //recyclerView.setAdapter(adapter);
 
-        et_searched_Text.setText("");
-        adapter.Change_Searching_Mode_Status(false);
+        //et_searched_Text.setText("");
+        //adapter.Change_Searching_Mode_Status(false);
         item_count = 0;
 
-        Clear_Lists();
-        Update_Recycler_View();
+        //Clear_Lists();
+        //Update_Recycler_View();
 
         fa_btn.setVisibility(View.VISIBLE);
         fa_btn.setFocusable(true);
@@ -147,6 +150,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             return insets;
         });
 
+
         getWindow().setStatusBarColor(getResources().getColor(R.color.light_brown_natural));
         getWindow().setNavigationBarColor(getResources().getColor(R.color.main_navigation_bar));
 
@@ -169,6 +173,9 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             }
         }).attach();
 
+        notesFragment = new NotesFragment();
+        notesFragment.setNoteFragment_Reminder_Listener(this);
+
         DB_N = new DB_Notes(this);
         Random_G = new Random_Content_Generator_For_Test();
         Stable_G = new Stable_Content_Generator_For_Test();
@@ -179,7 +186,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         noteList = new ArrayList<>();
         selected_positions_list = new ArrayList<>();
 
-        et_searched_Text = findViewById(R.id.Searched_Text);
+        //et_searched_Text = findViewById(R.id.Searched_Text);
 
         BNP = new Body_Note_Preview();
         DoN_IV = new Date_of_Note_Item_View_DEPRECATED();
@@ -212,6 +219,8 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         btn_go_trash_can = findViewById(R.id.btnNavigate);
         HIDDEN_OFFSET = dpToPx(55);
         HIDDEN_OFFSET_ARROW = dpToPx(6);
+
+
         floating_TrashCan_Access.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -265,19 +274,19 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
                 Go_To_Add_New_Note();
             }
         });
-        et_searched_Text.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-                String searched_Text = et_searched_Text.getText().toString();
+        //et_searched_Text.addTextChangedListener(new TextWatcher() {
+        //    @Override
+        //    public void afterTextChanged(Editable s) {
+        //        String searched_Text = et_searched_Text.getText().toString();
 
-                Update_Recycler_View_ftsValues_Snipped4(searched_Text);
-            }
+        //        Update_Recycler_View_ftsValues_Snipped4(searched_Text);
+        //    }
 
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
-        });
+        //    @Override
+        //    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        //    @Override
+        //    public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        //});
 
         btn_config.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -325,145 +334,9 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if(selection_item_menu_PopUp.popupWindow != null){
-                    for( int i = 0; i < selected_list.size() ; i++){
-                        if(selected_list.get(i)== true){
-                            selected_list.set(i,false);
-                            adapter.notifyItemChanged(i);
-                        }
-                    }
-                    Restart_Selection();
-                }else{
-                    finish();
-                }
+                finish();
             }
         });
-    }
-    private void Update_Recycler_View_ftsValues_Snipped4(String searched_Text) {
-        //-------Intenta utilizar el diffutil eliminar coincidencias entre menos existan,
-        //---agregar coincidencias progresivamente al eliminar algunas letras
-        //---Limpiar las listas al no tener ninguna coincidencia
-        //!!--Optimizar
-
-        ////if(!adapter.Get_Searching_Mode_Status()) item_count = 0;
-        try (Cursor cursor_Notes = DB_N.get_All_Notes_fts_2(searched_Text)) {
-            if(cursor_Notes.getCount()==0 || et_searched_Text.getTextSize()==0){
-                adapter.Change_Searching_Mode_Status(false);
-                Log.d("2Search", "Zero : adapter itemcount:" + adapter.getItemCount());
-                ///if(id_List.size() > 0){
-                ///    //Clear_Lists();
-                ///    Clear_Searched_Lists();
-
-                ///    recyclerView.setAdapter(adapter);
-                ///    recyclerView.setLayoutManager(new LinearLayoutManager(this));
-                ///    item_count = 0;
-                ///}
-
-
-                Clear_Lists();
-                //Clear_Searched_Lists();
-
-                recyclerView.setAdapter(adapter);
-                recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-
-
-
-                Update_Recycler_View();
-                //adapter.Change_Searching_Mode_Status(false);
-            }else{
-                adapter.Change_Searching_Mode_Status(true);
-
-                //if(!adapter.Get_Searching_Mode_Status()) {
-                //    adapter.Change_Searching_Mode_Status(true);
-                //}
-                int title_indx = cursor_Notes.getColumnIndex("title");
-                int note_indx = cursor_Notes.getColumnIndex("note");
-
-
-                if(cursor_Notes.getCount() < noteList.size()){
-                    int i = 0;
-                    ///!! la ultima condicion de while solo esta alli porque se esta eliminando debido a que el orden de la lista de ntf2 no es la misma que el actual orden de la lista
-                    while(i <= cursor_Notes.getCount() -1 && i <= noteList.size() -1){
-                        Note _note = noteList.get(i);
-                        cursor_Notes.moveToPosition(i);
-                        if(_note.note_id != cursor_Notes.getLong(0)){
-                            Log.d("2Search", "            Removing: Title: "+_note.title+ "    i: "+ i);
-                            noteList.remove(i);
-                            selected_list.remove(i);
-                            dateEdited_list.remove(i);
-                            noteOriginal_list.remove(i);
-                            adapter.notifyItemRemoved(i);
-                        }else{
-                            noteList.get(i).setTitle(cursor_Notes.getString(4));
-                            noteList.get(i).setNote(cursor_Notes.getString(3));
-                            adapter.notifyItemChanged(i);
-                            i++;
-                        }
-                    }
-                    if(cursor_Notes.getCount() < noteList.size()){
-                        for(int j = noteList.size() -1  ; j >=cursor_Notes.getCount()  ; j --){
-                            Log.d("2Search", "            Removing: Title: "+noteList.get(j).title+ "    j: "+ j);
-                            noteList.remove(j);
-                            selected_list.remove(j);
-                            dateEdited_list.remove(j);
-                            noteOriginal_list.remove(j);
-                            adapter.notifyItemRemoved(j);
-                        }
-                    }
-                }else if (cursor_Notes.getCount() > noteList.size()){
-                    int i = 0;
-                    while(i <= noteList.size() -1){
-                        cursor_Notes.moveToPosition(i);
-                        Note _note = noteList.get(i);
-                        Log.d("2Search", "            first Adding: Title: "+_note.title+ "    i: "+ i);
-                        if(_note.note_id != cursor_Notes.getLong(0)){
-
-
-                            Note note_adding = DB_N.getASpecificNote(cursor_Notes.getLong(0));
-                            Log.d("2Search", "            Adding: Title: "+note_adding.title+ "    i: "+ i);
-                            dateEdited_list.add(i,DoN.Set_Date_of_Note_Item_View(note_adding.date,start_of_today));
-                            noteOriginal_list.add(i,note_adding.note);
-                            note_adding.setTitle(cursor_Notes.getString(4));
-                            note_adding.setNote(cursor_Notes.getString(3));
-                            selected_list.add(i,false);
-                            noteList.add(i,note_adding);
-                            adapter.notifyItemInserted(i);
-                        }else{
-                            noteList.get(i).setTitle(cursor_Notes.getString(4));
-                            noteList.get(i).setNote(cursor_Notes.getString(3));
-                            adapter.notifyItemChanged(i);
-                        }
-                        i++;
-                    }
-                    if(cursor_Notes.getCount() > noteList.size()){
-                        for(int j = noteList.size()   ; j <=cursor_Notes.getCount() -1  ; j ++){
-                            cursor_Notes.moveToPosition(j);
-                            Note note_adding = DB_N.getASpecificNote(cursor_Notes.getLong(0));
-                            Log.d("2Search", "            Adding: Title: "+note_adding.title+ "    j: "+ j);
-                            dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(note_adding.date,start_of_today));
-                            noteOriginal_list.add(note_adding.note);
-                            note_adding.setTitle(cursor_Notes.getString(4));
-                            note_adding.setNote(cursor_Notes.getString(3));
-                            selected_list.add(false);
-                            noteList.add(note_adding);
-                            adapter.notifyItemInserted(j);
-                        }
-                    }
-                }else{
-                    while(cursor_Notes.moveToNext()){
-                        int i = cursor_Notes.getPosition();
-                        Note _note = noteList.get(i);
-                        Log.d("2Search", "            Just updating: Title: "+_note.title+ "    i: "+ i);
-                        noteList.get(i).setTitle(cursor_Notes.getString(4));
-                        noteList.get(i).setNote(cursor_Notes.getString(3));
-                        adapter.notifyItemChanged(i);
-                        //i++;
-                    }
-
-                }
-            }
-        }
     }
 
     /// TrashCan_Access:
@@ -591,8 +464,8 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
                 }
             }
         }
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        //recyclerView.setAdapter(adapter);
+        //recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
     private void Clear_Lists(){
         if(noteOriginal_list.isEmpty()&&selected_list.isEmpty()){
@@ -614,31 +487,6 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
 
     @Override
     public void onItemClick(int position, View v) {
-        if(!adapter.Get_Searching_Mode_Status()){
-            if(selection_mode) {
-                Select_Item(position, v);
-                return;
-            }
-
-            Note _note = noteList.get(position);
-            Intent goTo = new Intent(this, MainActivity.class);
-            goTo.putExtra("send_date_of_note",_note.date);
-            goTo.putExtra("send_note_id",_note.note_id);
-            startActivity(goTo);
-            overridePendingTransition(R.anim.slide_left_in,R.anim.slide_left_out);
-        }else{
-            if(selection_mode) {
-                //!! Must correct this section
-                Select_Item(position, v);
-                return;
-            }
-
-            Intent goTo = new Intent(this, MainActivity.class);
-            goTo.putExtra("send_note_id",noteList.get(position).getNote_id());
-            startActivity(goTo);
-            overridePendingTransition(R.anim.slide_left_in,R.anim.slide_left_out);
-
-        }
     }
 
     @Override
@@ -646,167 +494,37 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         Select_Item(position, v);
     }
     private void Select_Item(int position, View v) {
-        selected_list.set(position,!selected_list.get(position));// invert value
-
-        selection_count += selected_list.get(position) ? 1 : -1; /// Ternary Operator!
-
-        if(!selection_mode) fa_btn.startAnimation(Animation_FloatingButton_Disappear);
-
-        selection_mode = selection_count > 0;
-
-        selected_positions_list.add(0,position);
-
-
-        if(selection_item_menu_PopUp.popupWindow == null && selection_count >= 2){
-            //--Buscar estado del pin de las dos primeras notas seleccionadas:
-            Note _note = noteList.get(selected_positions_list.get(0));
-            Note _note2 = noteList.get(selected_positions_list.get(1));
-
-            //pin_initial_state_MS = false;
-            pin_initial_state_MS = _note.getPin() & _note2.getPin() || _note2.getPin(); /// AND Operator !!--Verificar si la opcion de elegir lo primero que escoja el usuario es lo mejor
-
-
-            selection_item_menu_PopUp.setListener_dismiss(this);
-            selection_item_menu_PopUp.show(v, pin_initial_state_MS);
-
-            adapter.Change_multi_selection_state(selection_mode);
-            adapter.notifyItemChanged(position,this);
-            adapter.notifyItemChanged(selected_positions_list.get(1),this);//!!se estan desvaneciendo sin las animaciones
-
-            //fa_btn.startAnimation(AnimationLayoutDimDisappear_Normal);
-        }
-        if(selection_item_menu_PopUp.popupWindow != null && !selection_mode){
-            //selection_item_menu_PopUp.popupWindow.dismiss();
-            //selection_item_menu_PopUp.popupWindow = null;
-            //adapter.Change_multi_selection_state(selection_mode);
-
-            //selected_positions_list.clear();
-            //fa_btn.startAnimation(AnimationLayoutDimAppear);
-            Restart_Selection();
-        }
-        if(selection_item_menu_PopUp.popupWindow != null && selection_mode){
-            //selection_item_menu_PopUp.popupWindow.update(v,60,-150,140,360);
-        }
-        adapter.notifyItemChanged(position);//!! se esta duplicando con la instruccion de arriba
-
-        //---Set unselecting_view to repeated unselect
-        if(selected_positions_list.size()==2) {
-            if(Objects.equals(position, selected_positions_list.get(1))){
-                adapter.Change_is_repeated_value(true);
-                selected_positions_list.clear();
-            }
-        }
-
-        if(selected_positions_list.size()==3) selected_positions_list.remove(2);
-        if(!selection_mode) fa_btn.startAnimation(Animation_FloatingButton_Appear);
     }
 
     /// Pin Items:
     @Override
     public void PinItem(int position) {
-        Note _note = noteList.get(position);
-        //int _pin = _note.getPin() ^ 1;      //XOR Operator
-
-
-        //!!--en modo multiple seleccion, cambiar el pin dependiendo del color del pin
-            //!!--no invertir todo
-        if(pin_multi_change && pin_initial_state_MS ^ _note.getPin()){///XOR Operator
-            selected_list.set(position,!selected_list.get(position));// invert value
-            adapter.notifyItemChanged(position);
-            return;
-        }
-
-        Toast.makeText(this, "Repeated pinned", Toast.LENGTH_SHORT).show();
-        adapter.Change_is_repeated_value(true);
-
-        boolean _pin = pin_multi_change ? !pin_initial_state_MS : !_note.getPin();///Ternary Operator
-
-
-        if(DB_N.Modify_Pin_Status(_note.note_id,_pin)){
-            RecyclerView_Pin_Update(position);
-        }else{
-            Toast.makeText(Memo_Board.this, "Not_Pin_Modified", Toast.LENGTH_SHORT).show();
-        }
     }
     public void RecyclerView_Pin_Update(int position){
-
-        Note _note = noteList.get(position);
-        String _date= dateEdited_list.get(position);
-        String _noteOriginal= noteOriginal_list.get(position);
-        boolean _selected=false;
-        selected_list.set(position,false);
-        adapter.notifyItemChanged(position);
-
-        dateEdited_list.remove(position);
-        noteOriginal_list.remove(position);
-        selected_list.remove(position);
-
-        noteList.remove(position);
-
-
-        int current_pinned_notes = 0;
-        if(adapter.Get_Searching_Mode_Status() == true){
-            int i = 0 ;
-            while (i <= noteList.size()-1) {
-                if(noteList.get(i).pin != _note.pin){/// Pin
-                    while(_note.date < noteList.get(i).date ){/// Date
-                        i++;
-                    }
-                    current_pinned_notes = i;
-                    break;
-                }
-                i++;
-            }
-
-        }else{
-            current_pinned_notes = DB_N.get_Specific_Note_Sorted_by_Pin_and_Date(_note.note_id);
-        }
-        //Log.d("Pin","   current_pin:" + current_pinned_notes+ "    position:" + position);
-
-        dateEdited_list.add(current_pinned_notes,_date);
-        noteOriginal_list.add(current_pinned_notes,_noteOriginal);
-        //--cambio de estado con referencia al anterior de (0 a 1)
-        //_note.setPin(_note.getPin() ^ 1);       //XOR Operator
-        _note.setPin(!_note.getPin());
-        noteList.add(current_pinned_notes,_note);
-        selected_list.add(current_pinned_notes,_selected);
-        adapter.notifyItemMoved(position,current_pinned_notes);
-        adapter.notifyItemChanged(current_pinned_notes);
-
-        Restart_Selection();
     }
 
     /// Reminder
     @Override
     public void SetReminder(int position) {
-        layout_dim.setVisibility(View.VISIBLE);
-        layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.white_sand_light)));
-        layout_dim.startAnimation(AnimationLayoutDimAppear);
 
-        adapter.Change_is_repeated_value(true);
-        Reminder_PopUpWindow reminder_PopUp = new Reminder_PopUpWindow(this, position);
-        reminder_PopUp.setListener(this);
-        reminder_PopUp.setListener_dismiss(this);
+        ///layout_dim.setVisibility(View.VISIBLE);
+        ///layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.white_sand_light)));
+        ///layout_dim.startAnimation(AnimationLayoutDimAppear);
 
-        Note _note = noteList.get(position);
-        reminder_PopUp.show(main, _note);
+        /////adapter.Change_is_repeated_value(true);
+        ///Reminder_PopUpWindow reminder_PopUp = new Reminder_PopUpWindow(this, position);
+        ///reminder_PopUp.setListener(this);
+        ///reminder_PopUp.setListener_dismiss(this);
+
+        ///Note _note = noteList.get(position);
+        ///reminder_PopUp.show(main, _note);
     }
     @Override
     public void OnValueSelected(int position, long alarm_time) {
-        Note _note = noteList.get(position);
-        selected_list.set(position,false);
-
-
-        _note.setReminder(alarm_time);
-        //!!---- actualizar type and interval
-        _note.setReminder_type(0);
-        _note.setReminder_interval(0);
-        noteList.remove(position);
-        noteList.add(position,_note);
-        adapter.notifyItemChanged(position);
     }
     @Override
     public void onPopupClosed(int salida, int position) {
+
         layout_dim.setVisibility(View.VISIBLE);
         Restart_Selection();
         if(salida == 1){//setter
@@ -823,9 +541,31 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
 
             return;
         }
-        selected_list.set(position,false);
 
-        adapter.notifyItemChanged(position);
+        //////Have to put this into the NoteFragment:
+        ///    //selected_list.set(position,false);
+
+        ///    //adapter.notifyItemChanged(position);
+        //Reminder_PopUpWindow reminderPopUpWindow = Reminder_PopUpWindow(new Reminder_PopUpWindow(){
+        //    @Override
+        //    public void onPopupClosed_Repeater(int salida) {
+
+        //        layout_dim.setVisibility(View.VISIBLE);
+
+        //        layout_dim.startAnimation(AnimationLayoutDimDisappear_Normal);
+
+        //    }
+
+        //});
+
+        //notesFragment.adapter_noteFragment.notifyItemChanged(position);
+        //memoBoardNewAuxOutReminderListener.onMemoBoardNewAux_OutReminder(salida,position);
+
+
+        if(memoBoardNewAuxOutReminderListener != null){
+            memoBoardNewAuxOutReminderListener.onMemoBoardNewAux_OutReminder(salida,position);
+        }
+
         layout_dim.startAnimation(AnimationLayoutDimDisappear_Normal);
 
         ///!!-- duplicated
@@ -836,31 +576,8 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
 
     @Override
     public void RemoveItem(int position) {
-        Note _note = noteList.get(position);
-
-        Reminder_Notification.Cancel_Reminder_Alarm(main,_note.note_id,0, _note.reminder);
-
-        if(DB_N.Send_Note_To_Trash(_note.note_id,_note.date,_note.title,noteOriginal_list.get(position),_note.pin,20)){
-            //----Remove Note from Recycler View
-            dateEdited_list.remove(position);
-            noteOriginal_list.remove(position);
-            noteList.remove(position);
-            selected_list.remove(position);
-            adapter.notifyItemRemoved(position);
-
-            Restart_Selection();
-        }
     }
     private void Restart_Selection() {
-        selection_count =0;
-        selection_mode = false;
-        selected_positions_list.clear();
-        if(selection_item_menu_PopUp.popupWindow != null){
-            selection_item_menu_PopUp.popupWindow.dismiss();
-            selection_item_menu_PopUp.popupWindow = null;
-        }
-        if(!selection_mode) fa_btn.startAnimation(Animation_FloatingButton_Appear);
-        adapter.Change_multi_selection_state(false);
     }
 
     public void Go_To_Trash_Can(){
@@ -928,5 +645,45 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
             selected_positions_list.clear();
         }
 
+    }
+
+    @Override
+    public void onNoteFragment_Reminder_Open(int salida, int position, Note note) {
+        layout_dim.setVisibility(View.VISIBLE);
+        layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.white_sand_light)));
+        layout_dim.startAnimation(AnimationLayoutDimAppear);
+
+        //adapter.Change_is_repeated_value(true);
+        Reminder_PopUpWindow reminder_PopUp = new Reminder_PopUpWindow(this, position);
+        reminder_PopUp.setListener(this);
+        reminder_PopUp.setListener_dismiss(this);
+
+
+
+        //Note _note = noteList.get(position);
+        reminder_PopUp.show(main, note);
+    }
+    public void ejecutarPopUP(MemoBoardNewAux_OutReminder_Listener listener, Note note){
+        Reminder_PopUpWindow reminder_PopUp = new Reminder_PopUpWindow(this, 0);
+        //reminder_PopUp.setListener(this);
+        //reminder_PopUp.setListener_dismiss(this);
+
+
+
+        ////Note _note = noteList.get(position);
+        //reminder_PopUp.show(main, note);
+        this.memoBoardNewAuxOutReminderListener = listener;
+        reminder_PopUp = new Reminder_PopUpWindow(new Reminder_PopUpWindow.PopupDismissListener(){
+            @Override
+            public void onPopupClosed(int salida, int position){
+                if(memoBoardNewAuxOutReminderListener != null){
+                    memoBoardNewAuxOutReminderListener.onMemoBoardNewAux_OutReminder(salida,position);
+                }
+            }
+
+        });
+        reminder_PopUp.setListener(this);
+        reminder_PopUp.setListener_dismiss(this);
+        reminder_PopUp.show(main, note);
     }
 }

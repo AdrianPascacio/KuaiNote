@@ -273,7 +273,7 @@
         android:layout_marginTop="0dp"
         android:layout_marginRight="38dp"
         android:layout_marginBottom="0dp"
-        android:gravity="center_vertical"
+        android:paddingTop="10dp"
         android:orientation="vertical">
 
 
@@ -295,7 +295,8 @@
         android:layout_marginTop="0dp"
         android:layout_marginRight="38dp"
         android:layout_marginBottom="0dp"
-        android:gravity="center_vertical"
+        android:paddingTop="16dp"
+        android:gravity="center_horizontal"
         android:orientation="vertical">
 
 
@@ -304,7 +305,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_gravity="top"
-            android:layout_marginLeft="10dp"
+            android:layout_marginLeft="9dp"
             android:layout_marginBottom="0dp"
             android:background="@drawable/icon_complete_task_test_4"
             android:backgroundTint="@color/item_visualizer_icon_neutral_tint"
@@ -313,14 +314,41 @@
             android:longClickable="false" />
     </LinearLayout>
     <LinearLayout
-        android:id="@+id/Layout_Upper_Line"
         android:layout_width="match_parent"
-        android:layout_height="5dp"
-        android:layout_gravity="top"
-        android:layout_marginTop="0dp"
-        android:gravity="center_vertical"
-        android:background="@drawable/task_main_upper_line"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+
+        >
+        <LinearLayout
+            android:id="@+id/Layout_Upper_Line"
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:layout_gravity="top"
+            android:layout_marginTop="0dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/task_main_upper_line"
+            android:orientation="vertical"
+
+            >
+        </LinearLayout>
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            ></Space>
+        <LinearLayout
+            android:id="@+id/Layout_Button_Line"
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:layout_gravity="top"
+            android:layout_marginTop="0dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/task_main_upper_line"
+            android:orientation="vertical"
+
+            >
+
+        </LinearLayout>
 
     </LinearLayout>
 

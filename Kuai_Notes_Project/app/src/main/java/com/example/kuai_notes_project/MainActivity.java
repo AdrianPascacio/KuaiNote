@@ -2,11 +2,10 @@ package com.example.kuai_notes_project;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
@@ -15,7 +14,6 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,13 +36,34 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
     private FrameLayout fl_Change_Pin_Status_Ghost, fl_Change_Reminder_Status_Ghost, fl_Back_Ghost, fl_Delete_Ghost;
     private Date_of_Note DoN;
     private View layout_date_and_info, layout_body_note, layout_dim;
-    private Animation AnimationPin, AnimationReminder, AnimationDate, AnimationDateInvert, AnimationInfo, AnimationInfoInvert, AnimationPinAppear, AnimationPinFade;
+    private Animation AnimationPin, AnimationReminder, AnimationDate, AnimationDateInvert, AnimationDateInvert_Debounce_Slower, AnimationInfo, AnimationInfoInvert, AnimationInfoInvert_Debounce_Slower, AnimationPinAppear, AnimationPinFade;
     private Animation AnimationNoteAppear, AnimationTitleAppear, AnimationNoteHintFading;
     private Animation AnimationLayoutDimAppear, AnimationLayoutDimDisappear_Normal,AnimationLayoutDimDisappear_Setter,AnimationLayoutDimDisappear_Cancel;
     private int previous_note_size = -1;
     private char last_deleted_char = '0';
     Indent_Replicator indentReplicator;
+    private final Handler debounceHandler = new Handler(Looper.getMainLooper());
+    private Runnable debounceRunnable;
+    private static final long DEBOUNCE_DELAY_OF_HIDE_INFO = 1700;
+
+    private void Date_Format_Change_With_Debounce(){
+        if (debounceHandler != null){//Si existia previamente se cancela
+            debounceHandler.removeCallbacks(debounceRunnable);
+        }
+
+        debounceRunnable = new Runnable() {//Creacion de tarea para ejecucion con debounce:
+            @Override
+            public void run() {
+                Date_Format_Change_Slower();
+            }
+        };
+
+        debounceHandler.postDelayed(debounceRunnable, DEBOUNCE_DELAY_OF_HIDE_INFO); //programacion de la tarea
+    }
+
+
     ///private Space space_below_note;
+
 
 
     @Override
@@ -106,8 +125,10 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
         AnimationReminder = AnimationUtils.loadAnimation(this, R.anim.reminder_visualizer_change_status);
         AnimationDate = AnimationUtils.loadAnimation(this, R.anim.date_visualizer);
         AnimationDateInvert = AnimationUtils.loadAnimation(this, R.anim.date_visualizer_invert);
+        AnimationDateInvert_Debounce_Slower = AnimationUtils.loadAnimation(this, R.anim.date_visualizer_invert_slower);
         AnimationInfo = AnimationUtils.loadAnimation(this, R.anim.info_visualizer);
         AnimationInfoInvert = AnimationUtils.loadAnimation(this, R.anim.info_visualizer_invert);
+        AnimationInfoInvert_Debounce_Slower = AnimationUtils.loadAnimation(this, R.anim.info_visualizer_invert_debounce_slower);
         AnimationPinAppear = AnimationUtils.loadAnimation(this, R.anim.appear_visualizer);
         AnimationPinFade = AnimationUtils.loadAnimation(this, R.anim.fade_visualizer);
         AnimationNoteAppear = AnimationUtils.loadAnimation(this, R.anim.note_appear_mainvisualizer);
@@ -150,6 +171,9 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
             public void afterTextChanged(Editable s) {
                 change_in_note = true;
                 Verify_if_exist_something();
+                if(show_note_info){
+                    Date_Format_Change_With_Debounce();
+                }
             }
 
             @Override
@@ -163,6 +187,8 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
                 change_in_note = true;
                 if (show_note_info) {
                     tv_Info.setText(DoN.Set_Date_Note_Only_Information(et_Note.getText().toString()));
+
+                    Date_Format_Change_With_Debounce();
                 }
                 Verify_if_exist_something();
 
@@ -475,6 +501,19 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
         } else {
             if (note_exist) tv_Date.startAnimation(AnimationDateInvert);
             tv_Info.startAnimation(AnimationInfoInvert);
+        }
+    }
+    private void Date_Format_Change_Slower() { //Se creo una refactorizacion que agrega una evaluacion adicional de 2 >  a 3 evaluaciones, en post de no duplicar codigo
+        show_note_info = !show_note_info;
+        boolean note_exist = note.note_id != 0;
+        tv_Date.setText(note_exist ? DoN.Set_Date_of_Note_In_Visualizer(note.date) : ""); ///Ternary Operator
+        if (show_note_info) {
+            if (note_exist) tv_Date.startAnimation(AnimationDate);
+            tv_Info.setText(DoN.Set_Date_Note_Only_Information(et_Note.getText().toString()));
+            tv_Info.startAnimation(AnimationInfo);
+        } else {
+            if (note_exist) tv_Date.startAnimation(AnimationDateInvert_Debounce_Slower);
+            tv_Info.startAnimation(AnimationInfoInvert_Debounce_Slower);
         }
     }
 

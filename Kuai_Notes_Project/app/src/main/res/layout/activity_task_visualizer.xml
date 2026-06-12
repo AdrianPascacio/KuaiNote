@@ -2,22 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/note_visualizer_main_background"
-    tools:context=".MainActivity"
-    >
-
-    <!--android:background="#FFECC4"-->
-    <!--android:background="#FFF3D1"-->
-
-    <LinearLayout
-        android:id="@+id/Layout_Task_Main"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="81dp"
-        android:gravity="start|top"
+    android:id="@+id/main" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/note_visualizer_main_background" tools:context=".MainActivity" > <!--android:background="#FFECC4"--> <!--android:background="#FFF3D1"--> <LinearLayout android:id="@+id/Layout_Task_Main" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="81dp" android:gravity="start|top"
         android:background="@android:color/transparent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"        android:orientation="horizontal"
@@ -126,6 +111,7 @@
             android:textColor="@color/note_visualizer_information_text_color"
             android:textSize="13sp"
             android:textStyle="bold"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintStart_toStartOf="parent"
@@ -143,6 +129,7 @@
             android:textColor="@color/note_visualizer_information_text_color"
             android:textSize="13sp"
             android:textStyle="bold"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintStart_toStartOf="parent"
@@ -150,12 +137,50 @@
 
 
     </LinearLayout>
+    <TextView
+        android:id="@+id/Task_Completion2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="5dp"
+        android:background="@android:color/transparent"
+        android:hint="2/4"
+        android:lineSpacingExtra="2sp"
+        android:paddingBottom="1dp"
+        android:textColor="@color/note_visualizer_information_text_color"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/Layout_Task_Main"
+        />
+
+    <TextView
+        android:id="@+id/Task_Date2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="10dp"
+        android:translationY="0dp"
+        android:background="@android:color/transparent"
+        android:hint="Ultima modificacion: 2"
+        android:maxWidth="240dp"
+        android:lineSpacingExtra="2sp"
+        android:textColor="@color/note_visualizer_information_text_color"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/Layout_Task_Main"
+        />
 
     <FrameLayout
         android:id="@+id/FrameLayout_Insert_Sub_Task_Initial"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginRight="33dp"
+        android:layout_marginRight="26dp"
         android:layout_marginTop="3dp"
         android:background="@drawable/icon_insert_sub_task_test_4"
         android:backgroundTint="@color/green_dark_cha"
@@ -169,8 +194,8 @@
         android:id="@+id/FrameLayout_Order"
         android:layout_width="24dp"
         android:layout_height="23dp"
-        android:layout_marginRight="33dp"
-        android:layout_marginTop="36dp"
+        android:layout_marginRight="29dp"
+        android:layout_marginTop="35dp"
         android:background="@drawable/sort_icon_uncomplete_first_2"
         android:backgroundTint="@color/green_dark_cha"
         android:clickable="true"
@@ -271,10 +296,10 @@
         android:backgroundTint="@color/Neutral_gray_icon_note"
         android:clickable="true"
         android:focusable="true"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintHorizontal_bias="0.8769"
-        android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent" />
 
     <FrameLayout
@@ -317,11 +342,12 @@
         android:id="@+id/FrameLayout_Copy_To_Clipboard"
         android:layout_width="24dp"
         android:layout_height="23dp"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="35dp"
         android:background="@drawable/copy_icon_test_3"
         android:backgroundTint="@color/Neutral_gray_icon_note"
         android:clickable="true"
         android:focusable="true"
+        android:translationY="-29dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintHorizontal_bias="0.80"
         app:layout_constraintEnd_toEndOf="parent"

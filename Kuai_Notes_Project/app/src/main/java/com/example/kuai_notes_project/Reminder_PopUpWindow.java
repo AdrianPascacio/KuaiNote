@@ -30,6 +30,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelectedListener_Repeater, Repeater_PopUpWindow.PopupDismissListener_Repeater,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_None,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_X_Hour,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_X_Day,Note_Update_Listener,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_Day_Of_Week,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_Day_Of_Month   {
+
     LayoutInflater layoutInflater;
     PopupWindow popupWindow;
     Calendar calendar = null;
@@ -53,6 +54,10 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
 
     private LocalDate today = LocalDate.now();
     private int days_until_picked_day_of_week = 0;
+
+    public Reminder_PopUpWindow(PopupDismissListener popupDismissListener) {
+    }
+
 
     @Override
     public void Update_Note_Content(int indent_type, char last_deleted_char, int previous_note_size, int cursor_selection) {
@@ -177,7 +182,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
         void OnValueSelected(int position, long alarm_Time);
     }
 
-    private final Context context;
+    private Context context = null;
     private OnValueSelectedListener listener;
 
     public Reminder_PopUpWindow(Context context, int position){

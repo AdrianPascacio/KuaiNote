@@ -62,7 +62,7 @@
             android:name=".Aux_Search_In_Tasks"
             android:exported="false" />
         <activity
-            android:name=".Memo_Board"
+            android:name=".Memo_Board_New_Aux"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

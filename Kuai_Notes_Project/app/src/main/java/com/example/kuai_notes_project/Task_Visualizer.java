@@ -44,7 +44,8 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
     private long sub_taskID_a =   0;
     private long sub_taskID_b =   0;
     private DB_Tasks DB_T;
-    private TextView tv_Date, tv_Completion;
+    //private TextView tv_Date, tv_Completion;
+    private TextView tv_Date2, tv_Completion2;
     private EditText et_Task_main;
     private Note note = new Note();
     private Task_Main task = new Task_Main();
@@ -65,6 +66,9 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
     private Date_of_Note DoN;
     private View layout_date_and_info, layout_body_task, layout_dim;
     private Animation AnimationPin, AnimationReminder, AnimationDate, AnimationDateInvert, AnimationInfo, AnimationInfoInvert, AnimationPinAppear, AnimationPinFade;
+    private Animation AnimationSetOrder_Change_Sort;
+    private Animation AnimationCopy_Confirmed;
+    private Animation AnimationSubTask_Inserted;
     private Animation AnimationNoteAppear, AnimationTitleAppear, AnimationNoteHintFading, Animation_FloatingButton_Appear, Animation_FloatingButton_Disappear;
     private Animation AnimationLayoutDimAppear, AnimationLayoutDimDisappear_Normal,AnimationLayoutDimDisappear_Setter,AnimationLayoutDimDisappear_Cancel;
     private int previous_note_size = -1;
@@ -1082,8 +1086,11 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         selected_positions_list = new ArrayList<>();
         DB_T = new DB_Tasks(this);
 
-        tv_Completion = findViewById(R.id.Task_Completion);
-        tv_Date = findViewById(R.id.Task_Date);
+        ///tv_Completion = findViewById(R.id.Task_Completion);
+        ///tv_Date = findViewById(R.id.Task_Date);
+
+        tv_Completion2 = findViewById(R.id.Task_Completion2);
+        tv_Date2 = findViewById(R.id.Task_Date2);
 
         et_Task_main = findViewById(R.id.Task_Main_Text);
 
@@ -1107,6 +1114,9 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         layout_date_and_info = findViewById(R.id.Layout_date_and_info);
         layout_body_task = findViewById(R.id.Layout_Body_Task);
 
+        AnimationCopy_Confirmed = AnimationUtils.loadAnimation(this, R.anim.copy_confirmed);
+        AnimationSetOrder_Change_Sort = AnimationUtils.loadAnimation(this, R.anim.set_order_change_sort);
+        AnimationSubTask_Inserted = AnimationUtils.loadAnimation(this, R.anim.sub_task_inserted);
         AnimationPin = AnimationUtils.loadAnimation(this, R.anim.pin_visualizer_change_status);
         AnimationReminder = AnimationUtils.loadAnimation(this, R.anim.reminder_visualizer_change_status);
         AnimationDate = AnimationUtils.loadAnimation(this, R.anim.date_visualizer);
@@ -1133,20 +1143,26 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         indentReplicator = new Indent_Replicator(this);
 
 
+        ///tv_Date.setVisibility(View.GONE);
 
         if (received_task_id != 0) {
             Initialize_Received_Note(received_task_id);
             Set_Written_Note_Style();
             fl_Insert_Sub_Task_Initial.setVisibility(View.GONE);
+            //fl_Insert_Sub_Task_Initial.animate().alpha(0);
             fl_Insert_Sub_Task.setVisibility(View.VISIBLE);
             fl_Set_Order.setVisibility(Is_Valid_To_Sort_Completed_Sub_Tasks()? View.VISIBLE : View.GONE);
         } else {
             Set_Blank_Note_Style();
             fl_Insert_Sub_Task_Initial.setVisibility(View.VISIBLE);
+            //fl_Insert_Sub_Task_Initial.animate().alpha(1);
             fl_Insert_Sub_Task.setVisibility(View.GONE);
-            tv_Completion.setVisibility(View.GONE);
-            tv_Date.setVisibility(View.GONE);
+            ///tv_Completion.setVisibility(View.GONE);
+            tv_Completion2.setVisibility(View.GONE);
+            ///tv_Date.setVisibility(View.GONE);
+            tv_Date2.setVisibility(View.GONE);
             fl_Set_Order.setVisibility(View.GONE);
+
 
             new Handler().postDelayed(new Runnable() {//Se enfoca en titulo del tasky abre el teclado solo si el task es nuevo
                 @Override
@@ -1184,6 +1200,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                 Update_Completion_Ratio();
                 //!!--Need to update this (visibility update) to → (appear and disappear function):
                 fl_Set_Order.setVisibility(Is_Valid_To_Sort_Completed_Sub_Tasks()? View.VISIBLE : View.GONE);
+                fl_Insert_Sub_Task.startAnimation(AnimationSubTask_Inserted);
             }
         });
         fl_Insert_Sub_Task_Initial.setOnClickListener(new View.OnClickListener() {
@@ -1198,14 +1215,30 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                     Change_Complete_Main_Task_Status();
                 }
                 Update_Completion_Ratio();
-                fl_Insert_Sub_Task_Initial.setVisibility(View.GONE);
-                fl_Insert_Sub_Task_Initial.setAlpha(0f);
+                fl_Insert_Sub_Task_Initial.animate().alpha(0).setDuration(500).withEndAction(new Runnable(){
+                    @Override
+                    public void run(){
+                        fl_Insert_Sub_Task_Initial.setVisibility(View.GONE);
+                        fl_Insert_Sub_Task_Initial.setFocusable(false);
+                        fl_Insert_Sub_Task_Initial.setClickable(false);
+                    }
+                });
+                ///fa_btn.animate().alpha(0f).scaleY(0.7f).scaleX(0.7f).setDuration(325).withEndAction(new Runnable() {
+                ///    @Override
+                ///    public void run() {
+                ///        fa_btn.setFocusable(false);
+                ///        fa_btn.setClickable(false);
+                ///        fa_btn.setVisibility(View.GONE);
+                ///    }
+                ///});
+
             }
         });
         fl_Copy_To_Clipboard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Copy_Tasks_To_Clipboard();
+                fl_Copy_To_Clipboard.startAnimation(AnimationCopy_Confirmed);
             }
         });
         fl_Set_Order.setOnClickListener(new View.OnClickListener() {
@@ -1214,12 +1247,15 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                 Set_Tasks_Order();
                 if(order_type == 0){
                     fl_Set_Order.setBackground(ContextCompat.getDrawable(fl_Set_Order.getContext(),R.drawable.sort_icon_uncomplete_first_2));
+                    fl_Set_Order.startAnimation(AnimationSetOrder_Change_Sort);
 
                 }else if(order_type == 1){
                     fl_Set_Order.setBackground(ContextCompat.getDrawable(fl_Set_Order.getContext(),R.drawable.sort_icon_test_12));
+                    fl_Set_Order.startAnimation(AnimationSetOrder_Change_Sort);
 
                 }else if(order_type == 2){
                     fl_Set_Order.setBackground(ContextCompat.getDrawable(fl_Set_Order.getContext(),R.drawable.sort_icon_original_sort_2));
+                    fl_Set_Order.startAnimation(AnimationSetOrder_Change_Sort);
 
                 }
                 Debug_sub_task_list_position();
@@ -1261,8 +1297,10 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                         inputMethodManager.hideSoftInputFromWindow(et_Task_main.getWindowToken(),0);
                     }
 
-                    tv_Date.setAlpha(0.9f);
-                    tv_Completion.setAlpha(0.9f);
+                    //tv_Date.setAlpha(0.9f);
+                    tv_Date2.setAlpha(0.9f);
+                    //tv_Completion.setAlpha(0.9f);
+                    tv_Completion2.setAlpha(0.9f);
                     et_Task_main.setAlpha(0.8f);
                     layout_dim.setVisibility(View.VISIBLE);
                     layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.white_sand_light)));
@@ -1673,20 +1711,25 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
 
     private void Update_Date() {
         if(received_task_id > 0){
-            tv_Date.setVisibility(View.VISIBLE);
+            ///tv_Date.setVisibility(View.VISIBLE);
+            tv_Date2.setVisibility(View.VISIBLE);
         }else{
-            tv_Date.setVisibility(View.GONE);
+            ///tv_Date.setVisibility(View.GONE);
+            tv_Date2.setVisibility(View.GONE);
         }
         if(task.completed){
-            tv_Date.setText("Completed: " +  DoN.Set_Date_of_Note_In_Visualizer(task.date_completed));
+            ///tv_Date.setText("Completed: " +  DoN.Set_Date_of_Note_In_Visualizer(task.date_completed));
+            tv_Date2.setText("Completed:2 " +  DoN.Set_Date_of_Note_In_Visualizer(task.date_completed));
         }else{
             if(task.date_created == task.date_modified){
                 //--Date created
-                tv_Date.setText("Created: " + DoN.Set_Date_of_Note_In_Visualizer(task.date_created));
+                ///tv_Date.setText("Created: " + DoN.Set_Date_of_Note_In_Visualizer(task.date_created));
+                tv_Date2.setText("Created:2 " + DoN.Set_Date_of_Note_In_Visualizer(task.date_created));
 
             }else{
                 //--Date modified
-                tv_Date.setText("Modified: "+DoN.Set_Date_of_Note_In_Visualizer(task.date_modified));
+                ///tv_Date.setText("Modified: "+DoN.Set_Date_of_Note_In_Visualizer(task.date_modified));
+                tv_Date2.setText("Modified:2 "+DoN.Set_Date_of_Note_In_Visualizer(task.date_modified));
             }
         }
     }
@@ -1694,12 +1737,29 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
     private void Update_Completion_Ratio() {
         if(task.has_sub_tasks){
             //!!--La visibilidad se esta activando cada vez que se refresca innecesariamente
-            tv_Completion.setVisibility(View.VISIBLE);
+            ///tv_Completion.setVisibility(View.VISIBLE);
+            tv_Completion2.setVisibility(View.VISIBLE);
+            tv_Completion2.setAlpha(0);
+            tv_Completion2.animate().alpha(1).setDuration(300);
             int sub_Task_size = task_subList.size();
             int completion_size = getCompletionSize();
-            tv_Completion.setText(completion_size + "/" + sub_Task_size);
+            ///tv_Completion.setText(completion_size + "/" + sub_Task_size);
+            tv_Completion2.setText(completion_size + "/" + sub_Task_size);
+            tv_Date2.animate().translationY(55).setDuration(500);
+            fl_Copy_To_Clipboard.animate().translationY(0).setDuration(500);
         }else{
-            tv_Completion.setVisibility(View.GONE);
+            ///tv_Completion.setVisibility(View.GONE);
+            tv_Completion2.setVisibility(View.GONE);
+            tv_Date2.animate().translationY(0).setDuration(500);
+            fl_Copy_To_Clipboard.animate().translationY(-55).setDuration(500);
+            ///fa_btn.animate().alpha(0f).scaleY(0.7f).scaleX(0.7f).setDuration(325).withEndAction(new Runnable() {
+            ///    @Override
+            ///    public void run() {
+            ///        fa_btn.setFocusable(false);
+            ///        fa_btn.setClickable(false);
+            ///        fa_btn.setVisibility(View.GONE);
+            ///    }
+            ///});
         }
     }
     private boolean Is_Valid_To_Sort_Completed_Sub_Tasks(){
@@ -1854,8 +1914,10 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
     }
     @Override
     public void onPopupClosed(int salida, int position) { //  0 nada/normal, 1 setter, 2 cancelado
-        tv_Date.setAlpha(1f);
-        tv_Completion.setAlpha(1f);
+        //tv_Date.setAlpha(1f);
+        tv_Date2.setAlpha(1f);
+        //tv_Completion.setAlpha(1f);
+        tv_Completion2.setAlpha(1f);
         ///et_Note.setAlpha(1f);
         layout_dim.setVisibility(View.VISIBLE);
 
@@ -2228,8 +2290,11 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         //if (et_Task_main.getText().toString().isEmpty() ) {
             Delete_Task();
         } else {
-            if (tv_Date.getText().toString().isEmpty()) {
-                tv_Date.setVisibility(View.GONE);
+            ///if (tv_Date.getText().toString().isEmpty()) {
+            ///    tv_Date.setVisibility(View.GONE);
+            ///}
+            if (tv_Date2.getText().toString().isEmpty()) {
+                tv_Date2.setVisibility(View.GONE);
             }
             Return_To_Task_List();
         }
