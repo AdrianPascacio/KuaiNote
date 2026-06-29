@@ -388,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
                 note.getReminder() > 0 ? R.color.item_visualizer_icon_reminder_tint :R.color.Neutral_gray_icon_note)));  ///Ternary Operator
     }
     @Override
-    public void OnValueSelected(int position, long alarm_Time) {
+    public void OnValueSelected(int position, long alarm_Time, int reminder_type, int reminder_interval) {
         note.setReminder(alarm_Time);
         Change_Reminder_Status_Style();
         if(note.note_id==0){//!!---Verificar si realmente es necesario, deberia ya tener un ID si fue guardado

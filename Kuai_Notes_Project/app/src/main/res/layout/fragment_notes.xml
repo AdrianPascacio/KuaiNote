@@ -19,6 +19,7 @@
         android:inputType="text"
         android:text=""
         android:hint="Search:"
+        android:visibility="gone"
         />
 
     <androidx.recyclerview.widget.RecyclerView

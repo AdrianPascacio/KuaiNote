@@ -18,7 +18,7 @@ public class Random_Content_Generator_For_Test {
             Fill_Tasks(i, result.random_number, result.end_of_title, result._current_time);
         }
     }
-    public void Random_Note_Generator(Context context, int Content_Number){
+    public void Random_Notes_Generator(Context context, int Content_Number){
         DB_N = new DB_Notes(context);
 
         for(int i = Content_Number ; i>=0; i--){

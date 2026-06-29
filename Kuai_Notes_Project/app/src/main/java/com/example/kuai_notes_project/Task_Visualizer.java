@@ -162,7 +162,6 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                     viewHolder.itemView.setAlpha(0.5f);
                     Remove_Item(position);
                 }
-
             }
             @Override
             public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive){

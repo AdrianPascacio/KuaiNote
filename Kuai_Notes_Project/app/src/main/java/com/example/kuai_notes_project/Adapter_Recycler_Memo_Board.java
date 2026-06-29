@@ -29,15 +29,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-///180 V3, 258 V6
+///180 V3, 258 V6, 611 22jun2026-V9
 public class Adapter_Recycler_Memo_Board extends RecyclerView.Adapter<Adapter_Recycler_Memo_Board.MyViewHolder> {
     private Context context;
     private ArrayList date_id;
     private ArrayList<Boolean> selected_id;
     private ArrayList<Note> noteList;
-    private boolean is_searching_mode = false;
 
     private final Recycler_Memo_Board_Interface recycler_memo_board_interface;
+    private boolean is_searching_mode = false;
     private boolean multi_selection_state = false;
     private boolean is_repeated = false;
     private int multi_first_count = 2;

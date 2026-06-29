@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Objects;
 
-///324 V3, 305 V4, 358 V6, 306 V7, 450 V7.2, 570 v9.0B
+///324 V3, 305 V4, 358 V6, 306 V7, 450 V7.2, 570 v9.0B, 932 11jul2026
 public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board_Interface, Reminder_PopUpWindow.OnValueSelectedListener,Reminder_PopUpWindow.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener {
     RecyclerView recyclerView;
     ArrayList<String> dateEdited_list;
@@ -534,7 +534,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
 
     /// Content Generation for Test:
     private void Generate_Random_Content_For_Test() {
-        Random_G.Random_Note_Generator(this,20);
+        Random_G.Random_Notes_Generator(this,20);
     }
     private void Generate_Stable_Content_For_Test() {
         Stable_G.Stable_Note_Generator(this,20,0,20,20,20);
@@ -792,7 +792,7 @@ public class Memo_Board extends AppCompatActivity implements Recycler_Memo_Board
         reminder_PopUp.show(main, _note);
     }
     @Override
-    public void OnValueSelected(int position, long alarm_time) {
+    public void OnValueSelected(int position, long alarm_time, int reminder_type, int reminder_interval) {
         Note _note = noteList.get(position);
         selected_list.set(position,false);
 

@@ -78,20 +78,24 @@ public class DB_Tasks extends SQLiteOpenHelper {
                 ///"INSERT INTO Tasks_fts(docid, title, note) VALUES(new._id,new.title, new.note); "+
                 "INSERT INTO Tasks_fts(docid, title) VALUES(new._id,new.title); "+
                 "END;");
-        DB_T.execSQL("Create TRIGGER Before_Tasks_update BEFORE UPDATE ON Tasks BEGIN " +
+        DB_T.execSQL("Create TRIGGER Before_Tasks_update BEFORE UPDATE OF title ON Tasks BEGIN " +
                 //"UPDATE  Notes_fts SET title = new.title, note = new.note WHERE docid = old._id; "+
                 "DELETE FROM Tasks_fts WHERE docid = old._id; "+
                 "END;");
-        DB_T.execSQL("Create TRIGGER After_Tasks_update AFTER UPDATE ON Tasks BEGIN " +
+        DB_T.execSQL("Create TRIGGER After_Tasks_update AFTER UPDATE OF title ON Tasks BEGIN " +
                 //"UPDATE  Notes_fts SET title = new.title, note = new.note WHERE docid = old._id; "+
                 "INSERT INTO Tasks_fts(docid, title) VALUES(new._id, new.title); "+
                 "END;");
-        DB_T.execSQL("Create TRIGGER After_Sub_Tasks_Insert AFTER INSERT ON Tasks_Sub BEGIN " +
-                ///"UPDATE Tasks_fts SET note = COALESCE(note, 'NoPreviousNote') || ' [\n -] ' || COALESCE(new.note, 'NoPreviousNote') "+
+        DB_T.execSQL("Create TRIGGER After_Sub_Tasks_Insert AFTER INSERT  ON Tasks_Sub BEGIN " +
+                //"UPDATE Tasks_fts SET note = COALESCE(note, 'NoPreviousNote') || ' [\n -] ' || COALESCE(new.note, 'NoPreviousNote') "+
                 "UPDATE Tasks_fts SET note =  COALESCE('\n-' || new.note, 'NoPreviousNote') "+
                 "WHERE docid = new.parent_id; "+
                 "END;");
-        DB_T.execSQL("CREATE TRIGGER After_Sub_Tasks_Update AFTER UPDATE ON Tasks_Sub BEGIN " +
+        ///DB_T.execSQL("Create TRIGGER Before_Tasks_Sub_update BEFORE UPDATE OF note ON Tasks_Sub BEGIN " +
+        ///        //"UPDATE  Notes_fts SET title = new.title, note = new.note WHERE docid = old._id; "+
+        ///        "DELETE FROM Tasks_fts WHERE docid = old._id; "+
+        ///        "END;");
+        DB_T.execSQL("CREATE TRIGGER After_Sub_Tasks_Update AFTER UPDATE OF note ON Tasks_Sub BEGIN " +
                 ///"UPDATE Tasks_fts SET note = (SELECT t.note || ' ' || COALESCE(GROUP_CONCAT('\n-'||s.note, ' '), 'NoPreviousNote') " +
                 "UPDATE Tasks_fts SET note = (SELECT  COALESCE(GROUP_CONCAT('\n-'||s.note, ' '), 'NoPreviousNote') " +
                 "FROM Tasks t LEFT JOIN Tasks_Sub s ON t._id = s.parent_id " +
@@ -457,6 +461,24 @@ public class DB_Tasks extends SQLiteOpenHelper {
                 ///        "WHERE f.Tasks_fts MATCH ? AND t.deleted = 0"
 
 
+
+                , new String[]{queryInput});
+        return cursor;
+
+    }
+    public Cursor get_All_Tasks_fts_2(String searched_text){
+        SQLiteDatabase DB_T = this.getReadableDatabase();
+
+        String queryInput = searched_text + "*";
+
+        Cursor cursor = DB_T.rawQuery("select t._id, t.title, t.note, " +
+                        "snippet(Tasks_fts, '[', ']', '...', 1, 4) AS preview, " +
+                        "snippet(Tasks_fts, '[', ']', '...', 0, 4) AS preview_title " +
+
+                        "FROM Tasks t " +
+                        "JOIN Tasks_fts f ON t._id = f.docid " +
+                        "WHERE f.Tasks_fts MATCH ? AND t.deleted = 0 " +
+                        "Order By pin  DESC, completed ASC, date_modified DESC"
 
                 , new String[]{queryInput});
         return cursor;

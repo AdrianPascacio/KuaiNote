@@ -29,6 +29,7 @@ import java.time.Year;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+/// 548 14jul2026 V9.0
 public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelectedListener_Repeater, Repeater_PopUpWindow.PopupDismissListener_Repeater,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_None,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_X_Hour,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_X_Day,Note_Update_Listener,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_Day_Of_Week,Repeater_PopUpWindow.OnValueSelectedListener_Repeater_Every_Day_Of_Month   {
 
     LayoutInflater layoutInflater;
@@ -164,11 +165,8 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
 
     @Override
     public void onPopupClosed_Repeater(int salida) {
-
         layout_dim.setVisibility(View.VISIBLE);
-
         layout_dim.startAnimation(AnimationLayoutDimDisappear_Normal);
-
     }
 
 
@@ -176,26 +174,26 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
         void onPopupClosed(int salida, int position); // 0 nada/normal, 1 cambio realizado, 2 cancelado
     }
     private PopupDismissListener listener_dismiss;
+    public void setListener_dismiss(PopupDismissListener listener){
+        this.listener_dismiss = listener;
+    }
     private View view_brought;
 
     public interface OnValueSelectedListener{
-        void OnValueSelected(int position, long alarm_Time);
+        void OnValueSelected(int position, long alarm_Time, int type, int interval);
+    }
+    private OnValueSelectedListener listener;
+    public void setListener(OnValueSelectedListener listener){
+        this.listener = listener;
     }
 
     private Context context = null;
-    private OnValueSelectedListener listener;
 
     public Reminder_PopUpWindow(Context context, int position){
         this.context = context;
         this.position = position;
     }
 
-    public void setListener(OnValueSelectedListener listener){
-        this.listener = listener;
-    }
-    public void setListener_dismiss(PopupDismissListener listener){
-        this.listener_dismiss = listener;
-    }
 
     private void Disable_Editing_NumberPicker(NumberPicker numberPicker){
         int child_Count = numberPicker.getChildCount();
@@ -223,7 +221,6 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
         String note_title = this.note.title;
         layoutInflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
         container = (ViewGroup) layoutInflater.inflate(R.layout.reminder_setter,null);
-        View divider_1, divider_2,divider_3,divider_4 ;
         NumberPicker  numberpicker_month, numberpicker_year, numberpicker_hour, numberpicker_minute, numberpicker_meridian;
         name_in_reminder = container.findViewById(R.id.Note_title_in_Reminder_Setter);
         label_in_reminder = container.findViewById(R.id.Label_Reminder_Setter);
@@ -231,25 +228,14 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
         btn_cancel_reminder_alarm = container.findViewById(R.id.Reminder_Cancel_Button);
         View layout_np_container = container.findViewById(R.id.Layout_numberpicker_container);
         layout_dim = container.findViewById(R.id.Layout_Dim_Reminder_Setter);
-        Space space_date = container.findViewById(R.id.Space_date);
-        Space space_time = container.findViewById(R.id.Space_time);
         LinearLayout layout_date = container.findViewById(R.id.layot_space_date);
         LinearLayout layout_time = container.findViewById(R.id.layot_space_time);
-        divider_1 = container.findViewById(R.id.divider1);
-        divider_2 = container.findViewById(R.id.divider2);
-        divider_3 = container.findViewById(R.id.divider3);
-        divider_4 = container.findViewById(R.id.divider4);
 
         Animation_setter_need_update = AnimationUtils.loadAnimation(context, R.anim.reminder_setter_btn_need_update);
         AnimationLayoutDimAppear = AnimationUtils.loadAnimation(context, R.anim.layout_dim_appear_reminder_setter);
         AnimationLayoutDimDisappear_Normal = AnimationUtils.loadAnimation(context, R.anim.layout_dim_disappear_normal);
-        int container_width = container.getWidth();
-        //Toast.makeText(context, "container_w: "+container_width, Toast.LENGTH_SHORT).show();
 
-
-        //popupWindow = new PopupWindow(container, 800,900 , true);
         popupWindow = new PopupWindow(container, LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT , true);
-        //popupWindow.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#FFFFFF")));
         if(position == -1){
             //---note Visualizer activity
             popupWindow.setAnimationStyle(R.style.ReminderAnimationInOut_NoteVisualizer);
@@ -505,7 +491,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
                     action_took = true;
 
                     if (listener != null) {
-                        listener.OnValueSelected(position, alarm_Time); // Devolver el valor
+                        listener.OnValueSelected(position, alarm_Time,note.reminder_type,note.reminder_interval); // Devolver el valor
                     }
                     popupWindow.dismiss();
                     if (listener_dismiss != null) {
@@ -524,7 +510,7 @@ public class Reminder_PopUpWindow  implements Repeater_PopUpWindow.OnValueSelect
                 action_took = true;
 
                 if (listener != null) {
-                    listener.OnValueSelected(position, 0); // Devolver el valor
+                    listener.OnValueSelected(position, 0,0,0); // Devolver el valor
                 }
                 popupWindow.dismiss();
                 if (listener_dismiss != null) {

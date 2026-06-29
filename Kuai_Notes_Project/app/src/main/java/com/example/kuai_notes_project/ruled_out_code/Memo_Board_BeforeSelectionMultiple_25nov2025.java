@@ -375,7 +375,7 @@ public class Memo_Board_BeforeSelectionMultiple_25nov2025 extends AppCompatActiv
         reminder_PopUp.show(main, _note);
     }
     @Override
-    public void OnValueSelected(int position, long alarm_time) {
+    public void OnValueSelected(int position, long alarm_time, int reminder_type, int reminder_interval) {
         Note _note = noteList.get(position);
         selected_list.set(position,false);
         unselected_list.set(position,true);
