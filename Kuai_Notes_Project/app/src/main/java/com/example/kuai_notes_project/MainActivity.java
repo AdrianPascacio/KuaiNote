@@ -1,6 +1,7 @@
 package com.example.kuai_notes_project;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,6 +26,16 @@ import androidx.core.view.WindowInsetsCompat;
 
 ///290 V03 , 347 V04, 281 V05, 485 V06, 429 V07, 529 V07antes de refactorizar DB con _id, DB con date = long, DB unificado (soft deleted flag)A , 740L 32264c V07.02 indentado repeticiones diarias en reminder, 784 V07.3.1 antes de optimizar y refactorizar
 public class MainActivity extends AppCompatActivity implements Reminder_PopUpWindow.OnValueSelectedListener, Reminder_PopUpWindow.PopupDismissListener,Note_Update_Listener {
+    private int note_modification_result = 0; /// 0 Element Modification, 1 New Element, 2 Element Deleted
+    public interface NoteVisualizer_Modification_in_Notes {//esto puede ir tambien en una clase separada
+        void onNoteVisualizer_Modification_in_Notes(boolean modification_in_notes, long note_id); // 0 nada/normal, 1 cambio realizado, 2 cancelado
+    }
+    private NoteVisualizer_Modification_in_Notes modification_in_notes;
+    public void setNoteVisualizer_Modification_in_Notes(NoteVisualizer_Modification_in_Notes listener){
+        this.modification_in_notes = listener;
+    }
+    private boolean journal_notes_update;/// If there is a modification or A new Note, there must be an update on the journal note list recyclerview.
+
     private DB_Notes DB_N;
     private TextView tv_Date, tv_Info;
     private EditText et_Title, et_Note;
@@ -452,6 +463,7 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
         }
     }
     private Boolean Save_Note_in_TrashCan() {
+        note_modification_result = 2;
         if (!now_is_something_written) { //if there_is_nothing__wrote > Send to trashcan what was in the database before save
             if (note.title != null || note.note != null) {
                 Log.d("Delete","Delete 1-");
@@ -464,6 +476,7 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
                     return DB_N.Send_Note_To_Trash_With_Out_DataBase_Modification(note.getNote_id(),note.pin,20); //!!--Check cual es la mejor opcion para este valor de expire days
                 }
                 Log.d("Delete","Delete 2-");
+                note_modification_result = -1;
                 Toast.makeText(MainActivity.this, "2- No hay nada que guardar ", Toast.LENGTH_SHORT).show();//si se utiliza reminder y luego se borra
                 return true;
             }
@@ -524,17 +537,37 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
             if (tv_Date.getText().toString().isEmpty()) {
                 tv_Date.setVisibility(View.GONE);
             }
+
             Return_To_Memo_Board();
         }
+
     }
 
     public void Return_To_Memo_Board() {
+
         View view = this.getCurrentFocus();
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
         if (view != null) {
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
+
+        /// Verificacion:::::
+        if (note.note_id == 0 && Note_is_not_empty() && change_in_note) {
+            Log.d("MainActivity", "Return to memo board, saving before");
+            Save_Note();
+            note_modification_result = 1;
+        }
+
+        Intent  resultadoIntent = new Intent();
+        resultadoIntent.putExtra("extra_modificacion", note_modification_result);
+        resultadoIntent.putExtra("extra_id", note.note_id);
+        Log.d("MainActivity", "Result_OK: " + MainActivity.RESULT_OK);
+        Log.d("MainActivity", "Return to memo board, note id: " + note.note_id);
+        setResult(MainActivity.RESULT_OK,resultadoIntent);
+
         finish();
         overridePendingTransition(R.anim.return_activity_slide_right_in, R.anim.return_activity_slide_right_out);
+
     }
 }

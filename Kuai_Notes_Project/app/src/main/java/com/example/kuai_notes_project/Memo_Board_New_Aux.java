@@ -1,10 +1,12 @@
 package com.example.kuai_notes_project;
 
 import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
@@ -12,14 +14,16 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -30,7 +34,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 ///734 13jul2026
-public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragment.Note_Fragment_ReminderListener, NotesFragment.Note_Fragment_Out_ReminderListener, NotesFragment.Note_Fragment_Adding_Option_Available, TasksFragment.Task_Fragment_Adding_Option_Available {
+public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragment.Note_Fragment_ReminderListener, NotesFragment.Note_Fragment_Out_ReminderListener, NotesFragment.Note_Fragment_Adding_Option_Available, TasksFragment.Task_Fragment_Adding_Option_Available{
+
+
 
     public interface MemoBoardNewAux_OutReminder_Listener {//esto puede ir tambien en una clase separada
         void onMemoBoardNewAux_OutReminder(int salida, int position); // 0 nada/normal, 1 cambio realizado, 2 cancelado
@@ -40,6 +46,9 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragme
     public void setMemoBoardNewAuxOutReminderListener(MemoBoardNewAux_OutReminder_Listener outReminderListener){
         this.memoBoardNewAuxOutReminderListener = outReminderListener;
     }
+
+
+    private ActivityResultLauncher<Intent> lanzadorActivityC;
 
     ArrayList<Integer> selected_positions_list;
 
@@ -71,7 +80,7 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragme
 
 
     private static final String CHANNEL_ID = "My_App_Channel";
-
+    private ViewPager2 viewPager;
     NotesFragment notesFragment;
     TasksFragment tasksFragment;
 
@@ -113,10 +122,31 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragme
         getWindow().setNavigationBarColor(getResources().getColor(R.color.main_navigation_bar));
 
         TabLayout tabLayout = findViewById(R.id.tabLayout);
-        ViewPager2 viewPager = findViewById(R.id.viewPager);
+        viewPager = findViewById(R.id.viewPager);
 
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(this);
         viewPager.setAdapter(viewPagerAdapter);
+
+
+        lanzadorActivityC = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    Log.d("MemoBoard_NewAux" , "Result OK: " + MainActivity.RESULT_OK );
+                    Log.d("MemoBoard_NewAux" , "result.getData() != null : " + (result.getData() != null) );
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        // ¡Activity C terminó con éxito! Ahora avisamos al Fragment actual
+                        Intent data = result.getData();
+                        int modificacion = data.getIntExtra("extra_modificacion", -1);
+                        long id = data.getLongExtra("extra_id", -1 != -1 ? data.getLongExtra("extra_id", -1) : -1);
+
+                        // Aquí ejecutas tu lógica para actualizar el RecyclerView
+                        Log.d("MemoBoard_NewAux" , "Just Before Update Journal Notes:");
+                        notificarFragmentActual(modificacion, id);
+                    }
+                }
+        );
+
+
 
         new TabLayoutMediator(tabLayout, viewPager, new TabLayoutMediator.TabConfigurationStrategy() {
             @Override
@@ -144,6 +174,15 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragme
                     });
                 }
                 Journal_Section = position;
+
+                // Obtenemos el Fragment actual usando el ID del ViewPager2
+                Fragment currentFragment = getSupportFragmentManager()
+                        .findFragmentByTag("f" + position); // "f" + position es el tag por defecto que usa ViewPager2
+
+                // Si el fragment actual implementa nuestra interfaz, le notificamos
+                if (currentFragment instanceof FragmentRefreshable) {
+                    ((FragmentRefreshable) currentFragment).onFragmentSelected();
+                }
             }
         });
 
@@ -295,6 +334,30 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragme
         });
     }
 
+    public ActivityResultLauncher<Intent> getLanzadorActivityC() {
+        return this.lanzadorActivityC;
+    }
+
+    private void notificarFragmentActual(int modification_in_element, long element_id) {
+        int indexActual = viewPager.getCurrentItem();
+
+        // Buscamos el fragment usando el Tag por defecto de ViewPager2 ("f" + posición)
+        Fragment fragmentActual = getSupportFragmentManager()
+                .findFragmentByTag("f" + indexActual);
+
+        // Si el fragment actual implementa nuestra interfaz, le decimos que se actualice
+        if (fragmentActual instanceof FragmentRefreshable) {
+            Log.d("MemoBoard_New_Aux", "modification_result: " + modification_in_element);
+            if(modification_in_element == 0){
+                ((FragmentRefreshable) fragmentActual).onFragmentElementModification(modification_in_element,element_id);
+            }else if(modification_in_element == 1){
+                ((FragmentRefreshable) fragmentActual).onFragmentNewElement(modification_in_element,element_id);
+            }else if(modification_in_element ==2){
+                ((FragmentRefreshable) fragmentActual).onFragmentElementElimination(modification_in_element,element_id);
+            }
+        }
+    }
+
     /// TrashCan_Access:
     private void toggle_TrashCan_Menu(boolean expand) {
         if (isExpanded == expand) return; // Evita repetir la animación si ya está en ese estado
@@ -385,7 +448,8 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragme
         }else{
             goTo = new Intent(this, Task_Visualizer.class);
         }
-        startActivity(goTo);
+        lanzadorActivityC.launch(goTo);
+        ///startActivity(goTo);
         overridePendingTransition(R.anim.slide_left_in, R.anim.slide_left_out);
     }
 

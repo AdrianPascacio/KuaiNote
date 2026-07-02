@@ -3,6 +3,7 @@ package com.example.kuai_notes_project;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Canvas;
@@ -36,6 +37,9 @@ import java.util.Objects;
 
 //488 01apr2026, 1207 v9.0B
 public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks_Sub_In_Visualizer_Interface, Reminder_PopUpWindow_Tasks.OnValueSelectedListener, Reminder_PopUpWindow_Tasks.PopupDismissListener,Note_Update_Listener{
+    private int task_modification_result = 0; /// 0 Element Modification, 1 New Element, 2 Element Deleted
+
+
     private int order_type = 0;
     private int old_true_position_assigned = -1;
     private int new_position_a =  0;
@@ -1852,7 +1856,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
             fl_Change_Pin_Status.startAnimation(AnimationPinFade);
             fl_Change_Reminder_Status.startAnimation(AnimationPinFade);
 
-            if(note.note_id == 0){
+            if(task.task_id == 0){
                 fl_Delete.startAnimation(AnimationPinFade);
             }
         }
@@ -2206,6 +2210,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
 
     private Boolean Save_Task_in_TrashCan() {
         //!!--Save in trashcan what was saved in data base before all tasks were cleared:
+        task_modification_result = 2;
         if (et_Task_main.getText().toString().isEmpty()) { //if there_is_nothing__wrote > Send to trashcan what was in the database before save
             if (task.note != null || has_sub_tasks_in_database ) {//!!--aqui se debe corregir para que se verifiquen los sub task originales
                 Log.d("Delete","    Delete: 1-");
@@ -2216,6 +2221,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                     Log.d("Delete","    Delete: 2.2- Main task hard delete by non Useful");
                     DB_T.Delete_Hard_Specific_Main_Task(task.task_id);
                 }
+                task_modification_result = -1;
                 Toast.makeText(Task_Visualizer.this, "2- No hay nada que guardar ", Toast.LENGTH_SHORT).show();//si se utiliza reminder y luego se borra
                 return true;
             }
@@ -2299,12 +2305,31 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         }
 
     }
+
     public void Return_To_Task_List() {
         View view = this.getCurrentFocus();
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         if (view != null) {
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
+
+
+        /// Verificacion:::::
+        if (task.task_id == 0 && (Task_is_not_empty() || !All_Current_Sub_Task_Are_Empty_2())  && change_in_task) {
+            Log.d("MainActivity", "Return to memo board, saving before");
+            Save_Task();
+            task_modification_result = 1;
+        }
+
+        Intent resultadoIntent = new Intent();
+        resultadoIntent.putExtra("extra_modificacion", task_modification_result);
+        resultadoIntent.putExtra("extra_id", task.task_id);
+        Log.d("Task_Visualizer", "Result_OK: " + Task_Visualizer.RESULT_OK);
+        Log.d("Task_Visualizer", "Return to memo board, note id: " + task.task_id);
+        setResult(Task_Visualizer.RESULT_OK,resultadoIntent);
+
+
+
         finish();
         overridePendingTransition(R.anim.return_activity_slide_right_in, R.anim.return_activity_slide_right_out);
     }

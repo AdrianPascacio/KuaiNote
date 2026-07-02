@@ -1,4 +1,4 @@
-package com.example.kuai_notes_project;
+package com.example.kuai_notes_project.ruled_out_code;
 
 import android.animation.ObjectAnimator;
 import android.content.Intent;
@@ -29,7 +29,23 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.example.kuai_notes_project.ruled_out_code.Date_of_Note_Item_View_DEPRECATED;
+import com.example.kuai_notes_project.Adapter_Recycler_Memo_Board;
+import com.example.kuai_notes_project.Aux_Search;
+import com.example.kuai_notes_project.Body_Note_Preview;
+import com.example.kuai_notes_project.DB_Notes;
+import com.example.kuai_notes_project.Date_of_Note;
+import com.example.kuai_notes_project.MainActivity;
+import com.example.kuai_notes_project.Note;
+import com.example.kuai_notes_project.R;
+import com.example.kuai_notes_project.Random_Content_Generator_For_Test;
+import com.example.kuai_notes_project.Recycler_Memo_Board_Interface;
+import com.example.kuai_notes_project.Reminder_Notification;
+import com.example.kuai_notes_project.Reminder_PopUpWindow;
+import com.example.kuai_notes_project.Selection_Item_Menu_MemoBoard_PopUpWindow;
+import com.example.kuai_notes_project.Stable_Content_Generator_For_Test;
+import com.example.kuai_notes_project.Tasks_List;
+import com.example.kuai_notes_project.Trash_Can;
+import com.example.kuai_notes_project.ViewPagerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -338,17 +354,17 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if(selection_item_menu_PopUp.popupWindow != null){
-                    for( int i = 0; i < selected_list.size() ; i++){
-                        if(selected_list.get(i)== true){
-                            selected_list.set(i,false);
-                            adapter.notifyItemChanged(i);
-                        }
-                    }
-                    Restart_Selection();
-                }else{
-                    finish();
-                }
+                //if(selection_item_menu_PopUp.popupWindow != null){
+                //    for( int i = 0; i < selected_list.size() ; i++){
+                //        if(selected_list.get(i)== true){
+                //            selected_list.set(i,false);
+                //            adapter.notifyItemChanged(i);
+                //        }
+                //    }
+                //    Restart_Selection();
+                //}else{
+                //    finish();
+                //}
             }
         });
     }
@@ -400,8 +416,8 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
                     while(i <= cursor_Notes.getCount() -1 && i <= noteList.size() -1){
                         Note _note = noteList.get(i);
                         cursor_Notes.moveToPosition(i);
-                        if(_note.note_id != cursor_Notes.getLong(0)){
-                            Log.d("2Search", "            Removing: Title: "+_note.title+ "    i: "+ i);
+                        if(_note.getNote_id() != cursor_Notes.getLong(0)){
+                            Log.d("2Search", "            Removing: Title: "+_note.getTitle()+ "    i: "+ i);
                             noteList.remove(i);
                             selected_list.remove(i);
                             dateEdited_list.remove(i);
@@ -416,7 +432,7 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
                     }
                     if(cursor_Notes.getCount() < noteList.size()){
                         for(int j = noteList.size() -1  ; j >=cursor_Notes.getCount()  ; j --){
-                            Log.d("2Search", "            Removing: Title: "+noteList.get(j).title+ "    j: "+ j);
+                            Log.d("2Search", "            Removing: Title: "+noteList.get(j).getTitle()+ "    j: "+ j);
                             noteList.remove(j);
                             selected_list.remove(j);
                             dateEdited_list.remove(j);
@@ -429,14 +445,14 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
                     while(i <= noteList.size() -1){
                         cursor_Notes.moveToPosition(i);
                         Note _note = noteList.get(i);
-                        Log.d("2Search", "            first Adding: Title: "+_note.title+ "    i: "+ i);
-                        if(_note.note_id != cursor_Notes.getLong(0)){
+                        Log.d("2Search", "            first Adding: Title: "+_note.getTitle()+ "    i: "+ i);
+                        if(_note.getNote_id() != cursor_Notes.getLong(0)){
 
 
                             Note note_adding = DB_N.getASpecificNote(cursor_Notes.getLong(0));
-                            Log.d("2Search", "            Adding: Title: "+note_adding.title+ "    i: "+ i);
-                            dateEdited_list.add(i,DoN.Set_Date_of_Note_Item_View(note_adding.date,start_of_today));
-                            noteOriginal_list.add(i,note_adding.note);
+                            Log.d("2Search", "            Adding: Title: "+note_adding.getTitle()+ "    i: "+ i);
+                            dateEdited_list.add(i,DoN.Set_Date_of_Note_Item_View(note_adding.getDate(),start_of_today));
+                            noteOriginal_list.add(i,note_adding.getNote());
                             note_adding.setTitle(cursor_Notes.getString(4));
                             note_adding.setNote(cursor_Notes.getString(3));
                             selected_list.add(i,false);
@@ -453,9 +469,9 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
                         for(int j = noteList.size()   ; j <=cursor_Notes.getCount() -1  ; j ++){
                             cursor_Notes.moveToPosition(j);
                             Note note_adding = DB_N.getASpecificNote(cursor_Notes.getLong(0));
-                            Log.d("2Search", "            Adding: Title: "+note_adding.title+ "    j: "+ j);
-                            dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(note_adding.date,start_of_today));
-                            noteOriginal_list.add(note_adding.note);
+                            Log.d("2Search", "            Adding: Title: "+note_adding.getTitle()+ "    j: "+ j);
+                            dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(note_adding.getDate(),start_of_today));
+                            noteOriginal_list.add(note_adding.getNote());
                             note_adding.setTitle(cursor_Notes.getString(4));
                             note_adding.setNote(cursor_Notes.getString(3));
                             selected_list.add(false);
@@ -467,7 +483,7 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
                     while(cursor_Notes.moveToNext()){
                         int i = cursor_Notes.getPosition();
                         Note _note = noteList.get(i);
-                        Log.d("2Search", "            Just updating: Title: "+_note.title+ "    i: "+ i);
+                        Log.d("2Search", "            Just updating: Title: "+_note.getTitle()+ "    i: "+ i);
                         noteList.get(i).setTitle(cursor_Notes.getString(4));
                         noteList.get(i).setNote(cursor_Notes.getString(3));
                         adapter.notifyItemChanged(i);
@@ -597,7 +613,7 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
                             cursor_Notes.getLong(reminder_indx),
                             cursor_Notes.getInt(reminder_type_indx),
                             cursor_Notes.getInt(reminder_interval_indx));
-                    dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(note.date,start_of_today));
+                    dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(note.getDate(),start_of_today));
                     noteOriginal_list.add(cursor_Notes.getString(note_indx));
                     selected_list.add(false);
                     noteList.add(note);
@@ -635,8 +651,8 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
 
             Note _note = noteList.get(position);
             Intent goTo = new Intent(this, MainActivity.class);
-            goTo.putExtra("send_date_of_note",_note.date);
-            goTo.putExtra("send_note_id",_note.note_id);
+            goTo.putExtra("send_date_of_note",_note.getDate());
+            goTo.putExtra("send_note_id",_note.getNote_id());
             startActivity(goTo);
             overridePendingTransition(R.anim.slide_left_in,R.anim.slide_left_out);
         }else{
@@ -670,36 +686,36 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
         selected_positions_list.add(0,position);
 
 
-        if(selection_item_menu_PopUp.popupWindow == null && selection_count >= 2){
-            //--Buscar estado del pin de las dos primeras notas seleccionadas:
-            Note _note = noteList.get(selected_positions_list.get(0));
-            Note _note2 = noteList.get(selected_positions_list.get(1));
+        ///if(selection_item_menu_PopUp.popupWindow == null && selection_count >= 2){
+        ///    //--Buscar estado del pin de las dos primeras notas seleccionadas:
+        ///    Note _note = noteList.get(selected_positions_list.get(0));
+        ///    Note _note2 = noteList.get(selected_positions_list.get(1));
 
-            //pin_initial_state_MS = false;
-            pin_initial_state_MS = _note.getPin() & _note2.getPin() || _note2.getPin(); /// AND Operator !!--Verificar si la opcion de elegir lo primero que escoja el usuario es lo mejor
+        ///    //pin_initial_state_MS = false;
+        ///    pin_initial_state_MS = _note.getPin() & _note2.getPin() || _note2.getPin(); /// AND Operator !!--Verificar si la opcion de elegir lo primero que escoja el usuario es lo mejor
 
 
-            selection_item_menu_PopUp.setListener_dismiss(this);
-            selection_item_menu_PopUp.show(v, pin_initial_state_MS);
+        ///    selection_item_menu_PopUp.setListener_dismiss(this);
+        ///    selection_item_menu_PopUp.show(v, pin_initial_state_MS);
 
-            adapter.Change_multi_selection_state(selection_mode);
-            adapter.notifyItemChanged(position,this);
-            adapter.notifyItemChanged(selected_positions_list.get(1),this);//!!se estan desvaneciendo sin las animaciones
+        ///    adapter.Change_multi_selection_state(selection_mode);
+        ///    adapter.notifyItemChanged(position,this);
+        ///    adapter.notifyItemChanged(selected_positions_list.get(1),this);//!!se estan desvaneciendo sin las animaciones
 
-            //fa_btn.startAnimation(AnimationLayoutDimDisappear_Normal);
-        }
-        if(selection_item_menu_PopUp.popupWindow != null && !selection_mode){
-            //selection_item_menu_PopUp.popupWindow.dismiss();
-            //selection_item_menu_PopUp.popupWindow = null;
-            //adapter.Change_multi_selection_state(selection_mode);
+        ///    //fa_btn.startAnimation(AnimationLayoutDimDisappear_Normal);
+        ///}
+        ///if(selection_item_menu_PopUp.popupWindow != null && !selection_mode){
+        ///    //selection_item_menu_PopUp.popupWindow.dismiss();
+        ///    //selection_item_menu_PopUp.popupWindow = null;
+        ///    //adapter.Change_multi_selection_state(selection_mode);
 
-            //selected_positions_list.clear();
-            //fa_btn.startAnimation(AnimationLayoutDimAppear);
-            Restart_Selection();
-        }
-        if(selection_item_menu_PopUp.popupWindow != null && selection_mode){
-            //selection_item_menu_PopUp.popupWindow.update(v,60,-150,140,360);
-        }
+        ///    //selected_positions_list.clear();
+        ///    //fa_btn.startAnimation(AnimationLayoutDimAppear);
+        ///    Restart_Selection();
+        ///}
+        ///if(selection_item_menu_PopUp.popupWindow != null && selection_mode){
+        ///    //selection_item_menu_PopUp.popupWindow.update(v,60,-150,140,360);
+        ///}
         adapter.notifyItemChanged(position);//!! se esta duplicando con la instruccion de arriba
 
         //---Set unselecting_view to repeated unselect
@@ -735,7 +751,7 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
         boolean _pin = pin_multi_change ? !pin_initial_state_MS : !_note.getPin();///Ternary Operator
 
 
-        if(DB_N.Modify_Pin_Status(_note.note_id,_pin)){
+        if(DB_N.Modify_Pin_Status(_note.getNote_id(),_pin)){
             RecyclerView_Pin_Update(position);
         }else{
             Toast.makeText(Memo_Board_BackUp_Before_Viewpager2.this, "Not_Pin_Modified", Toast.LENGTH_SHORT).show();
@@ -761,8 +777,8 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
         if(adapter.Get_Searching_Mode_Status() == true){
             int i = 0 ;
             while (i <= noteList.size()-1) {
-                if(noteList.get(i).pin != _note.pin){/// Pin
-                    while(_note.date < noteList.get(i).date ){/// Date
+                if(noteList.get(i).getPin() != _note.getPin()){/// Pin
+                    while(_note.getDate() < noteList.get(i).getDate() ){/// Date
                         i++;
                     }
                     current_pinned_notes = i;
@@ -772,7 +788,7 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
             }
 
         }else{
-            current_pinned_notes = DB_N.get_Specific_Note_Sorted_by_Pin_and_Date(_note.note_id);
+            current_pinned_notes = DB_N.get_Specific_Note_Sorted_by_Pin_and_Date(_note.getNote_id());
         }
         //Log.d("Pin","   current_pin:" + current_pinned_notes+ "    position:" + position);
 
@@ -850,9 +866,9 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
     public void RemoveItem(int position) {
         Note _note = noteList.get(position);
 
-        Reminder_Notification.Cancel_Reminder_Alarm(main,_note.note_id,0, _note.reminder);
+        Reminder_Notification.Cancel_Reminder_Alarm(main,_note.getNote_id(),0, _note.getReminder());
 
-        if(DB_N.Send_Note_To_Trash(_note.note_id,_note.date,_note.title,noteOriginal_list.get(position),_note.pin,20)){
+        if(DB_N.Send_Note_To_Trash(_note.getNote_id(),_note.getDate(),_note.getTitle(),noteOriginal_list.get(position),_note.getPin(),20)){
             //----Remove Note from Recycler View
             dateEdited_list.remove(position);
             noteOriginal_list.remove(position);
@@ -867,10 +883,10 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
         selection_count =0;
         selection_mode = false;
         selected_positions_list.clear();
-        if(selection_item_menu_PopUp.popupWindow != null){
-            selection_item_menu_PopUp.popupWindow.dismiss();
-            selection_item_menu_PopUp.popupWindow = null;
-        }
+        ////if(selection_item_menu_PopUp.popupWindow != null){
+        ////    selection_item_menu_PopUp.popupWindow.dismiss();
+        ////    selection_item_menu_PopUp.popupWindow = null;
+        ////}
         if(!selection_mode) fa_btn.startAnimation(Animation_FloatingButton_Appear);
         adapter.Change_multi_selection_state(false);
     }

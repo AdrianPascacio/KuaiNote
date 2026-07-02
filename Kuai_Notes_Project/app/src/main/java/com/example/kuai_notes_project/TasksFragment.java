@@ -1,5 +1,7 @@
 package com.example.kuai_notes_project;
 
+import static android.view.View.VISIBLE;
+
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -11,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,10 +27,81 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Objects;
 
-public class TasksFragment extends Fragment implements Recycler_Tasks_List_Interface, Recycler_Tasks_Sub_List_Interface, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener {
+public class TasksFragment extends Fragment implements Recycler_Tasks_List_Interface, Recycler_Tasks_Sub_List_Interface, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener, FragmentRefreshable {
+    @Override
+    public void onFragmentSelected() {
+        if(et_searched_Text_Task.getVisibility() == VISIBLE){/// If is in Searching mode → Restart
+            adapter_taskFragment.Change_Searching_Mode_Status(false);
+            Log.d("4Search", "Zero : adapter itemcount:" + adapter_taskFragment.getItemCount());
+
+            Clear_Lists();
+
+            recyclerView_Tasks.setAdapter(adapter_taskFragment);
+            recyclerView_Tasks.setLayoutManager(new LinearLayoutManager(getContext()));
+
+            Update_Recycler_View();
+            task_fragment_adding_option_available.onTaskFragment_Adding_Option_Available(true);
+
+            //!!---Faltan las anicamiones
+            fl_search.setVisibility(VISIBLE);
+            et_searched_Text_Task.setText("");
+            et_searched_Text_Task.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onFragmentNewElement(int modification_in_notes, long element_id) {
+        Log.d("TaskFragment", "     New Task to the Journal: Journal Insertion");
+        Task_Main task_main = DB_T.getASpecificTask(element_id);
+        int current_position = DB_T.get_Specific_Task_Sorted_by_Pin_and_Date(element_id);
+        task_elements.add(current_position,task_main);
+        noteOriginal_list.add(task_main.note);
+        selected_list.add(current_position,false);
+
+        adapter_taskFragment.notifyItemInserted(current_position);
+
+    }
+
+    @Override
+    public void onFragmentElementModification(int modification_in_element, long element_id) {
+        Modification_In_Journal_Task(element_id);
+
+    }
+
+    @Override
+    public void onFragmentElementElimination(int modification_in_element, long element_id) {
+
+        for(int i = 0; i <= task_elements.size()-1; i++){
+            if( task_elements.get(i).getViewType() == 0 && element_id == task_elements.get(i).getId()){
+
+                RemoveItem(i);
+                break;
+            }
+        }
+    }
+
+    private void Modification_In_Journal_Task(long element_id) {
+        Log.d("TaskFragment", "Journal Modification Update");
+        Task_Main _task_main_2 = DB_T.getASpecificTask(element_id);
+        //boolean is_unfolded = _task_main.unfolded;
+
+        for(int i = 0 ; i <= task_elements.size()-1 ; i ++){
+            if(element_id == task_elements.get(i).getId() && task_elements.get(i).getViewType()== 0){
+                Task_Main _task_main = (Task_Main) task_elements.get(i);
+
+                if(_task_main.unfolded) Unfold_New(i,element_id);
+                task_elements.set(i,_task_main_2);
+                adapter_taskFragment.notifyItemChanged(i);
+                return;
+            }
+        }
+
+    }
+
     public interface Task_Fragment_Adding_Option_Available {//esto puede ir tambien en una clase separada
         void onTaskFragment_Adding_Option_Available(boolean adding_option_available); // 0 nada/normal, 1 cambio realizado, 2 cancelado
     }
+
     private Task_Fragment_Adding_Option_Available task_fragment_adding_option_available;
     public void setTaskFragment_Adding_Option_Available(Task_Fragment_Adding_Option_Available listener){
         this.task_fragment_adding_option_available = listener;
@@ -44,6 +118,8 @@ public class TasksFragment extends Fragment implements Recycler_Tasks_List_Inter
     DB_Tasks DB_T;
 
     EditText et_searched_Text_Task;
+
+    FrameLayout fl_search;
 
     long start_of_today = 0;
     ///Button btn_config, btn_check_lists;
@@ -81,16 +157,16 @@ public class TasksFragment extends Fragment implements Recycler_Tasks_List_Inter
 
     @Override
     public void onResume(){
-        super.onResume()        ///Delete_Task();
+        super.onResume();   ///Delete_Task();
         ///Return_To_Task_List();
-        ;
+
         getStartOfToday();
 
-        if(adapter_taskFragment.Get_Searching_Mode_Status()){
-            adapter_taskFragment.Change_Searching_Mode_Status(false);
-            Clear_Lists();
-            Update_Recycler_View();
-        }
+        ///if(adapter_taskFragment.Get_Searching_Mode_Status()){
+        ///    adapter_taskFragment.Change_Searching_Mode_Status(false);
+        ///    Clear_Lists();
+        ///    Update_Recycler_View();
+        ///}
 
     }
 
@@ -122,6 +198,8 @@ public class TasksFragment extends Fragment implements Recycler_Tasks_List_Inter
 
         et_searched_Text_Task = view.findViewById(R.id.Searched_Text_Task);
 
+        fl_search = view.findViewById(R.id.button_Search);
+
 
         recyclerView_Tasks.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter_taskFragment = new Adapter_Recycler_Tasks_List(getContext(),selected_list,task_elements,this,this);
@@ -142,6 +220,13 @@ public class TasksFragment extends Fragment implements Recycler_Tasks_List_Inter
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        });
+        fl_search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                fl_search.setVisibility(View.GONE);
+                et_searched_Text_Task.setVisibility(VISIBLE);
+            }
         });
         return view;
     }
@@ -380,9 +465,16 @@ public class TasksFragment extends Fragment implements Recycler_Tasks_List_Inter
             task_id  = task_sub.getParent_id();
         }
 
-        Intent goTo = new Intent(getContext(), Task_Visualizer.class);
-        goTo.putExtra("send_task_id",task_id);
-        startActivity(goTo);
+        if (getActivity() instanceof Memo_Board_New_Aux) {
+            Intent intent = new Intent(getActivity(), Task_Visualizer.class);
+            intent.putExtra("send_task_id",task_id);
+            // Le pedimos al launcher de la MainActivity que la ejecute
+            ((Memo_Board_New_Aux) getActivity()).getLanzadorActivityC().launch(intent);
+        }
+
+        ///Intent goTo = new Intent(getContext(), Task_Visualizer.class);
+        ///goTo.putExtra("send_task_id",task_id);
+        ///startActivity(goTo);
         //overridePendingTransition(R.anim.slide_left_in,R.anim.slide_left_out);
     }
 
@@ -827,8 +919,11 @@ public class TasksFragment extends Fragment implements Recycler_Tasks_List_Inter
         long bench_time = end_nano_time - start_nano_time;
         Log.d("TasksList","   Time Consumed in unfold:  "+ bench_time/1000);
     }
+
+
     public void Unfold_New(int position, long element_id) {
         Task_Main _task = (Task_Main) task_elements.get(position);
+
         _task.setUnfolded(!_task.unfolded);
 
         if(DB_T.Modify_Unfold_Status(_task.task_id,_task.unfolded)){
@@ -965,7 +1060,6 @@ public class TasksFragment extends Fragment implements Recycler_Tasks_List_Inter
             Restart_Selection();
             return;
         }
-
         if(option == 2){/// Option Reminder
         }
         if(option == 3){/// Option Delete

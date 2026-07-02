@@ -10,6 +10,14 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         >
+        <FrameLayout
+            android:id="@+id/button_Search"
+            android:layout_width="24dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="0dp"
+            android:background="@drawable/search_icon_4"/>
+
         <EditText
             android:id="@+id/Searched_Text_Task"
             android:layout_width="383dp"

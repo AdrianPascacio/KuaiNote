@@ -351,6 +351,7 @@ public class DB_Tasks extends SQLiteOpenHelper {
         }
         return result;
     }
+
     public Boolean Delete_Hard_Specific_Task_Sub(long task_sub_id){
         SQLiteDatabase DB_T = this.getWritableDatabase();
         int result = DB_T.delete("Tasks_Sub",  "_id=? ", new String[]{String.valueOf(task_sub_id)});
