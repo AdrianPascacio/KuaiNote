@@ -37,7 +37,8 @@ import java.util.Objects;
 
 //488 01apr2026, 1207 v9.0B
 public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks_Sub_In_Visualizer_Interface, Reminder_PopUpWindow_Tasks.OnValueSelectedListener, Reminder_PopUpWindow_Tasks.PopupDismissListener,Note_Update_Listener{
-    private int task_modification_result = 0; /// 0 Element Modification, 1 New Element, 2 Element Deleted
+    boolean is_a_new_task = false;
+    private int task_modification_result = -1; /// 0 Element Modification, 1 New Element, 2 Element Deleted
 
 
     private int order_type = 0;
@@ -1156,6 +1157,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
             fl_Insert_Sub_Task.setVisibility(View.VISIBLE);
             fl_Set_Order.setVisibility(Is_Valid_To_Sort_Completed_Sub_Tasks()? View.VISIBLE : View.GONE);
         } else {
+            is_a_new_task = true;
             Set_Blank_Note_Style();
             fl_Insert_Sub_Task_Initial.setVisibility(View.VISIBLE);
             //fl_Insert_Sub_Task_Initial.animate().alpha(1);
@@ -1183,6 +1185,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
             @Override
             public void afterTextChanged(Editable s) {
                 change_in_task = true;
+                task_modification_result = 0;
                 Verify_if_exist_something();
             }
 
@@ -1196,6 +1199,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
             public void onClick(View view) {
                 Insert_Sub_Task();
                 change_in_task = true;
+                task_modification_result = 0;
 
                 if(task.completed) {
                     Change_Complete_Main_Task_Status();
@@ -1204,6 +1208,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                 //!!--Need to update this (visibility update) to → (appear and disappear function):
                 fl_Set_Order.setVisibility(Is_Valid_To_Sort_Completed_Sub_Tasks()? View.VISIBLE : View.GONE);
                 fl_Insert_Sub_Task.startAnimation(AnimationSubTask_Inserted);
+
             }
         });
         fl_Insert_Sub_Task_Initial.setOnClickListener(new View.OnClickListener() {
@@ -1213,6 +1218,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                 fl_Insert_Sub_Task.setVisibility(View.VISIBLE);
                 Insert_Sub_Task();
                 change_in_task = true;
+                task_modification_result = 0;
 
                 if(task.completed) {
                     Change_Complete_Main_Task_Status();
@@ -1280,6 +1286,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                 fl_Set_Order.setVisibility(Is_Valid_To_Sort_Completed_Sub_Tasks()? View.VISIBLE : View.GONE);
                 Sort_Sub_Task_According_Original_Order();
                 Debug_sub_task_list_position();
+                task_modification_result= 0;
             }
         });
         fl_Change_Pin_Status_Ghost.setOnClickListener(new View.OnClickListener() {
@@ -1288,6 +1295,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
                 if (Task_is_not_empty()|| !All_Current_Sub_Task_Are_Empty_2()) {
                     Pin_Task();
                     fl_Change_Pin_Status.startAnimation(AnimationPin);
+                    task_modification_result= 0;
                 }
             }
         });
@@ -1311,6 +1319,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
 
                     Set_Reminder_Note();
                     fl_Change_Reminder_Status.startAnimation(AnimationReminder);
+                    task_modification_result= 0;
                 }
             }
         });
@@ -1986,6 +1995,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         task_sub.setNote(description);
         task_subList.set(position,task_sub);
         change_in_task = true;
+        task_modification_result = 0;
     }
 
 
@@ -2016,6 +2026,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         ///
         //recyclerView.smoothScrollToPosition(0);
 
+        task_modification_result= 0;
     }
     private void Debug_sub_task_list_position() {
         for(int i = 0; i <= task_subList.size()-1; i++){
@@ -2034,6 +2045,8 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         }else{
             if(task.completed) Change_Complete_Main_Task_Status();
         }
+
+        ///Mejorado: if((result > 0) != task.completed)Change_Complete_Main_Task_Status();
 
     }
     private void Change_Complete_Main_Task_Status() {
@@ -2088,6 +2101,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
             Log.d("Task Visualizer", "Save Success: ");
             change_in_task = false;
             task.date = _current_time;
+            task_modification_result= 0;
             //!!--Update info:
             ///tv_Date.setText(DoN.Set_Date_of_Note_In_Visualizer(note.date));
         }else{
@@ -2098,6 +2112,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
 
     private Boolean  Save_Sub_Tasks() {
 
+        task_modification_result= 0;
         Log.d("Task Visualizer", "Save_Sub_Task: ");
         boolean save_sub_tasks_success = true;
         for(int i = task_subList.size() - 1; i >= 0; i --){
@@ -2315,7 +2330,7 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
 
 
         /// Verificacion:::::
-        if (task.task_id == 0 && (Task_is_not_empty() || !All_Current_Sub_Task_Are_Empty_2())  && change_in_task) {
+        if (is_a_new_task == true && (Task_is_not_empty() || !All_Current_Sub_Task_Are_Empty_2())  && change_in_task) {
             Log.d("MainActivity", "Return to memo board, saving before");
             Save_Task();
             task_modification_result = 1;

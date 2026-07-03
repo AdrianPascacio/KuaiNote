@@ -374,7 +374,7 @@ public class DB_Tasks extends SQLiteOpenHelper {
         contentValues.put("unfolded",unfolded);
 
         int result = DB_T.update("Tasks", contentValues, "_id=? ", new String[]{String.valueOf(task_id)});
-        Result_Log_treatment(result, "Modify_Unfolded_Status");
+        Result_Log_treatment(result, "Modify_Unfolded_Status to: " + unfolded);
         return result > 0;
     }
     public Boolean Modify_Reminder_Status(long task_id,  long reminder, int reminder_type, int reminder_interval){
@@ -711,12 +711,13 @@ public class DB_Tasks extends SQLiteOpenHelper {
         task.setReminder_interval(cursor.getInt(cursor.getColumnIndexOrThrow("reminder_interval")));
         task.setCompleted(cursor.getInt(cursor.getColumnIndexOrThrow("completed")) == 1);
         task.setHas_Sub_Tasks(cursor.getInt(cursor.getColumnIndexOrThrow("has_sub_tasks")) == 1);
+        task.setUnfolded(cursor.getInt(cursor.getColumnIndexOrThrow("unfolded")) == 1);
     }
 
     @NonNull
     private static void Result_Log_treatment(int result, String from) {
         if (result > 0) {
-            Log.d("Inside DB_Notes", "From: " + from);
+            Log.d("Inside DB_Tasks", "From: " + from);
         } else {
             //result == 0 no se encontro | -1 hubo un error
             if (result == 0) Log.d("Inside DB_Tasks", from + ": NOT Found");

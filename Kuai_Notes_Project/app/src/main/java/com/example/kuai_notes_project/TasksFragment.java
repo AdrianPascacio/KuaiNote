@@ -89,8 +89,12 @@ public class TasksFragment extends Fragment implements Recycler_Tasks_List_Inter
             if(element_id == task_elements.get(i).getId() && task_elements.get(i).getViewType()== 0){
                 Task_Main _task_main = (Task_Main) task_elements.get(i);
 
-                if(_task_main.unfolded) Unfold_New(i,element_id);
                 task_elements.set(i,_task_main_2);
+                if(_task_main.unfolded){
+
+                    RecyclerView_Unfold_Update(i, false, _task_main.task_id);
+                    RecyclerView_Unfold_Update(i, true, _task_main.task_id);
+                }
                 adapter_taskFragment.notifyItemChanged(i);
                 return;
             }
