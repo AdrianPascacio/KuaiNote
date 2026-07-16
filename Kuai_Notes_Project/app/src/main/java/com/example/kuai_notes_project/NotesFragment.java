@@ -2,12 +2,11 @@ package com.example.kuai_notes_project;
 
 import static android.view.View.VISIBLE;
 
-import android.app.Activity;
+import static androidx.core.content.ContextCompat.getSystemService;
+
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -15,12 +14,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -30,21 +29,18 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Objects;
 
-///777 13jul2026
+///777 13jun2026, 623 13jul2026
 public class NotesFragment extends Fragment implements Recycler_Memo_Board_Interface, Reminder_PopUpWindow.OnValueSelectedListener,Reminder_PopUpWindow.PopupDismissListener, Selection_Item_Menu_MemoBoard_PopUpWindow.SM_PopupDismissListener, FragmentRefreshable, MainActivity.NoteVisualizer_Modification_in_Notes{
 
-    private ActivityResultLauncher<Intent> lanzadorActivityC;
     long start_of_today = 0;
     RecyclerView recyclerView_Notes;
     ArrayList<String> dateEdited_list;
     ArrayList<String> noteOriginal_list;
     ArrayList<Boolean> selected_list;
     ArrayList<Note> noteList;
-
-    EditText et_searched_Text;
-
     ArrayList<Integer> selected_positions_list;
 
+    EditText et_searched_Text;
     DB_Notes DB_N;
     public Adapter_Recycler_Memo_Board adapter_noteFragment;
 
@@ -56,33 +52,10 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
     Selection_Item_Menu_MemoBoard_PopUpWindow selection_item_menu_PopUp;
     Memo_Board_New_Aux memoBoardNewAux;
     MainActivity mainActivity;
-    public void iniciarFlujo(){
-        memoBoardNewAux.ejecutarPopUP((salida, position) -> {///  Implementacion de interfaz sin tener que  implementarla en la clase:
-
-            Log.d("implementacion", "implementancion");
-            memoBoardNewAux.btn_search.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#fafa99")));
-            Toast.makeText(memoBoardNewAux, "Ejecutado desde Note"+salida + position, Toast.LENGTH_SHORT).show();
-
-        });
-    }
     private int selection_count = 0;
     private boolean pin_initial_state_MS= false;
     private boolean selection_mode = false;
     private boolean pin_multi_change = false;
-
-    public void onMemoBoardNewAux_OutReminder(int salida, int position) {
-        adapter_noteFragment.Change_Searching_Mode_Status(false);
-        Log.d("2Search", "Zero : adapter itemcount:" + adapter_noteFragment.getItemCount());
-
-        Clear_Lists();
-
-        recyclerView_Notes.setAdapter(adapter_noteFragment);
-        recyclerView_Notes.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        note_fragment_adding_option_available.onNoteFragment_Adding_Option_Available(true);
-        Update_Recycler_View();
-
-    }
 
     @Override
     public void onFragmentSelected() {
@@ -98,7 +71,6 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
             note_fragment_adding_option_available.onNoteFragment_Adding_Option_Available(true);
             Update_Recycler_View();
 
-            //!!---Faltan las anicamiones
             fl_search.setVisibility(VISIBLE);
             et_searched_Text.setText("");
             et_searched_Text.setVisibility(View.GONE);
@@ -131,13 +103,9 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
         Log.d("NoteFragment", "     New Note to the Journal: Journal Insertion");
         Note _note = DB_N.getASpecificNote(note_id);
         int current_position = DB_N.get_Specific_Note_Sorted_by_Pin_and_Date(note_id);
-        noteList.add(current_position,_note);
-        selected_list.add(current_position,false);
-        dateEdited_list.add(current_position,DoN.Set_Date_of_Note_Item_View(_note.date,start_of_today));
-        noteOriginal_list.add(current_position,_note.note);
+        Add_Element_In_Every_List(current_position, _note,_note.note);
 
         adapter_noteFragment.notifyItemInserted(current_position);
-
     }
     private void Modification_In_Journal_Note(long element_id) {
         Update_On_Journal_Notes(0,element_id);
@@ -148,10 +116,6 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
     }
 
     private void Update_On_Journal_Notes(int modification_in_notes, long note_id){
-        /// Actualmente se debe buscar en la lista el Id para luego actualizarlo
-        /// En caso de no existir entonces se debe introducir a la lista.
-        /// !!---Tal vez, si se puede especificar desde antes si es una modificacion o es una nota nueva se pueda optimizar y no tenga que buscarse si existe en la lista actual de la journal list
-
         Log.d("NoteFragment", "Journal Modification Update");
         Note _note = DB_N.getASpecificNote(note_id);
         for(int i = 0 ; i <= noteList.size()-1 ; i ++){
@@ -165,17 +129,10 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
         Log.d("NoteFragment", "Journal Insertion");
         int current_position = DB_N.get_Specific_Note_Sorted_by_Pin_and_Date(note_id);
 
-        noteList.add(current_position,_note);
-        selected_list.add(current_position,false);
-        dateEdited_list.add(current_position,DoN.Set_Date_of_Note_Item_View(_note.date,start_of_today));
-        noteOriginal_list.add(current_position,_note.note);
+        Add_Element_In_Every_List(current_position,_note,_note.note);
 
         adapter_noteFragment.notifyItemInserted(current_position);
     }
-
-
-
-
 
     public interface Note_Fragment_Adding_Option_Available {//esto puede ir tambien en una clase separada
         void onNoteFragment_Adding_Option_Available(boolean adding_option_available); // 0 nada/normal, 1 cambio realizado, 2 cancelado
@@ -235,13 +192,11 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
         notefragment_reminder_listener = null; //  Para evitar fugas de memoria
         notefragment_out_reminder_listener = null; //  Para evitar fugas de memoria
         note_fragment_adding_option_available = null; //  Para evitar fugas de memoria
-
     }
     @Override
     public void onResume(){
         super.onResume();
         getStartOfToday();
-        //mainActivity.setNoteVisualizer_Modification_in_Notes(this);
 
         if(adapter_noteFragment.Get_Searching_Mode_Status()){
             adapter_noteFragment.Change_Searching_Mode_Status(false);
@@ -255,7 +210,6 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
         View view = inflater.inflate(R.layout.fragment_notes, container, false);
         selection_item_menu_PopUp = new Selection_Item_Menu_MemoBoard_PopUpWindow(view.getContext(),-1);
         memoBoardNewAux = new Memo_Board_New_Aux();
-        //memoBoardNewAux.setMemoBoardNewAuxOutReminderListener(getContext());
 
         recyclerView_Notes = view.findViewById(R.id.rvNotes);
         DB_N = new DB_Notes(getContext());
@@ -276,27 +230,7 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
         adapter_noteFragment = new Adapter_Recycler_Memo_Board(getContext(), dateEdited_list,selected_list,noteList,this);
         recyclerView_Notes.setAdapter(adapter_noteFragment);
 
-        //mainActivity.setNoteVisualizer_Modification_in_Notes(this);
         Update_Recycler_View();
-
-        lanzadorActivityC = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    Log.d("NotesFragment" , "Result OK: " + MainActivity.RESULT_OK );
-                    Log.d("NotesFragment" , "result.getData() != null : " + (result.getData() != null) );
-
-                    if (result.getResultCode() == MainActivity.RESULT_OK && result.getData() != null) {
-                        // ¡Aquí recibimos los datos de regreso seguros!
-                        Intent data = result.getData();
-                        int modificacion = data.getIntExtra("extra_modificacion", 0);
-                        long id = data.getLongExtra("extra_id", -1 != -1 ? data.getLongExtra("extra_id", -1) : -1);
-
-                        // Aquí ejecutas tu lógica para actualizar el RecyclerView
-                        Log.d("NotesFragment" , "Just Before Update Journal Notes:");
-                        Update_On_Journal_Notes(modificacion, id);
-                    }
-                }
-        );
 
         et_searched_Text.addTextChangedListener(new TextWatcher() {
             @Override
@@ -304,10 +238,8 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
                 String searched_Text = et_searched_Text.getText().toString();
                 Update_Recycler_View_ftsValues_Snipped4(searched_Text);
             }
-
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
         });
@@ -316,8 +248,28 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
             public void onClick(View view) {
                 fl_search.setVisibility(View.GONE);
                 et_searched_Text.setVisibility(VISIBLE);
+
+                et_searched_Text.requestFocus();
+                InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(requireContext(),InputMethodManager.class);///Forma correcta de obtener el context al abrirlo dentro de un Fragment
+                if (inputMethodManager != null) {
+                    inputMethodManager.showSoftInput(et_searched_Text, InputMethodManager.SHOW_IMPLICIT);
+                }
             }
         });
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if(et_searched_Text.isFocused()){
+                    et_searched_Text.setText("");
+                    et_searched_Text.setVisibility(View.GONE);
+                    fl_search.setVisibility(View.VISIBLE);
+                    fl_search.requestFocus();
+                }else{
+                    requireActivity().finish();
+                }
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), callback);
         return view;
     }
 
@@ -331,8 +283,6 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
     }
 
     private void Update_Recycler_View_ftsValues_Snipped4(String searched_Text) {
-        //!!--Optimizar
-
         try (Cursor cursor_Notes = DB_N.get_All_Notes_fts_2(searched_Text)) {
             if(cursor_Notes.getCount()==0 || et_searched_Text.getTextSize()==0){
                 adapter_noteFragment.Change_Searching_Mode_Status(false);
@@ -346,8 +296,6 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
                 note_fragment_adding_option_available.onNoteFragment_Adding_Option_Available(true);
                 Update_Recycler_View();
             }else{
-                iniciarFlujo();
-
                 note_fragment_adding_option_available.onNoteFragment_Adding_Option_Available(false);
                 adapter_noteFragment.Change_Searching_Mode_Status(true);
 
@@ -368,11 +316,14 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
                         }
                     }
                     if(cursor_Notes.getCount() < noteList.size()){
-                        for(int j = noteList.size() -1  ; j >=cursor_Notes.getCount()  ; j --){
-                            Log.d("2Search", "            Removing: Title: "+noteList.get(j).title+ "    j: "+ j);
-                            Remove_Element_In_Every_List(j);
-                            adapter_noteFragment.notifyItemRemoved(j);
+                        int j = 0  ;
+                        while (i <=noteList.size()-1) {
+                            Log.d("2Search", "            Removing: Another Title: "+noteList.get(i).title+ "    i: "+ i);
+                            Remove_Element_In_Every_List(i);
+                            j++;
                         }
+                        adapter_noteFragment.notifyItemRangeRemoved(i,j);
+                        ///aqui se puede utilizar "i" como referencia e indicarle al adapter que pueda realizar la actualizacion de la remocion en lote desde "i" hasta "noteList.size()-1"
                     }
                 }else if (cursor_Notes.getCount() > noteList.size()){
                     int i = 0;
@@ -381,16 +332,13 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
                         Note _note = noteList.get(i);
                         Log.d("2Search", "            first Adding: Title: "+_note.title+ "    i: "+ i);
                         if(_note.note_id != cursor_Notes.getLong(0)){
-
-
                             Note note_adding = DB_N.getASpecificNote(cursor_Notes.getLong(0));
                             Log.d("2Search", "            Adding: Title: "+note_adding.title+ "    i: "+ i);
-                            dateEdited_list.add(i,DoN.Set_Date_of_Note_Item_View(note_adding.date,start_of_today));
-                            noteOriginal_list.add(i,note_adding.note);
+                            String note_original = note_adding.note;
+
                             note_adding.setTitle(cursor_Notes.getString(4));
                             note_adding.setNote(cursor_Notes.getString(3));
-                            selected_list.add(i,false);
-                            noteList.add(i,note_adding);
+                            Add_Element_In_Every_List(i,note_adding,note_original);
                             adapter_noteFragment.notifyItemInserted(i);
                         }else{
                             noteList.get(i).setTitle(cursor_Notes.getString(4));
@@ -400,18 +348,20 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
                         i++;
                     }
                     if(cursor_Notes.getCount() > noteList.size()){
-                        for(int j = noteList.size()   ; j <=cursor_Notes.getCount() -1  ; j ++){
-                            cursor_Notes.moveToPosition(j);
+                        int j = 0  ;
+                        int start = i;
+                        while (i <=cursor_Notes.getCount()-1) {
+                            cursor_Notes.moveToPosition(i);
                             Note note_adding = DB_N.getASpecificNote(cursor_Notes.getLong(0));
-                            Log.d("2Search", "            Adding: Title: "+note_adding.title+ "    j: "+ j);
-                            dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(note_adding.date,start_of_today));
-                            noteOriginal_list.add(note_adding.note);
+                            Log.d("2Search", "            Adding: Another Title: "+note_adding.note+ "    i: "+ i);
+                            String note_original = note_adding.note;
                             note_adding.setTitle(cursor_Notes.getString(4));
                             note_adding.setNote(cursor_Notes.getString(3));
-                            selected_list.add(false);
-                            noteList.add(note_adding);
-                            adapter_noteFragment.notifyItemInserted(j);
+                            Add_Element_In_Every_List(noteList.size(),note_adding,note_original);
+                            j++;
+                            i++;
                         }
+                        adapter_noteFragment.notifyItemRangeRemoved(start,j);
                     }
                 }else{
                     while(cursor_Notes.moveToNext()){
@@ -420,8 +370,9 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
                         Log.d("2Search", "            Just updating: Title: "+_note.title+ "    i: "+ i);
                         noteList.get(i).setTitle(cursor_Notes.getString(4));
                         noteList.get(i).setNote(cursor_Notes.getString(3));
-                        adapter_noteFragment.notifyItemChanged(i);
                     }
+                    adapter_noteFragment.notifyItemRangeChanged(0,noteList.size());
+                    //cambiar para que al adapter pueda realizar su trabajo en forma de RANGE
                 }
             }
         }
@@ -429,7 +380,7 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
     private void Update_Recycler_View(){
         try (Cursor cursor_Notes = DB_N.get_All_Notes()) {
             if(cursor_Notes.getCount()==0){
-                //Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
+                Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
             }else{
                 int id_indx = cursor_Notes.getColumnIndex("_id");
                 int date_indx = cursor_Notes.getColumnIndex("date");
@@ -449,10 +400,7 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
                             cursor_Notes.getLong(reminder_indx),
                             cursor_Notes.getInt(reminder_type_indx),
                             cursor_Notes.getInt(reminder_interval_indx));
-                    dateEdited_list.add(DoN.Set_Date_of_Note_Item_View(note.date,start_of_today));
-                    noteOriginal_list.add(cursor_Notes.getString(note_indx));
-                    selected_list.add(false);
-                    noteList.add(note);
+                    Add_Element_In_Every_List(noteList.size(),note,note.note);
                 }
             }
         }
@@ -466,6 +414,18 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
         selected_list.clear();
         noteList.clear();
     }
+    private void Remove_Element_In_Every_List(int position){
+        noteList.remove(position);
+        noteOriginal_list.remove(position);
+        dateEdited_list.remove(position);
+        selected_list.remove(position);
+    }
+    private void Add_Element_In_Every_List(int position, Note note ,String note_Original){
+        dateEdited_list.add(position, DoN.Set_Date_of_Note_Item_View(note.date,start_of_today));
+        noteOriginal_list.add(position, note_Original);
+        selected_list.add(position, false);
+        noteList.add(position, note);
+    }
 
     @Override
     public void onItemClick(int position, View v) {
@@ -477,15 +437,8 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
         if (getActivity() instanceof Memo_Board_New_Aux) {
             Intent intent = new Intent(getActivity(), MainActivity.class);
             intent.putExtra("send_note_id",noteList.get(position).getNote_id());
-            // Le pedimos al launcher de la MainActivity que la ejecute
-            ((Memo_Board_New_Aux) getActivity()).getLanzadorActivityC().launch(intent);
+            ((Memo_Board_New_Aux) getActivity()).getLanzadorActivityC().launch(intent);/// Le pedimos al launcher de la MainActivity que la ejecute
         }
-
-
-        //Intent goTo = new Intent(getContext(), MainActivity.class);
-        //goTo.putExtra("send_note_id",noteList.get(position).getNote_id());
-        //lanzadorActivityC.launch(goTo);
-        ////startActivity(goTo);
     }
 
     @Override
@@ -503,21 +456,20 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
             Note _note = noteList.get(selected_positions_list.get(0));
             Note _note2 = noteList.get(selected_positions_list.get(1));
 
-            pin_initial_state_MS = _note.getPin() & _note2.getPin() || _note2.getPin(); /// AND Operator !!--Verificar si la opcion de elegir lo primero que escoja el usuario es lo mejor
+            pin_initial_state_MS = _note.getPin() & _note2.getPin() || _note2.getPin(); /// AND Operator
 
             selection_item_menu_PopUp.setListener_dismiss(this);
             selection_item_menu_PopUp.show(v, pin_initial_state_MS);
 
             adapter_noteFragment.Change_multi_selection_state(selection_mode);
-            adapter_noteFragment.notifyItemChanged(position,this);
-            adapter_noteFragment.notifyItemChanged(selected_positions_list.get(1),this);//!!se estan desvaneciendo sin las animaciones
+            adapter_noteFragment.notifyItemChanged(selected_positions_list.get(1),this);
 
             note_fragment_adding_option_available.onNoteFragment_Adding_Option_Available(false);
         }
         if(selection_item_menu_PopUp.popupWindow != null && !selection_mode){
             Restart_Selection();
         }
-        adapter_noteFragment.notifyItemChanged(position);//!! se esta duplicando con la instruccion de arriba
+        adapter_noteFragment.notifyItemChanged(position);
 
         //---Set unselecting_view to repeated unselect
         if(selected_positions_list.size()==2) {
@@ -557,7 +509,8 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
         if(option == 2){/// Option Reminder
         }
         if(option == 3){/// Option Delete
-            for(int i = selected_list.size() -1 ;i >= selected_list.size() -1; i--){
+            Log.d("NotesFragment", "Option Delete");
+            for(int i = selected_list.size() -1 ;i >= 0; i--){
                 if(selected_list.get(i))    RemoveItem(i);
             }
             selected_positions_list.clear();
@@ -585,11 +538,9 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
             RecyclerView_Pin_Update(position);
         }
     }
-
     public void RecyclerView_Pin_Update(int position){
 
         Note _note = noteList.get(position);
-        String _date= dateEdited_list.get(position);
         String _noteOriginal= noteOriginal_list.get(position);
         selected_list.set(position,false);
         adapter_noteFragment.notifyItemChanged(position);
@@ -617,13 +568,9 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
             current_pinned_notes = DB_N.get_Specific_Note_Sorted_by_Pin_and_Date(_note.note_id);
         }
 
-        dateEdited_list.add(current_pinned_notes,_date);
-        noteOriginal_list.add(current_pinned_notes,_noteOriginal);
-        //--cambio de estado con referencia al anterior de (0 a 1)
         //_note.setPin(_note.getPin() ^ 1);       //XOR Operator
         _note.setPin(!_note.getPin());
-        noteList.add(current_pinned_notes,_note);
-        selected_list.add(current_pinned_notes,false);
+        Add_Element_In_Every_List(current_pinned_notes,_note,_noteOriginal);
         adapter_noteFragment.notifyItemMoved(position,current_pinned_notes);
         adapter_noteFragment.notifyItemChanged(current_pinned_notes);
 
@@ -664,6 +611,7 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
         noteList.add(position,_note);
         adapter_noteFragment.notifyItemChanged(position);
     }
+
     @Override
     public void RemoveItem(int position) {
         Note _note = noteList.get(position);
@@ -689,11 +637,5 @@ public class NotesFragment extends Fragment implements Recycler_Memo_Board_Inter
 
         note_fragment_adding_option_available.onNoteFragment_Adding_Option_Available(true);
         adapter_noteFragment.Change_multi_selection_state(false);
-    }
-    private void Remove_Element_In_Every_List(int position){
-        noteList.remove(position);
-        noteOriginal_list.remove(position);
-        dateEdited_list.remove(position);
-        selected_list.remove(position);
     }
 }

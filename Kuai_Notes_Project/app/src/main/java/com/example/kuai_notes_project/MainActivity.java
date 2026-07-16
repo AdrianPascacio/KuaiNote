@@ -24,7 +24,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-///290 V03 , 347 V04, 281 V05, 485 V06, 429 V07, 529 V07antes de refactorizar DB con _id, DB con date = long, DB unificado (soft deleted flag)A , 740L 32264c V07.02 indentado repeticiones diarias en reminder, 784 V07.3.1 antes de optimizar y refactorizar
+///290 V03 , 347 V04, 281 V05, 485 V06, 429 V07, 529 V07A DB con _id, DB con date = long, DB unificado (soft deleted flag), 740L 32264c V07.02 , 784 V07.3.1B, 548 v9.0B 16jul2026
 public class MainActivity extends AppCompatActivity implements Reminder_PopUpWindow.OnValueSelectedListener, Reminder_PopUpWindow.PopupDismissListener,Note_Update_Listener {
     private int note_modification_result = 0; /// 0 Element Modification, 1 New Element, 2 Element Deleted
     public interface NoteVisualizer_Modification_in_Notes {//esto puede ir tambien en una clase separada
@@ -72,10 +72,7 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
         debounceHandler.postDelayed(debounceRunnable, DEBOUNCE_DELAY_OF_HIDE_INFO); //programacion de la tarea
     }
 
-
     ///private Space space_below_note;
-
-
 
     @Override
     protected void onPause() {
@@ -157,7 +154,6 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
         indentReplicator = new Indent_Replicator(this);
 
         ///space_below_note = findViewById(R.id.Space_Below_Note_Main);
-
 
         if (received_note_id != 0) {
             Initialize_Received_Note(received_note_id);
@@ -325,13 +321,6 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
         boolean title_empty = __title.length()==0;
         boolean note_empty = __note.length()==0;
         return !title_empty || !note_empty;
-        /// Original: Using toString:
-        //!!--Verify if this is more effiecient that a String verification
-        //String _title = et_Title.getText().toString();
-        //String _note = et_Note.getText().toString();
-        //return !_title.isEmpty() || !_note.isEmpty();
-        /// Secure Option: Verify if the EditText is Null:
-        //boolean title_emptyx = TextUtils.isEmpty(et_Title.getText());
     }
 
     private void Update_Note_Status(boolean current_status) {
@@ -402,9 +391,6 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
     public void OnValueSelected(int position, long alarm_Time, int reminder_type, int reminder_interval) {
         note.setReminder(alarm_Time);
         Change_Reminder_Status_Style();
-        if(note.note_id==0){//!!---Verificar si realmente es necesario, deberia ya tener un ID si fue guardado
-            note.setNote_id(DB_N.Get_Last_RowId());
-        }
     }
     @Override
     public void onPopupClosed(int salida, int position) { //  0 nada/normal, 1 setter, 2 cancelado
@@ -418,13 +404,11 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
             layout_dim.startAnimation(AnimationLayoutDimDisappear_Setter);
             return;
         }
-
         if(salida == 2){//cancel
             layout_dim.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.reminder_discard)));
             layout_dim.startAnimation(AnimationLayoutDimDisappear_Cancel);
             return;
         }
-
         layout_dim.startAnimation(AnimationLayoutDimDisappear_Normal);
     }
 
@@ -444,7 +428,6 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
         }
 
         if (save_Success) {
-            //!!---Verificar, no se esta actualizando los datos recien agragados al objeto nota.
             change_in_note = false;
             note.date = _current_time;
             tv_Date.setText(DoN.Set_Date_of_Note_In_Visualizer(note.date));
@@ -453,10 +436,7 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
 
     private void Delete_Note() {
         if (Save_Note_in_TrashCan()) {
-
-            //!!---Deberia crearse algunas animaciones para eliminar el title y la nota, al igual que el date y la info
             Return_To_Memo_Board(); //is a method with the finish() method inside, but is there to add animations later
-
             if (note.note_id != 0) {      //Delete Reminder if exist
                 Reminder_Notification.Cancel_Reminder_Alarm(layout_body_note, note.note_id, 0,note.reminder);
             }
@@ -468,18 +448,17 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
             if (note.title != null || note.note != null) {
                 Log.d("Delete","Delete 1-");
                 return  getNoteInTrashCan(note.date,note.title,note.note, 20, "1-Insertado datos previous");
-            } else {
-                if(note.note_id > 0 && DB_N.Note_Exist(note.note_id)){
-                    Log.d("Delete","Delete 6-");
-                    change_in_note = false;
-                    Toast.makeText(MainActivity.this, "6.1-Insertado datos previous MOD", Toast.LENGTH_SHORT).show();//salvado previo con cambios sin guardar
-                    return DB_N.Send_Note_To_Trash_With_Out_DataBase_Modification(note.getNote_id(),note.pin,20); //!!--Check cual es la mejor opcion para este valor de expire days
-                }
-                Log.d("Delete","Delete 2-");
-                note_modification_result = -1;
-                Toast.makeText(MainActivity.this, "2- No hay nada que guardar ", Toast.LENGTH_SHORT).show();//si se utiliza reminder y luego se borra
-                return true;
             }
+            if(note.note_id > 0 && DB_N.Note_Exist(note.note_id)){
+                Log.d("Delete","Delete 6-");
+                change_in_note = false;
+                Toast.makeText(MainActivity.this, "6.1-Insertado datos previous MOD", Toast.LENGTH_SHORT).show();//salvado previo con cambios sin guardar
+                return DB_N.Send_Note_To_Trash_With_Out_DataBase_Modification(note.getNote_id(),note.pin,20);
+            }
+            Log.d("Delete","Delete 2-");
+            note_modification_result = -1;
+            Toast.makeText(MainActivity.this, "2- No hay nada que guardar ", Toast.LENGTH_SHORT).show();//si se utiliza reminder y luego se borra
+            return true;
         }
         String _title = et_Title.getText().toString();
         String _note = et_Note.getText().toString();
@@ -497,7 +476,7 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
             Log.d("Delete","Delete 5-");
             Toast.makeText(MainActivity.this, "5- Cambios realizados, directo a TrashCan ", Toast.LENGTH_SHORT).show();//salvado previo con cambios sin guardar
             change_in_note = false;
-            return DB_N.Insert_Note_Directly_in_Trash(date,title,_note,note.pin,20); //!!--Check cual es la mejor opcion para este valor de expire days
+            return DB_N.Insert_Note_Directly_in_Trash(date,title,_note,note.pin,20);
         }
         Toast.makeText(MainActivity.this, Delete_Case, Toast.LENGTH_SHORT).show();//salvado previo con cambios sin guardar
         return DB_N.Send_Note_To_Trash(note.note_id, date, title, _note, note.pin,  expire_days);
@@ -508,11 +487,11 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
         boolean note_exist = note.note_id != 0;
         tv_Date.setText(note_exist ? DoN.Set_Date_of_Note_In_Visualizer(note.date) : ""); ///Ternary Operator
         if (show_note_info) {
-            if (note_exist) tv_Date.startAnimation(AnimationDate);
+            if (note_exist)    tv_Date.startAnimation(AnimationDate);
             tv_Info.setText(DoN.Set_Date_Note_Only_Information(et_Note.getText().toString()));
             tv_Info.startAnimation(AnimationInfo);
         } else {
-            if (note_exist) tv_Date.startAnimation(AnimationDateInvert);
+            if (note_exist)    tv_Date.startAnimation(AnimationDateInvert);
             tv_Info.startAnimation(AnimationInfoInvert);
         }
     }
@@ -521,11 +500,11 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
         boolean note_exist = note.note_id != 0;
         tv_Date.setText(note_exist ? DoN.Set_Date_of_Note_In_Visualizer(note.date) : ""); ///Ternary Operator
         if (show_note_info) {
-            if (note_exist) tv_Date.startAnimation(AnimationDate);
+            if (note_exist)    tv_Date.startAnimation(AnimationDate);
             tv_Info.setText(DoN.Set_Date_Note_Only_Information(et_Note.getText().toString()));
             tv_Info.startAnimation(AnimationInfo);
         } else {
-            if (note_exist) tv_Date.startAnimation(AnimationDateInvert_Debounce_Slower);
+            if (note_exist)    tv_Date.startAnimation(AnimationDateInvert_Debounce_Slower);
             tv_Info.startAnimation(AnimationInfoInvert_Debounce_Slower);
         }
     }
@@ -537,10 +516,8 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
             if (tv_Date.getText().toString().isEmpty()) {
                 tv_Date.setVisibility(View.GONE);
             }
-
             Return_To_Memo_Board();
         }
-
     }
 
     public void Return_To_Memo_Board() {
@@ -552,7 +529,6 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
 
-        /// Verificacion:::::
         if (note.note_id == 0 && Note_is_not_empty() && change_in_note) {
             Log.d("MainActivity", "Return to memo board, saving before");
             Save_Note();
@@ -568,6 +544,5 @@ public class MainActivity extends AppCompatActivity implements Reminder_PopUpWin
 
         finish();
         overridePendingTransition(R.anim.return_activity_slide_right_in, R.anim.return_activity_slide_right_out);
-
     }
 }

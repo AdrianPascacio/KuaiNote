@@ -1,4 +1,4 @@
-package com.example.kuai_notes_project;
+package com.example.kuai_notes_project.ruled_out_code;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +18,12 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.kuai_notes_project.Adapter_Recycler_Search;
+import com.example.kuai_notes_project.DB_Notes;
+import com.example.kuai_notes_project.MainActivity;
+import com.example.kuai_notes_project.R;
+import com.example.kuai_notes_project.Recycler_Search_Interface;
 
 import java.util.ArrayList;
 import java.util.Objects;

@@ -53,15 +53,6 @@
             android:name=".Task_Visualizer"
             android:exported="false" />
         <activity
-            android:name=".Tasks_List"
-            android:exported="false" />
-        <activity
-            android:name=".Aux_Search"
-            android:exported="false" />
-        <activity
-            android:name=".Aux_Search_In_Tasks"
-            android:exported="false" />
-        <activity
             android:name=".Memo_Board_New_Aux"
             android:exported="true">
             <intent-filter>

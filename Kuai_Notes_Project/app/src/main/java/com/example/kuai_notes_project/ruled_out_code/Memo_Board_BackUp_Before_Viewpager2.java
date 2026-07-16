@@ -30,7 +30,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.kuai_notes_project.Adapter_Recycler_Memo_Board;
-import com.example.kuai_notes_project.Aux_Search;
 import com.example.kuai_notes_project.Body_Note_Preview;
 import com.example.kuai_notes_project.DB_Notes;
 import com.example.kuai_notes_project.Date_of_Note;
@@ -43,7 +42,6 @@ import com.example.kuai_notes_project.Reminder_Notification;
 import com.example.kuai_notes_project.Reminder_PopUpWindow;
 import com.example.kuai_notes_project.Selection_Item_Menu_MemoBoard_PopUpWindow;
 import com.example.kuai_notes_project.Stable_Content_Generator_For_Test;
-import com.example.kuai_notes_project.Tasks_List;
 import com.example.kuai_notes_project.Trash_Can;
 import com.example.kuai_notes_project.ViewPagerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -897,9 +895,9 @@ public class Memo_Board_BackUp_Before_Viewpager2 extends AppCompatActivity imple
         overridePendingTransition(R.anim.slide_left_in_trash,R.anim.slide_left_out_trash);
     }
     public void Go_To_Check_Lists(){
-        Intent goTo = new Intent(this, Tasks_List.class);
-        startActivity(goTo);
-        overridePendingTransition(R.anim.slide_left_in_trash,R.anim.slide_left_out_trash);
+        //Intent goTo = new Intent(this, Tasks_List.class);
+        //startActivity(goTo);
+        //overridePendingTransition(R.anim.slide_left_in_trash,R.anim.slide_left_out_trash);
     }
     private void Go_To_Search() {
         Intent goTo = new Intent(this, Aux_Search.class);

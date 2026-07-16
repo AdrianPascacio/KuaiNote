@@ -33,51 +33,33 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-///734 13jul2026
+///734 13jul2026, 484 16jul2026
 public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragment.Note_Fragment_ReminderListener, NotesFragment.Note_Fragment_Out_ReminderListener, NotesFragment.Note_Fragment_Adding_Option_Available, TasksFragment.Task_Fragment_Adding_Option_Available{
-
-
-
-    public interface MemoBoardNewAux_OutReminder_Listener {//esto puede ir tambien en una clase separada
-        void onMemoBoardNewAux_OutReminder(int salida, int position); // 0 nada/normal, 1 cambio realizado, 2 cancelado
-    }
-    private MemoBoardNewAux_OutReminder_Listener memoBoardNewAuxOutReminderListener;
-
-    public void setMemoBoardNewAuxOutReminderListener(MemoBoardNewAux_OutReminder_Listener outReminderListener){
-        this.memoBoardNewAuxOutReminderListener = outReminderListener;
-    }
-
-
     private ActivityResultLauncher<Intent> lanzadorActivityC;
 
     ArrayList<Integer> selected_positions_list;
 
     DB_Notes DB_N;
     DB_Tasks DB_T;
+
     Random_Content_Generator_For_Test Random_G;
     Stable_Content_Generator_For_Test Stable_G;
 
-    Button btn_config, btn_check_lists, btn_search, btn_generate_random_content, btn_generate_stable_content, btn_delete_all_notes_database;
+    Button btn_config, btn_check_lists, btn_generate_random_content, btn_generate_stable_content, btn_delete_all_notes_database;
 
-    View main;
-    View layout_dim;
+    View main, layout_dim;
+    private View btn_go_trash_can, menuTab;
     private int Journal_Section = -1;
-    private Animation AnimationAddNoteButton;
-    private Animation AnimationLayoutDimAppear, AnimationLayoutDimDisappear_Normal,AnimationLayoutDimDisappear_Setter,AnimationLayoutDimDisappear_Cancel, Animation_FloatingButton_Appear, Animation_FloatingButton_Disappear;
+    private Animation AnimationAddNoteButton, AnimationLayoutDimAppear, AnimationLayoutDimDisappear_Normal,AnimationLayoutDimDisappear_Setter,AnimationLayoutDimDisappear_Cancel, Animation_FloatingButton_Appear, Animation_FloatingButton_Disappear;
     private FloatingActionButton fa_btn;
 
     private LinearLayout floating_TrashCan_Access;
     private TextView tabArrow;
-    private View btn_go_trash_can;
-    private View menuTab;
 
     private boolean isExpanded = false;
     private float initialX;
-    //!!-- have to fix this:
-    // private final float HIDDEN_OFFSET = dpToPx(170); // Ajusta según el XML
     private float HIDDEN_OFFSET = 40; // Ajusta según el XML
     private float HIDDEN_OFFSET_ARROW = 6; // Ajusta según el XML
-
 
     private static final String CHANNEL_ID = "My_App_Channel";
     private ViewPager2 viewPager;
@@ -146,8 +128,6 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragme
                 }
         );
 
-
-
         new TabLayoutMediator(tabLayout, viewPager, new TabLayoutMediator.TabConfigurationStrategy() {
             @Override
             public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
@@ -215,7 +195,6 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragme
 
         btn_config = findViewById(R.id.button_Config);
         btn_check_lists = findViewById(R.id.button_Check_Lists);
-        btn_search = findViewById(R.id.button_Search);
         btn_generate_random_content = findViewById(R.id.button_Generate_Random_Content);
         btn_generate_stable_content = findViewById(R.id.button_Generate_Stable_Content);
         btn_delete_all_notes_database = findViewById(R.id.button_Delete_All_Notes_DataBase);
@@ -289,13 +268,7 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragme
         btn_check_lists.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Go_To_Check_Lists();
-            }
-        });
-        btn_search.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Go_To_Search();
+                //Go_To_Check_Lists();
             }
         });
         btn_go_trash_can.setOnClickListener(new View.OnClickListener() {
@@ -449,7 +422,6 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragme
             goTo = new Intent(this, Task_Visualizer.class);
         }
         lanzadorActivityC.launch(goTo);
-        ///startActivity(goTo);
         overridePendingTransition(R.anim.slide_left_in, R.anim.slide_left_out);
     }
 
@@ -458,17 +430,6 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragme
         startActivity(goTo);
         overridePendingTransition(R.anim.slide_left_in_trash,R.anim.slide_left_out_trash);
     }
-    public void Go_To_Check_Lists(){
-        Intent goTo = new Intent(this, Tasks_List.class);
-        startActivity(goTo);
-        overridePendingTransition(R.anim.slide_left_in_trash,R.anim.slide_left_out_trash);
-    }
-    private void Go_To_Search() {
-        Intent goTo = new Intent(this, Aux_Search.class);
-        startActivity(goTo);
-        overridePendingTransition(R.anim.slide_left_in_search,R.anim.slide_left_out_search);
-    }
-
 
     @Override
     public void onNoteFragment_Reminder_Open(int salida, int position, Note note) {
@@ -519,17 +480,5 @@ public class Memo_Board_New_Aux extends AppCompatActivity implements NotesFragme
             fa_btn.setClickable(false);
             fa_btn.startAnimation(Animation_FloatingButton_Disappear);
         }
-    }
-    public void ejecutarPopUP(MemoBoardNewAux_OutReminder_Listener listener){
-        this.memoBoardNewAuxOutReminderListener = listener;
-        //Toast.makeText(this, "Ejecutado desde NotesFragment 1", Toast.LENGTH_SHORT).show();
-        ///Reminder_PopUpWindow reminder_PopUp = new Reminder_PopUpWindow(new Reminder_PopUpWindow.PopupDismissListener(){ ///Sobrescribir un metodo de otra clase dentro de una interfaz propia???:
-        ///    @Override
-        ///    public void onPopupClosed(int salida, int position){
-        ///        if(memoBoardNewAuxOutReminderListener != null){
-        ///            Toast.makeText(Memo_Board_New_Aux.this, "Ejecutado desde NotesFragment", Toast.LENGTH_SHORT).show();
-        ///        }
-        ///    }
-        ///});
     }
 }

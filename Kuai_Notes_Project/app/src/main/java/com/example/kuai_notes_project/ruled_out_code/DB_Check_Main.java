@@ -1,7 +1,4 @@
-package com.example.kuai_notes_project;
-
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
+package com.example.kuai_notes_project.ruled_out_code;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;

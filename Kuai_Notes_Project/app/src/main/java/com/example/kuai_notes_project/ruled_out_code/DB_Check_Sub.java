@@ -1,4 +1,4 @@
-package com.example.kuai_notes_project;
+package com.example.kuai_notes_project.ruled_out_code;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;

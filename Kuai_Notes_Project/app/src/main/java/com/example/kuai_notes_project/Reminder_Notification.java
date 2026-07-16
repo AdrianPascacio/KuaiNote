@@ -16,7 +16,7 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-
+/// 185 V9.0B 13jul2026
 public class Reminder_Notification {
     private static final String CHANNEL_ID = "My_App_Channel";
     private static final String CHANNEL_ID_TASK = "My_App_Channel_Task";
@@ -163,7 +163,6 @@ public class Reminder_Notification {
         }else{
             _hashreminder =  Reminder_Hash_Creator.get_Task_Hash(element_id);
         }
-        //int note_id_As_reminderCode =  (int) (( note_id >>> 32 ) ^ note_id ); //hash creado con XOR operator (upper ^ lower)
         Intent notificationIntent = new Intent(itemView.getContext(), Notification_Receiver.class);
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
