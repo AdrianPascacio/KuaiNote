@@ -7,8 +7,6 @@
     12    252 	Task_Element.java
     13    400 	Recycler_Tasks_List_Interface.java
     13    450 	Recycler_Tasks_Sub_In_Visualizer_Interface.java
-    22    578 	DB_Check_Sub.java
-    27    652 	DB_Check_Main.java
     27   1050 	Reminder_Hash_Creator.java
     31    783 	ViewPagerAdapter.java
     45   7491 	Stable_Content_Generator_For_Test.java
@@ -26,30 +24,26 @@
    121   6027 	Selection_Item_Menu_MemoBoard_PopUpWindow.java
    161   9487 	Every_Day_Of_The_Week.java
    164   5716 	Indent_Replicator.java
-   184   8591 	Reminder_Notification.java
+   182   8486 	Reminder_Notification.java
    193   4578 	Task_Main.java
    226  11468 	Adapter_Recycler_Search.java
    242  11740 	Adapter_Recycler_Trash_Can.java
-   264  10285 	Aux_Search.java
    275  12312 	Adapter_Recycler_Tasks_Sub_In_Visualizer.java
-   299  12556 	Aux_Search_In_Tasks.java
    388  14687 	Trash_Can.java
    411  18572 	Wasted_Note_Visualizer.java
    424  21021 	DB_Notes.java
    454  23738 	Notification_Receiver.java
    467  24179 	Adapter_Recycler_Tasks_List.java
+   483  20404 	Memo_Board_New_Aux.java
    484  21441 	Main_Check_Visualizer.java
    533  24054 	Reminder_PopUpWindow.java
-   535  22564 	Memo_Board_New_Aux.java
    542  24655 	Reminder_PopUpWindow_Tasks.java
-   572  26361 	MainActivity.java
+   547  25259 	MainActivity.java
    610  32289 	Adapter_Recycler_Memo_Board.java
    612  32539 	Repeater_PopUpWindow.java
-   698  30631 	NotesFragment.java
+   640  28057 	NotesFragment.java
    727  36636 	DB_Tasks.java
-   931  38611 	Memo_Board.java
-  1068  53629 	Tasks_List.java
-  1075  50270 	TasksFragment.java
-  2380 137949 	Task_Visualizer.java
-  Classes: 53
-Total Lines: 16269		Character: 782858 
+   860  40121 	TasksFragment.java
+  1220  60464 	Task_Visualizer.java
+47	Classes
+Lines: 12146	Chars: 572972

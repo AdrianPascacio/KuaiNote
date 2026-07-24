@@ -337,7 +337,7 @@ public class TasksFragment extends Fragment implements Recycler_Tasks_List_Inter
                             cursor_Tasks.getInt(has_sub_tasks_indx)==1,
                             cursor_Tasks.getInt(unfolded_indx)==1);
                     Add_Element_In_Every_List(task_elements.size(),task,false);
-                    if(task.has_sub_tasks && task.unfolded){//--the double verification is correct. Its allow to remember that an specific Task is prefered as unfolded even if currently it han no subTasks
+                    if(task.has_sub_tasks && task.unfolded){//--the double verification is correct. Its allow to remember that an specific Task is preferred as unfolded even if currently it has no subTasks
                         try (Cursor cursor_Tasks_Sub= DB_T.get_All_Tasks_Sub_For_Specific_Task_Main(task.task_id)) {
                             if(cursor_Tasks_Sub.getCount()==0){
                                 Log.d("Read cursor_Notes", "Cursor_Notes : readcycleplanrecord: No Entry Exist");
@@ -556,7 +556,6 @@ public class TasksFragment extends Fragment implements Recycler_Tasks_List_Inter
     }
 
     private void Set_Sub_Tasks_Order_When_Complete(int position) {
-        Log.d("TasksList","   Set_Sub_Tasks_Order_When_Complete(int position)  ");
         Task_Sub _task_sub = (Task_Sub) task_elements.get(position);
         int first_sub = position;
         int last_sub = position;
@@ -567,18 +566,18 @@ public class TasksFragment extends Fragment implements Recycler_Tasks_List_Inter
             last_sub++;
         }
         if ((last_sub - first_sub) < 1) return;
-        if(order_type == 1 && _task_sub.completed){
-            for (int i = first_sub; i <= position ; i++) { /// Move to the superior group that is the opposite (completed / uncompleted)
+        if((order_type == 1) == _task_sub.completed){
+            for (int i = first_sub; i <= position ; i++) { /// Move to the superior opposite group  (completed / uncompleted)
                 Task_Sub task_sub_i = (Task_Sub) task_elements.get(i);
-                if (task_elements.get(i).getCompletion() != _task_sub.completed || task_sub_i.getTask_sub_position() >= _task_sub.getTask_sub_position()) {/// if complete value is different let it pass, else , verify if the current task have a GreaterOrEqual positon
+                if (task_sub_i.getCompletion() != _task_sub.completed || task_sub_i.getTask_sub_position() >= _task_sub.getTask_sub_position()) {/// if complete value is different let it pass, else , verify if the current task have a GreaterOrEqual positon
                     Update_Sub_Tasks_Order_When_Complete(position, i, _task_sub);
                     break;
                 }
             }
         }else{//--   Default (Uncomplete first) ///--Esta solucion asume el order_type == 0
-            for (int i = last_sub; i >= position; i--) {/// Move to the inferior group that is the opposite (completed / uncompleted)
+            for (int i = last_sub; i >= position; i--) {/// Move to the inferior opposite group (completed / uncompleted)
                 Task_Sub task_sub_i = (Task_Sub) task_elements.get(i);
-                if (task_elements.get(i).getCompletion() != _task_sub.completed || task_sub_i.getTask_sub_position() <= _task_sub.getTask_sub_position()) {/// if complete value is different let it pass, else , verify if the current task have a LesserOrEqual positon
+                if (task_sub_i.getCompletion() != _task_sub.completed || task_sub_i.getTask_sub_position() <= _task_sub.getTask_sub_position()) {/// if complete value is different let it pass, else , verify if the current task have a LesserOrEqual positon
                     Update_Sub_Tasks_Order_When_Complete(position, i, _task_sub);
                     break;
                 }
@@ -589,6 +588,7 @@ public class TasksFragment extends Fragment implements Recycler_Tasks_List_Inter
         task_elements.remove(from_position);
         task_elements.add(to_position, _task_sub);
         adapter_taskFragment.notifyItemMoved(from_position, to_position);
+        if(order_type != 2) recyclerView_Tasks.scrollToPosition(from_position);
     }
 
     private void Change_Complete_Main_Task_Status(Task_Main _task_main, int _task_main_position) {

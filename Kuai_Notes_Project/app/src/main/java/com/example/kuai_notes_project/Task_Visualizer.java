@@ -618,32 +618,6 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
             }
         }
     }
-    private void Set_Sub_Tasks_Order_When_Complete(int position) {
-        Task_Sub _task_sub = task_subList.get(position);
-        int sub_Task_size = task_subList.size();
-        if (sub_Task_size < 2)  return;
-        if (order_type == 2)    return;
-        if ((order_type == 1) == _task_sub.completed) { //--   Complete first
-            for (int i = 0; i <= sub_Task_size - 1; i++) { /// Move to the superior group that is the opposite (completed / uncompleted)
-                if (task_subList.get(i).getCompleted() != _task_sub.completed || task_subList.get(i).getTask_sub_position() >= _task_sub.getTask_sub_position()) {/// if complete value is different let it pass, else , verify if the current task have a GreaterOrEqual positon
-                    Update_Sub_Tasks_Order_When_Complete(position, i, _task_sub);
-                    break;
-                }
-            }
-        } else {//--   Default (Uncomplete first) ///--Esta solucion asume el order_type == 0
-            for (int i = sub_Task_size -1; i >= 0; i--) {/// Move to the inferior group that is the opposite (completed / uncompleted)
-                if (task_subList.get(i).getCompleted() != _task_sub.completed || task_subList.get(i).getTask_sub_position() <= _task_sub.getTask_sub_position()) {/// if complete value is different let it pass, else , verify if the current task have a LesserOrEqual positon
-                    Update_Sub_Tasks_Order_When_Complete(position, i, _task_sub);
-                    break;
-                }
-            }
-        }
-    }
-    private void Update_Sub_Tasks_Order_When_Complete(int from_position, int to_position, Task_Sub _task_sub){
-        task_subList.remove(from_position);
-        task_subList.add(to_position, _task_sub);
-        adapter.notifyItemMoved(from_position, to_position);
-    }
 
     private void Copy_Tasks_To_Clipboard() {
         StringBuilder clip_text = new StringBuilder("");
@@ -983,6 +957,33 @@ public class Task_Visualizer extends AppCompatActivity implements Recycler_Tasks
         change_in_task = true;
 
         task_modification_result= 0;
+    }
+    private void Set_Sub_Tasks_Order_When_Complete(int position) {
+        Task_Sub _task_sub = task_subList.get(position);
+        int sub_Task_size = task_subList.size();
+        if (sub_Task_size < 2)  return;
+        if (order_type == 2)    return;
+        if ((order_type == 1) == _task_sub.completed) { //--   Complete first
+            for (int i = 0; i <= sub_Task_size - 1; i++) { /// Move to the superior group that is the opposite (completed / uncompleted)
+                if (task_subList.get(i).getCompleted() != _task_sub.completed || task_subList.get(i).getTask_sub_position() >= _task_sub.getTask_sub_position()) {/// if complete value is different let it pass, else , verify if the current task have a GreaterOrEqual positon
+                    Update_Sub_Tasks_Order_When_Complete(position, i, _task_sub);
+                    break;
+                }
+            }
+        } else {//--   Default (Uncomplete first) ///--Esta solucion asume el order_type == 0
+            for (int i = sub_Task_size -1; i >= 0; i--) {/// Move to the inferior group that is the opposite (completed / uncompleted)
+                if (task_subList.get(i).getCompleted() != _task_sub.completed || task_subList.get(i).getTask_sub_position() <= _task_sub.getTask_sub_position()) {/// if complete value is different let it pass, else , verify if the current task have a LesserOrEqual positon
+                    Update_Sub_Tasks_Order_When_Complete(position, i, _task_sub);
+                    break;
+                }
+            }
+        }
+    }
+    private void Update_Sub_Tasks_Order_When_Complete(int from_position, int to_position, Task_Sub _task_sub){
+        task_subList.remove(from_position);
+        task_subList.add(to_position, _task_sub);
+        adapter.notifyItemMoved(from_position, to_position);
+        if(order_type != 2) recyclerView.scrollToPosition(from_position);
     }
     private void Debug_sub_task_list_position() {
         for(int i = 0; i <= task_subList.size()-1; i++){
